@@ -1,192 +1,169 @@
+import { useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
+import FormButtons from "../components/FormButtons";
+import "./ApplicationDetails.css";
+
 function ApplicationDetails() {
+  const navigate = useNavigate();
+
+  function Nextpage() {
+    navigate("/maindetails");
+  }
+
   return (
-    <div className="form-container">
-      <h2>Application Details</h2>
+    <Layout>
 
-      {/* Application Name */}
-      <label>Application Name</label>
-      <input
-        type="text"
-        name="applicationName"
-        placeholder="Enter Application Name"
-      />
+      <div className="form-container">
 
-      {/* Type of Application */}
-      <label>Type of Application</label>
-      <div className="radio-group">
-        <label>
-          <input type="radio" name="applicationType" value="website" />
-          Website
-        </label>
+        <h2 className="section-heading">
+           Application Details
+        </h2>
 
-        <label>
-          <input type="radio" name="applicationType" value="portal" />
-          Portal
-        </label>
+        <div className="form-row">
+          <label>Application Name</label>
+          <input
+            type="text"
+            placeholder="Enter Application Name"
+          />
+        </div>
 
-        <label>
-          <input type="radio" name="applicationType" value="application" />
-          Application
-        </label>
+        <div className="form-row">
+          <label>Type of Application</label>
 
-        <label>
-          <input type="radio" name="applicationType" value="other" />
-          Other
-        </label>
+          <div className="radio-group">
+            <label><input type="radio" name="applicationType" /> Website</label>
+            <label><input type="radio" name="applicationType" /> Portal</label>
+            <label><input type="radio" name="applicationType" /> Application</label>
+            <label><input type="radio" name="applicationType" /> Other</label>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>Nature of Application</label>
+
+          <div className="radio-group">
+            <label><input type="radio" name="applicationNature" /> G2G</label>
+            <label><input type="radio" name="applicationNature" /> G2B</label>
+            <label><input type="radio" name="applicationNature" /> G2C</label>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>Application Utility</label>
+
+          <div className="radio-group">
+            <label><input type="radio" name="applicationUtility" /> Budget Announcement</label>
+            <label><input type="radio" name="applicationUtility" /> CM Announcement</label>
+            <label><input type="radio" name="applicationUtility" /> General Application</label>
+            <label><input type="radio" name="applicationUtility" /> Other Priority Event</label>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>Purpose of Application</label>
+
+          <textarea
+            rows="5"
+            placeholder="Enter the purpose of the application"
+          ></textarea>
+
+          <p className="maintenance-text">
+            Please also attach a brief note about the application as per Annexure-6.
+          </p>
+        </div>
+
+        <div className="form-row">
+          <label>Proposed Sub Domain</label>
+          <input
+            type="text"
+            placeholder="xyz.rajasthan.gov.in"
+          />
+        </div>
+
+        <div className="form-row">
+          <label>Approved Primary URL from Department</label>
+          <input
+            type="text"
+            placeholder="Enter approved primary URL"
+          />
+        </div>
+
+        <div className="form-row">
+          <label>Alternate URL</label>
+          <input
+            type="text"
+            placeholder="Enter alternate URL"
+          />
+
+          <p className="maintenance-text">
+            Alternate URL will be assigned if the primary URL is not available.
+          </p>
+        </div>
+
+        <h2 className="section-heading">
+          4. Domain Name Approval
+        </h2>
+
+        <div className="two-column">
+
+          <div className="form-row">
+            <label>Authority Name</label>
+            <input type="text" />
+          </div>
+
+          <div className="form-row">
+            <label>Designation</label>
+            <input type="text" />
+          </div>
+
+        </div>
+
+        <div className="form-row">
+          <label>Approval Document</label>
+          <input type="file" />
+        </div>
+
+        <h2 className="section-heading">
+          5. SEMT / Administrative Approval
+        </h2>
+
+        <div className="form-row">
+          <label>Approval Available</label>
+
+          <div className="radio-group">
+            <label><input type="radio" name="approval" /> Yes</label>
+            <label><input type="radio" name="approval" /> No</label>
+          </div>
+        </div>
+
+        <div className="two-column">
+
+          <div className="form-row">
+            <label>MoM / Document Reference No.</label>
+            <input type="text" />
+          </div>
+
+          <div className="form-row">
+            <label>Date</label>
+            <input type="date" />
+          </div>
+
+        </div>
+
+        <div className="form-row">
+          <label>Attach MoM / Document</label>
+          <input type="file" />
+        </div>
+
       </div>
 
-      {/* Nature */}
-      <label>Nature of Application</label>
-      <div className="radio-group">
-        <label>
-          <input type="radio" name="applicationNature" value="g2g" />
-          G2G
-        </label>
-
-        <label>
-          <input type="radio" name="applicationNature" value="g2b" />
-          G2B
-        </label>
-
-        <label>
-          <input type="radio" name="applicationNature" value="g2c" />
-          G2C
-        </label>
-      </div>
-
-      {/* Utility */}
-      <label>Application Utility</label>
-      <div className="radio-group">
-        <label>
-          <input
-            type="radio"
-            name="applicationUtility"
-            value="budgetAnnouncement"
-          />
-          Budget Announcement
-        </label>
-
-        <label>
-          <input
-            type="radio"
-            name="applicationUtility"
-            value="cmAnnouncement"
-          />
-          CM Announcement
-        </label>
-
-        <label>
-          <input
-            type="radio"
-            name="applicationUtility"
-            value="generalApplication"
-          />
-          General Application
-        </label>
-
-        <label>
-          <input
-            type="radio"
-            name="applicationUtility"
-            value="otherPriorityEvent"
-          />
-          Other Priority Event
-        </label>
-      </div>
-
-      {/* Purpose */}
-      <label>Purpose of Application</label>
-      <textarea
-        rows="5"
-        name="purpose"
-        placeholder="Enter the purpose of the application"
-      ></textarea>
-
-      <small>
-        Please also attach a brief note about the application as per Annexure-6.
-      </small>
-
-      <hr />
-
-      {/* Proposed Sub Domain */}
-      <label>Proposed Sub Domain</label>
-      <input
-        type="text"
-        name="subDomain"
-        placeholder="xyz.rajasthan.gov.in"
+      <FormButtons
+        showBack={true}
+        onBack={() => navigate("/organization")}
+        onNext={Nextpage}
       />
 
-      {/* URLs */}
-      <label>Approved Primary URL from Department</label>
-      <input
-        type="text"
-        name="primaryUrl"
-        placeholder="Enter approved primary URL"
-      />
-
-      <label>Alternate URL</label>
-      <input
-        type="text"
-        name="alternateUrl"
-        placeholder="Enter alternate URL"
-      />
-
-      <small>
-        Alternate URL will be assigned if the primary URL is not available.
-      </small>
-
-      <hr />
-
-      {/* Domain Name Approval */}
-      <h3>Domain Name Approval</h3>
-
-      <label>Authority Name</label>
-      <input
-        type="text"
-        name="authorityName"
-        placeholder="Enter authority name"
-      />
-
-      <label>Designation</label>
-      <input
-        type="text"
-        name="designation"
-        placeholder="Enter designation"
-      />
-
-      <label>Approval Document</label>
-      <input type="file" name="approvalDocument" />
-
-      <hr />
-
-      {/* SEMT Approval */}
-      <label>SEMT / Administrative Approval for Project</label>
-
-      <div className="radio-group">
-        <label>
-          <input type="radio" name="semtApproval" value="yes" />
-          Yes
-        </label>
-
-        <label>
-          <input type="radio" name="semtApproval" value="no" />
-          No
-        </label>
-      </div>
-
-      <label>MoM / Document Reference No.</label>
-      <input
-        type="text"
-        name="documentRefNo"
-        placeholder="Enter reference number"
-      />
-
-      <label>Date</label>
-      <input type="date" name="approvalDate" />
-
-      <label>Attach MoM / Document</label>
-      <input type="file" name="momDocument" />
-    </div>
+    </Layout>
   );
 }
 

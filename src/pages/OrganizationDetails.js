@@ -1,56 +1,77 @@
 import "../pages.css";
-import {useNavigate} from "react-router-dom";
+import Layout from "../components/Layout";
+import FormButtons from "../components/FormButtons";
+import { useNavigate } from "react-router-dom";
 
 function OrganizationDetails() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    function Nextpage()
-    {
-       navigate("/application");
-    }
+  function Nextpage() {
+    navigate("/ApplicationDetails");
+  }
 
   return (
-    <div className="organization">
+    <Layout>
+      <h2 className="section-heading">
+        2. Organization Details
+      </h2>
 
-      <div className="title">
-        <h2>Organization Details</h2>
+      <div className="form-row">
+        <label>Organization Name</label>
+
+        <input
+          type="text"
+          placeholder="Enter Organization Name"
+        />
       </div>
 
-      <label>Organization Name</label>
+      <div className="form-row">
+        <label>Organization Type</label>
 
-      <input
-        type="text"
-        placeholder="Enter Organization Name"
-      />
+        <div className="radio-group">
 
-      <label>Organization Type</label>
+          <label>
+            <input type="radio" name="orgType" value="government" />
+            Government Department
+          </label>
 
-      <div className="radio-group">
+          <label>
+            <input type="radio" name="orgType" value="psu" />
+            PSU
+          </label>
 
-        <label><input type="radio" name="orgType" /> Government Department</label>
+          <label>
+            <input type="radio" name="orgType" value="startup" />
+            Startup
+          </label>
 
-        <label><input type="radio" name="orgType" /> PSU</label>
+          <label>
+            <input type="radio" name="orgType" value="msme" />
+            MSME
+          </label>
 
-        <label><input type="radio" name="orgType" /> Startup</label>
+          <label>
+            <input type="radio" name="orgType" value="other" />
+            Other
+          </label>
 
-        <label><input type="radio" name="orgType" /> MSME</label>
-
-        <label><input type="radio" name="orgType" /> Other</label>
-
+        </div>
       </div>
 
-      <div className="row">
+      <div className="two-column">
 
-        <div className="field">
+        <div className="form-row">
           <label>Nodal Officer</label>
+
           <input
             type="text"
             placeholder="Enter Name"
           />
         </div>
 
-        <div className="field">
+        <div className="form-row">
           <label>Designation</label>
+
           <input
             type="text"
             placeholder="Enter Designation"
@@ -59,18 +80,20 @@ function OrganizationDetails() {
 
       </div>
 
-      <div className="row">
+      <div className="two-column">
 
-        <div className="field">
+        <div className="form-row">
           <label>Email Address</label>
+
           <input
             type="email"
             placeholder="Enter Email"
           />
         </div>
 
-        <div className="field">
+        <div className="form-row">
           <label>Office Phone</label>
+
           <input
             type="tel"
             placeholder="Enter Phone"
@@ -79,18 +102,20 @@ function OrganizationDetails() {
 
       </div>
 
-      <div className="row">
+      <div className="two-column">
 
-        <div className="field">
+        <div className="form-row">
           <label>Mobile Number</label>
+
           <input
             type="tel"
             placeholder="Enter Mobile Number"
           />
         </div>
 
-        <div className="field">
+        <div className="form-row">
           <label>Postal Address</label>
+
           <input
             type="text"
             placeholder="Enter Address"
@@ -99,25 +124,31 @@ function OrganizationDetails() {
 
       </div>
 
-      <label>Name of DoIT&C Officer  (If available) /  SPOC Person (If DoIT&C Officer is not posted)</label>
+      <div className="form-row">
+        <label>
+          Name of DoIT&C Officer (If available) / SPOC Person (If DoIT&C Officer is not posted)
+        </label>
 
-      <input
-        type="text"
-        placeholder="Enter Name"
-      />
+        <input
+          type="text"
+          placeholder="Enter Name"
+        />
+      </div>
 
-      <div className="row">
+      <div className="two-column">
 
-        <div className="field">
-          <label>Designation(DoIT&C Officer / SPOC Person)</label>
+        <div className="form-row">
+          <label>Designation (DoIT&C Officer / SPOC Person)</label>
+
           <input
             type="text"
             placeholder="Enter Designation"
           />
         </div>
 
-        <div className="field">
-          <label>Contact Number(DoIT&C Officer / SPOC Person)</label>
+        <div className="form-row">
+          <label>Contact Number (DoIT&C Officer / SPOC Person)</label>
+
           <input
             type="text"
             placeholder="Enter Contact Number"
@@ -126,31 +157,19 @@ function OrganizationDetails() {
 
       </div>
 
-      <label>Email Address(DoIT&C Officer / SPOC Person)</label>
+      <div className="form-row">
+        <label>Email Address (DoIT&C Officer / SPOC Person)</label>
 
-      <input
-        type="email"
-        placeholder="Enter Email"
-      />
-    
+        <input
+          type="email"
+          placeholder="Enter Email"
+        />
+      </div>
 
-      <div className="button-group">
+      <FormButtons onNext={Nextpage} />
 
-  <button className="save-btn">
-    Save
-  </button>
-
-  <button className="next-btn" onClick={Nextpage} >Save & Next</button>
-
-</div>
-
-    </div>
-
-      
-  
+    </Layout>
   );
 }
-
-
 
 export default OrganizationDetails;
