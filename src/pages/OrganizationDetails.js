@@ -84,6 +84,25 @@ function OrganizationDetails() {
         placeholder="Enter Name of DoIT&C Officer/SPOC Person "
       />
 
+      <label>Designation (DoIT&C Officer/SPOC Person) </label>
+      <input
+        type="text"
+        placeholder="Enter Designation"
+      />
+
+      <label>Contact No. (DoIT&C Officer/SPOC Person) </label>
+      <input
+        type="text"
+        placeholder="Enter Contact No."
+      />
+
+      <label>e-Mail Address (DoIT&C Officer/SPOC Person) </label>
+      <input
+        type="text"
+        placeholder="Enter e-Mail Address"
+      />
+
+
 
     </div>
   );
