@@ -1,29 +1,15 @@
-function FormButtons(props) {
-
+function FormButtons({ onNext }) {
   return (
-
     <div className="button-group">
-
-      {props.showBack && (
-        <button
-          className="back-btn"
-          onClick={props.onBack}
-        >
-          Back
-        </button>
-      )}
-
       <button
+        type="button"
         className="next-btn"
-        onClick={props.onNext}
+        onClick={onNext}
       >
         Save & Next
       </button>
-
     </div>
-
   );
-
 }
 
 export default FormButtons;

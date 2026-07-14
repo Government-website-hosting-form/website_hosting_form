@@ -58,7 +58,7 @@ function CertificateDetails() {
           />
         </div>
 
-      </div>https://prod.liveshare.vsengsaas.visualstudio.com/join?3E88FFC8C19B86634323DEEE5C071E8ADB02
+      </div>
 
       <hr />
 
@@ -115,14 +115,16 @@ function CertificateDetails() {
 
       </div>
 
-      <label>Any Other Certificate Details</label>
+          <label>Any Other Certificate Details</label>
 
       <textarea
         rows="4"
         placeholder="Enter other certificate details (if any)"
       ></textarea>
 
-     <div className="save-button">
+      <div className="save-button">
+        {/* Add your button here later */}
+      </div>
 
     </div>
   );
