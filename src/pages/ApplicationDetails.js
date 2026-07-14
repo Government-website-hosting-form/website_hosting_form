@@ -3,7 +3,7 @@ function ApplicationDetails() {
     <div className="form-container">
       <h2>Application Details</h2>
 
-      {/* Application Name */}
+      
       <label>Application Name</label>
       <input
         type="text"
@@ -11,7 +11,7 @@ function ApplicationDetails() {
         placeholder="Enter Application Name"
       />
 
-      {/* Type of Application */}
+    
       <label>Type of Application</label>
       <div className="radio-group">
         <label>
@@ -35,7 +35,7 @@ function ApplicationDetails() {
         </label>
       </div>
 
-      {/* Nature */}
+    
       <label>Nature of Application</label>
       <div className="radio-group">
         <label>
@@ -54,7 +54,7 @@ function ApplicationDetails() {
         </label>
       </div>
 
-      {/* Utility */}
+      
       <label>Application Utility</label>
       <div className="radio-group">
         <label>
@@ -94,21 +94,17 @@ function ApplicationDetails() {
         </label>
       </div>
 
-      {/* Purpose */}
+   
       <label>Purpose of Application</label>
       <textarea
         rows="5"
         name="purpose"
-        placeholder="Enter the purpose of the application"
+        placeholder="Please also attach a brief note about the application as per Annexure-6."
       ></textarea>
-
-      <small>
-        Please also attach a brief note about the application as per Annexure-6.
-      </small>
 
       <hr />
 
-      {/* Proposed Sub Domain */}
+     
       <label>Proposed Sub Domain</label>
       <input
         type="text"
@@ -116,7 +112,7 @@ function ApplicationDetails() {
         placeholder="xyz.rajasthan.gov.in"
       />
 
-      {/* URLs */}
+    
       <label>Approved Primary URL from Department</label>
       <input
         type="text"
@@ -137,7 +133,7 @@ function ApplicationDetails() {
 
       <hr />
 
-      {/* Domain Name Approval */}
+     
       <h3>Domain Name Approval</h3>
 
       <label>Authority Name</label>
@@ -159,7 +155,7 @@ function ApplicationDetails() {
 
       <hr />
 
-      {/* SEMT Approval */}
+    
       <label>SEMT / Administrative Approval for Project</label>
 
       <div className="radio-group">

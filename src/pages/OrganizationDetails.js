@@ -1,5 +1,6 @@
 import "../pages.css";
 import {useNavigate} from "react-router-dom";
+import FormButtons from "../components/FormButtons";
 
 function OrganizationDetails() {
     const navigate = useNavigate();
@@ -134,15 +135,11 @@ function OrganizationDetails() {
       />
     
 
-      <div className="button-group">
-
-  <button className="save-btn">
-    Save
-  </button>
-
-  <button className="next-btn" onClick={Nextpage} >Save & Next</button>
-
-</div>
+     <FormButtons
+    showBack={false}
+    onSave={saveForm}
+    onNext={nextPage}
+/>
 
     </div>
 
