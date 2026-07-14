@@ -1,10 +1,23 @@
-function OrganizationDetails() {
-  return (
-    <div className="form-container">
+import "../pages.css";
+import {useNavigate} from "react-router-dom";
 
-      <h2>ORGANIZATION DETAILS</h2>
+function OrganizationDetails() {
+    const navigate = useNavigate();
+
+    function Nextpage()
+    {
+       navigate("/application");
+    }
+
+  return (
+    <div className="organization">
+
+      <div className="title">
+        <h2>Organization Details</h2>
+      </div>
 
       <label>Organization Name</label>
+
       <input
         type="text"
         placeholder="Enter Organization Name"
@@ -14,98 +27,130 @@ function OrganizationDetails() {
 
       <div className="radio-group">
 
-        <label>
-          <input type="radio" name="orgType" />
-          Government Department
-        </label>
+        <label><input type="radio" name="orgType" /> Government Department</label>
 
-        <label>
-          <input type="radio" name="orgType" />
-          PSU
-        </label>
+        <label><input type="radio" name="orgType" /> PSU</label>
 
-        <label>
-          <input type="radio" name="orgType" />
-          Startup
-        </label>
+        <label><input type="radio" name="orgType" /> Startup</label>
 
-        <label>
-          <input type="radio" name="orgType" />
-          MSME
-        </label>
+        <label><input type="radio" name="orgType" /> MSME</label>
 
-        <label>
-          <input type="radio" name="orgType" />
-          Other
-        </label>
+        <label><input type="radio" name="orgType" /> Other</label>
 
       </div>
 
-      <label>Nodal Officer</label>
-      <input
-        type="text"
-        placeholder="Enter Nodal Officer Name"
-      />
+      <div className="row">
 
-      <label>Designation</label>
-      <input
-        type="text"
-        placeholder="Enter Designation"
-      />
+        <div className="field">
+          <label>Nodal Officer</label>
+          <input
+            type="text"
+            placeholder="Enter Name"
+          />
+        </div>
 
-      <label>e-Mail Address</label>
-      <input
-        type="text"
-        placeholder="Enter e-Mail Address"
-      />
+        <div className="field">
+          <label>Designation</label>
+          <input
+            type="text"
+            placeholder="Enter Designation"
+          />
+        </div>
 
-      <label>Phone No.(Office)</label>
-      <input
-        type="tel"
-        placeholder="Enter Phone No.(Office)"
-      />
+      </div>
 
-      <label>Phone No.(Mobile)</label>
-      <input
-        type="tel"
-        placeholder="Enter Phone No.(Mobile)"
-      />
+      <div className="row">
 
-      <label>Postal Address</label>
-      <input
-        type="text"
-        placeholder="Enter Postal Address"
-      />
+        <div className="field">
+          <label>Email Address</label>
+          <input
+            type="email"
+            placeholder="Enter Email"
+          />
+        </div>
 
-      
+        <div className="field">
+          <label>Office Phone</label>
+          <input
+            type="tel"
+            placeholder="Enter Phone"
+          />
+        </div>
+
+      </div>
+
+      <div className="row">
+
+        <div className="field">
+          <label>Mobile Number</label>
+          <input
+            type="tel"
+            placeholder="Enter Mobile Number"
+          />
+        </div>
+
+        <div className="field">
+          <label>Postal Address</label>
+          <input
+            type="text"
+            placeholder="Enter Address"
+          />
+        </div>
+
+      </div>
+
       <label>Name of DoIT&C Officer  (If available) /  SPOC Person (If DoIT&C Officer is not posted)</label>
+
       <input
         type="text"
-        placeholder="Enter Name of DoIT&C Officer/SPOC Person "
+        placeholder="Enter Name"
       />
 
-      <label>Designation (DoIT&C Officer/SPOC Person) </label>
+      <div className="row">
+
+        <div className="field">
+          <label>Designation(DoIT&C Officer / SPOC Person)</label>
+          <input
+            type="text"
+            placeholder="Enter Designation"
+          />
+        </div>
+
+        <div className="field">
+          <label>Contact Number(DoIT&C Officer / SPOC Person)</label>
+          <input
+            type="text"
+            placeholder="Enter Contact Number"
+          />
+        </div>
+
+      </div>
+
+      <label>Email Address(DoIT&C Officer / SPOC Person)</label>
+
       <input
-        type="text"
-        placeholder="Enter Designation"
+        type="email"
+        placeholder="Enter Email"
       />
+    
 
-      <label>Contact No. (DoIT&C Officer/SPOC Person) </label>
-      <input
-        type="text"
-        placeholder="Enter Contact No."
-      />
+      <div className="button-group">
 
-      <label>e-Mail Address (DoIT&C Officer/SPOC Person) </label>
-      <input
-        type="text"
-        placeholder="Enter e-Mail Address"
-      />
+  <button className="save-btn">
+    Save
+  </button>
 
+  <button className="next-btn" onClick={Nextpage} >Save & Next</button>
 
+</div>
 
     </div>
+
+      
+  
   );
 }
+
+
 
 export default OrganizationDetails;

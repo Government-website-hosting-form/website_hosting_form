@@ -1,8 +1,12 @@
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background-color: #f4f4f4;
-  
+}
+
+.container {
+  width: 90%;
+  margin: auto;
 }
 
 .header {
@@ -10,7 +14,6 @@ body {
   color: white;
   text-align: center;
   padding: 30px;
-  
 }
 
 .government {
@@ -19,8 +22,8 @@ body {
   font-weight: bold;
 }
 
-button {
-  background-color:#123d6d;
+.start-button {
+  background-color: #123d6d;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -29,7 +32,6 @@ button {
   margin: 20px auto;
   cursor: pointer;
 }
-
 
 .note {
   width: 80%;
@@ -45,52 +47,4 @@ button {
 
 .note li {
   margin-bottom: 10px;
-}
-
-body{
-    margin:0;
-    font-family: sans-serif;
-    background:#f2f2f2;
-}
-
-.container{
-    width:90%;
-    margin:auto;
-}
-
-.form-container{
-    width:90%;
-    margin:30px auto;
-    background:white;
-    padding:20px;
-}
-
-.form-container h2{
-    text-align:center;
-    background:#1f73b7;
-    color:white;
-    padding:12px;
-}
-
-label{
-    display:block;
-    margin-top:15px;
-    margin-bottom:5px;
-    font-weight:bold;
-}
-
-input[type="text"]{
-    width:100%;
-    padding:10px;
-    box-sizing:border-box;
-}
-
-.radio-group label{
-    font-weight:normal;
-    margin-top:8px;
-}
-
-.radio-group input{
-    width:auto;
-    margin-right:8px;
 }
