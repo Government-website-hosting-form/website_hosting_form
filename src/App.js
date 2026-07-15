@@ -5,6 +5,9 @@ import LandingPage from "./pages/LandingPage";
 import OrganizationDetails from "./pages/OrganizationDetails";
 import ApplicationDetails from "./pages/ApplicationDetails";
 import MainDetails from "./pages/MainDetails";
+import CertificateDetails from "./pages/CertificateDetails";
+import InfraDetails from "./pages/InfraDetails";
+import HardwareDetails from "./pages/HardwareDetails";
 
 function App() {
   return (
@@ -14,6 +17,9 @@ function App() {
         <Route path="/organization" element={<OrganizationDetails />} />
         <Route path="/ApplicationDetails" element={<ApplicationDetails />} />
         <Route path="/maindetails" element={<MainDetails />} />
+        <Route path="/certificatedetails" element={<CertificateDetails />} />
+        <Route path="/infradetails" element={<InfraDetails />} />
+        <Route path="/hardwaredetails" element={<HardwareDetails />} />
       </Routes>
     </BrowserRouter>
   );

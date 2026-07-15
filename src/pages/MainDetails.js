@@ -1,9 +1,19 @@
 import Layout from "../components/Layout";
 import "./MainDetails.css";
+import FormButtons from "../components/FormButtons";
+import { useNavigate } from "react-router-dom";
 
 function MainDetails() {
 
-   
+   const navigate = useNavigate();
+
+  function Nextpage() {
+    navigate("/certificatedetails");
+  }
+  function Backpage() {
+    navigate("/ApplicationDetails");
+  }
+
   return (
     <Layout>
       <h2 className="section-heading">
@@ -129,6 +139,11 @@ function MainDetails() {
         </div>
       </div>
 
+    <FormButtons
+    showBack={true}
+    onBack={Backpage}
+    onNext={Nextpage}
+/>
 
     </Layout>
     
