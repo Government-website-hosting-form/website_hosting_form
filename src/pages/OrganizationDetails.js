@@ -13,7 +13,7 @@ function OrganizationDetails() {
   return (
     <Layout>
       <h2 className="section-heading">
-        2. Organization Details
+        Organization Details (Annexure-1)
       </h2>
 
       <div className="form-row">
@@ -32,28 +32,47 @@ function OrganizationDetails() {
 
           <label>
             <input type="radio" name="orgType" value="government" />
-            Government Department
+           Departments of Governement of Rajasthan
+
           </label>
 
           <label>
             <input type="radio" name="orgType" value="psu" />
-            PSU
+            Departments/PSU/Agency/Organization of other State Government 
+
           </label>
 
           <label>
             <input type="radio" name="orgType" value="startup" />
-            Startup
+            Departments/PSU/Agency/Organization of Central Governmen
           </label>
 
           <label>
             <input type="radio" name="orgType" value="msme" />
-            MSME
+            Startups registered under iStart
           </label>
 
           <label>
             <input type="radio" name="orgType" value="other" />
-            Other
+             Startups of other State/ Central Govt.
           </label>
+
+           <label>
+            <input type="radio" name="orgType" value="other" />
+             MSME Orgarization 
+          </label>
+
+           <label>
+            <input type="radio" name="orgType" value="other" />
+             Large Enterprise
+          </label>
+
+          
+           <label>
+            <input type="radio" name="orgType" value="other" />
+             Indivisuals / Other
+          </label>
+
 
         </div>
       </div>
@@ -61,7 +80,7 @@ function OrganizationDetails() {
       <div className="two-column">
 
         <div className="form-row">
-          <label>Nodal Officer</label>
+          <label>Name of Nodal Officer</label>
 
           <input
             type="text"
@@ -92,7 +111,7 @@ function OrganizationDetails() {
         </div>
 
         <div className="form-row">
-          <label>Office Phone</label>
+          <label>Phone No. (Office)</label>
 
           <input
             type="tel"
@@ -105,7 +124,7 @@ function OrganizationDetails() {
       <div className="two-column">
 
         <div className="form-row">
-          <label>Mobile Number</label>
+          <label>Phone No. (Mobile)</label>
 
           <input
             type="tel"

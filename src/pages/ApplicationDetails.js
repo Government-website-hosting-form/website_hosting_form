@@ -9,6 +9,9 @@ function ApplicationDetails() {
   function Nextpage() {
     navigate("/maindetails");
   }
+  function Backpage() {
+    navigate("/organization");
+  }
 
   return (
     <Layout>
@@ -16,7 +19,7 @@ function ApplicationDetails() {
       <div className="form-container">
 
         <h2 className="section-heading">
-           Application Details
+           Application Details (Annexure-2)
         </h2>
 
         <div className="form-row">
@@ -73,11 +76,7 @@ function ApplicationDetails() {
         </div>
 
         <div className="form-row">
-          <label>Proposed Sub Domain</label>
-          <input
-            type="text"
-            placeholder="xyz.rajasthan.gov.in"
-          />
+          <label>Proposed Sub Domain ( xyz.rajasthan.gov.in) :</label>
         </div>
 
         <div className="form-row">
@@ -100,9 +99,9 @@ function ApplicationDetails() {
           </p>
         </div>
 
-        <h2 className="section-heading">
-          4. Domain Name Approval
-        </h2>
+        <div className="form-row">
+          <label>Domain Name Approval :</label>
+        </div>
 
         <div className="two-column">
 
@@ -119,16 +118,16 @@ function ApplicationDetails() {
         </div>
 
         <div className="form-row">
-          <label>Approval Document</label>
+          <label>Attach Approval Document (if available)</label>
           <input type="file" />
         </div>
 
-        <h2 className="section-heading">
-          5. SEMT / Administrative Approval
-        </h2>
+        <div className="form-row">
+          <label>SEMT / Administrative Approval for Project :</label>
+        </div>
+        
 
         <div className="form-row">
-          <label>Approval Available</label>
 
           <div className="radio-group">
             <label><input type="radio" name="approval" /> Yes</label>
@@ -157,11 +156,11 @@ function ApplicationDetails() {
 
       </div>
 
-      <FormButtons
-        showBack={true}
-        onBack={() => navigate("/organization")}
-        onNext={Nextpage}
-      />
+     <FormButtons
+    showBack={true}
+    onBack={Backpage}
+    onNext={Nextpage}
+/>
 
     </Layout>
   );

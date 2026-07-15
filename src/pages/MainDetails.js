@@ -6,8 +6,6 @@ function MainDetails() {
    
   return (
     <Layout>
-
-
       <h2 className="section-heading">
      Application Developed by
       </h2>
@@ -133,6 +131,7 @@ function MainDetails() {
 
 
     </Layout>
+    
   );
 }
 

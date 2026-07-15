@@ -1,7 +1,14 @@
 import "../pages.css";
 
 function CertificateDetails() {
+  const navigate = useNavigate();
+
+  function Nextpage() {
+    navigate("/maindetails");
+  }
   return (
+
+    
     <div className="organization">
 
       <div className="title">
@@ -122,9 +129,9 @@ function CertificateDetails() {
         placeholder="Enter other certificate details (if any)"
       ></textarea>
 
-      <div className="save-button">
-        {/* Add your button here later */}
-      </div>
+
+
+     
 
     </div>
   );
