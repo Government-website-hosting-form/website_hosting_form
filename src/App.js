@@ -8,6 +8,8 @@ import MainDetails from "./pages/MainDetails";
 import CertificateDetails from "./pages/CertificateDetails";
 import InfraDetails from "./pages/InfraDetails";
 import HardwareDetails from "./pages/HardwareDetails";
+import SslDetails from "./pages/SslDetails";
+import Checklist from "./pages/Checklist";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/certificatedetails" element={<CertificateDetails />} />
         <Route path="/infradetails" element={<InfraDetails />} />
         <Route path="/hardwaredetails" element={<HardwareDetails />} />
+        <Route path="/ssldetails" element={<SslDetails />} />
+        <Route path="/checklist" element={<Checklist />} />
       </Routes>
     </BrowserRouter>
   );

@@ -70,7 +70,7 @@ function OrganizationDetails() {
           
            <label>
             <input type="radio" name="orgType" value="other" />
-             Indivisuals / Other
+             Individuals / Other
           </label>
 
 

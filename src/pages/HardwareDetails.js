@@ -8,7 +8,7 @@ function HardwareDetails() {
   const navigate = useNavigate();
 
   function Nextpage() {
-    navigate("/nextpage");      
+    navigate("/ssldetails");      
   }
 
   function Backpage() {

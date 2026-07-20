@@ -1,0 +1,30 @@
+.form-container {
+  width: 95%;
+  margin: auto;
+}
+
+.checklist-title {
+  margin: 20px 0 10px;
+}
+
+.checklist-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: -1px;
+}
+
+.question {
+  width: 75%;
+}
+
+.radio-group {
+  width: 20%;
+}
+
+.radio-group label {
+  display: block;
+  margin-bottom: 5px;
+}
