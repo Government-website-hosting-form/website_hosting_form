@@ -1,4 +1,4 @@
-function FormButtons({ showBack, onBack, onNext }) {
+function FormButtons({ showBack, onBack, onNext, disabled, saving, onNextLabel }) {
 
     return (
 
@@ -10,6 +10,7 @@ function FormButtons({ showBack, onBack, onNext }) {
                     type="button"
                     className="back-btn"
                     onClick={onBack}
+                    disabled={disabled}
                 >
                     Back
                 </button>
@@ -20,8 +21,9 @@ function FormButtons({ showBack, onBack, onNext }) {
                 type="button"
                 className="next-btn"
                 onClick={onNext}
+                disabled={disabled}
             >
-                Save & Next
+                {saving ? "Saving..." : (onNextLabel || "Save & Next")}
             </button>
 
         </div>

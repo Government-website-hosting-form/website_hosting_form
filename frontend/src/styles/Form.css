@@ -88,3 +88,23 @@ body{
     padding: 0;
     flex-shrink: 0;
 }
+.form-error {
+  background: #fdecea;
+  color: #b71c1c;
+  border: 1px solid #f5c6cb;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+
+.form-success {
+  background: #eaf7ec;
+  color: #1e7e34;
+  border: 1px solid #c3e6cb;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}

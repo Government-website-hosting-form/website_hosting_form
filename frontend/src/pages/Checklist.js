@@ -1,7 +1,10 @@
+import { useState } from "react";
 import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import "./Checklist.css";
 import { useNavigate } from "react-router-dom";
+import { useFormContext } from "../context/FormContext";
+import { apiPost } from "../api";
 
 import {
   securityChecklist,
@@ -9,11 +12,58 @@ import {
   implementationGuidelines,
 } from "./ChecklistData";
 
+import {
+  securityColumns,
+  otherColumns,
+  implementationColumns,
+} from "../utils/checklistColumns";
+
 function Checklist() {
   const navigate = useNavigate();
+  const { ids } = useFormContext();
 
-  function Nextpage() {
-    navigate("/nextpage");
+  // answers keyed by "security-0", "other-0", "implementation-0" ... like the
+  // original radio "name" attributes, holding "yes" | "no" | "na"
+  const [answers, setAnswers] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleAnswer(e) {
+    const { name, value } = e.target;
+    setAnswers((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function buildPayload() {
+    const payload = { app_id: ids.appId };
+    const mapGroup = (columns, prefix) => {
+      columns.forEach((col, index) => {
+        const answer = answers[`${prefix}-${index}`];
+        payload[col] = answer ? answer.toUpperCase() : "NA"; // matches ENUM('YES','NO','NA')
+      });
+    };
+    mapGroup(securityColumns, "security");
+    mapGroup(otherColumns, "other");
+    mapGroup(implementationColumns, "implementation");
+    return payload;
+  }
+
+  async function Nextpage() {
+    setError("");
+    if (!ids.appId) {
+      setError("Application record not found yet — please complete earlier steps first.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await apiPost("/checklist", buildPayload());
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+      setError("Could not save the Checklist.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function Backpage() {
@@ -27,6 +77,13 @@ function Checklist() {
         <h2 className="section-heading">
           Website Hosting Request Form Checklist for Secure Code Programming in Applications
         </h2>
+
+        {error && <p className="form-error">{error}</p>}
+        {submitted && (
+          <p className="form-success">
+            Form submitted successfully — all your data has been saved.
+          </p>
+        )}
 
     
         {securityChecklist.map((item, index) => (
@@ -43,6 +100,8 @@ function Checklist() {
                   type="radio"
                   name={`security-${index}`}
                   value="yes"
+                  checked={answers[`security-${index}`] === "yes"}
+                  onChange={handleAnswer}
                 />
                 YES
               </label>
@@ -52,6 +111,8 @@ function Checklist() {
                   type="radio"
                   name={`security-${index}`}
                   value="no"
+                  checked={answers[`security-${index}`] === "no"}
+                  onChange={handleAnswer}
                 />
                 NO
               </label>
@@ -61,6 +122,8 @@ function Checklist() {
                   type="radio"
                   name={`security-${index}`}
                   value="na"
+                  checked={answers[`security-${index}`] === "na"}
+                  onChange={handleAnswer}
                 />
                 Not Applicable
               </label>
@@ -87,6 +150,8 @@ function Checklist() {
                   type="radio"
                   name={`other-${index}`}
                   value="yes"
+                  checked={answers[`other-${index}`] === "yes"}
+                  onChange={handleAnswer}
                 />
                 YES
               </label>
@@ -96,6 +161,8 @@ function Checklist() {
                   type="radio"
                   name={`other-${index}`}
                   value="no"
+                  checked={answers[`other-${index}`] === "no"}
+                  onChange={handleAnswer}
                 />
                 NO
               </label>
@@ -105,6 +172,8 @@ function Checklist() {
                   type="radio"
                   name={`other-${index}`}
                   value="na"
+                  checked={answers[`other-${index}`] === "na"}
+                  onChange={handleAnswer}
                 />
                 Not Applicable
               </label>
@@ -131,6 +200,8 @@ function Checklist() {
                   type="radio"
                   name={`implementation-${index}`}
                   value="yes"
+                  checked={answers[`implementation-${index}`] === "yes"}
+                  onChange={handleAnswer}
                 />
                 YES
               </label>
@@ -140,6 +211,8 @@ function Checklist() {
                   type="radio"
                   name={`implementation-${index}`}
                   value="no"
+                  checked={answers[`implementation-${index}`] === "no"}
+                  onChange={handleAnswer}
                 />
                 NO
               </label>
@@ -149,6 +222,8 @@ function Checklist() {
                   type="radio"
                   name={`implementation-${index}`}
                   value="na"
+                  checked={answers[`implementation-${index}`] === "na"}
+                  onChange={handleAnswer}
                 />
                 Not Applicable
               </label>
@@ -164,6 +239,9 @@ function Checklist() {
         showBack={true}
         onBack={Backpage}
         onNext={Nextpage}
+        onNextLabel={submitted ? "Submitted" : "Submit"}
+        saving={saving}
+        disabled={saving || submitted}
       />
     </Layout>
   );
