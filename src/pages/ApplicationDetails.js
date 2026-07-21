@@ -2,6 +2,12 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import "./ApplicationDetails.css";
+import {
+  validateText,
+  validateEmail,
+  validateMobile,
+  validatePhone,
+} from "../helpers/Validation";
 
 function ApplicationDetails() {
   const navigate = useNavigate();
