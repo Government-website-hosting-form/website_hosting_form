@@ -10,15 +10,17 @@ import { apiPost } from "../api";
 const initialState = {
   name: "",
   type: "",
+  type_other: "",
   nature: "",
   utility: "",
+  utility_other: "",
   purpose: "",
   subdomain: "",
   url: "",
   alternate_url: "",
   approval_authority: "",
   approval_designation: "",
-  semt_approved: "No",
+  semt_approved: "",
   mom_ref_no: "",
   mom_date: "",
 };
@@ -29,13 +31,48 @@ function ApplicationDetails() {
   const [form, setForm] = useState(initialState);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [momDoc, setMomDoc] = useState(null);
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
+  function validateForm() {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = "This field is required.";
+    if (!form.type) newErrors.type = "This field is required.";
+    if (!form.nature) newErrors.nature = "This field is required.";
+    if (!form.utility) newErrors.utility = "This field is required.";
+    if (!form.purpose.trim()) newErrors.purpose = "This field is required.";
+    if (!form.url.trim()) newErrors.url = "This field is required.";
+    if (!form.alternate_url.trim()) newErrors.alternate_url = "This field is required.";
+    if (!form.approval_authority.trim()) newErrors.approval_authority = "This field is required.";
+    if (!form.approval_designation.trim()) newErrors.approval_designation = "This field is required.";
+    if (!form.semt_approved) newErrors.semt_approved = "This field is required.";
+
+    if (form.semt_approved === "Yes") {
+      if (!form.mom_ref_no.trim()) newErrors.mom_ref_no = "This field is required.";
+      if (!form.mom_date.trim()) newErrors.mom_date = "This field is required.";
+      if (!momDoc) newErrors.momDoc = "Please attach the MoM/Document.";
+    }
+
+    if (form.type === "Other" && !form.type_other.trim()) {
+      newErrors.type_other = "Please specify the application type.";
+    }
+
+    if (form.utility === "Other Priority Event" && !form.utility_other.trim()) {
+      newErrors.utility_other = "Please specify the priority event.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
   async function Nextpage() {
+    if (!validateForm()) return;
     setError("");
     setSaving(true);
     try {
@@ -44,8 +81,7 @@ function ApplicationDetails() {
         org_id: ids.orgId || null,
         user_id: ids.userId || null,
       };
-      // This page creates the `apps` row. Later pages (MainDetails,
-      // CertificateDetails) will PUT more fields onto this same row.
+
       const res = await apiPost("/apps", payload);
       setId("appId", res.id);
       navigate("/maindetails");
@@ -67,168 +103,271 @@ function ApplicationDetails() {
       <div className="form-container">
 
         <h2 className="section-heading">
-           Application Details (Annexure-2)
+          Application Details (Annexure-2)
         </h2>
 
         {error && <p className="form-error">{error}</p>}
 
-        <div className="form-row">
-          <label>Application Name</label>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Enter Application Name"
-          />
-        </div>
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">2.1</span>
+            <h3>Basic Information</h3>
+          </div>
 
-        <div className="form-row">
-          <label>Type of Application</label>
+          <div className="form-section-grid">
+            <div className="form-row">
+              <label className="required">Application Name</label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Enter Application Name"
+              />
+              {errors.name && <p className="error-message">{errors.name}</p>}
+            </div>
 
-          <div className="radio-group">
-            <label><input type="radio" name="type" value="Website" checked={form.type === "Website"} onChange={handleChange} /> Website</label>
-            <label><input type="radio" name="type" value="Portal" checked={form.type === "Portal"} onChange={handleChange} /> Portal</label>
-            <label><input type="radio" name="type" value="Application" checked={form.type === "Application"} onChange={handleChange} /> Application</label>
-            <label><input type="radio" name="type" value="Other" checked={form.type === "Other"} onChange={handleChange} /> Other</label>
+            <div className="form-row">
+              <label className="required">Application Type</label>
+              <select name="type" value={form.type} onChange={handleChange}>
+                <option value="">-- Select Application Type --</option>
+                <option value="Website">Website</option>
+                <option value="Portal">Portal</option>
+                <option value="Application">Application</option>
+                <option value="Mobile App">Mobile App</option>
+                <option value="Api">Api</option>
+                <option value="Other">Other</option>
+              </select>
+              {form.type === "Other" && (
+                <input
+                  type="text"
+                  name="type_other"
+                  placeholder="Please specify"
+                  value={form.type_other}
+                  onChange={handleChange}
+                  maxLength={100}
+                />
+              )}
+              {errors.type_other && <p className="error-message">{errors.type_other}</p>}
+              {errors.type && <p className="error-message">{errors.type}</p>}
+            </div>
+
+            <div className="form-row">
+              <label className="required">Application Nature</label>
+              <select name="nature" value={form.nature} onChange={handleChange}>
+                <option value="">-- Select Nature of Application --</option>
+                <option value="G2G">G2G</option>
+                <option value="G2B">G2B</option>
+                <option value="G2C">G2C</option>
+              </select>
+              {errors.nature && <p className="error-message">{errors.nature}</p>}
+            </div>
           </div>
         </div>
 
-        <div className="form-row">
-          <label>Nature of Application</label>
 
-          <div className="radio-group">
-            <label><input type="radio" name="nature" value="G2G" checked={form.nature === "G2G"} onChange={handleChange} /> G2G</label>
-            <label><input type="radio" name="nature" value="G2B" checked={form.nature === "G2B"} onChange={handleChange} /> G2B</label>
-            <label><input type="radio" name="nature" value="G2C" checked={form.nature === "G2C"} onChange={handleChange} /> G2C</label>
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">2.2</span>
+            <h3>Utility and Purpose</h3>
           </div>
-        </div>
+          <div className="form-section-grid">
+            <div className="form-row">
+              <label className="required">Application Utility</label>
+              <select name="utility" value={form.utility} onChange={handleChange}>
+                <option value="">-- Select Application Utility --</option>
+                <option value="Budget Announcement">Budget Announcement</option>
+                <option value="CM Announcement">CM Announcement</option>
+                <option value="General Application">General Application</option>
+                <option value="Other Priority Event">Other Priority Event</option>
+              </select>
+              {form.utility === "Other Priority Event" && (
+                <input
+                  type="text"
+                  name="utility_other"
+                  placeholder="Please specify"
+                  value={form.utility_other}
+                  onChange={handleChange}
+                  maxLength={100}
+                />
 
-        <div className="form-row">
-          <label>Application Utility</label>
+              )}
+              {errors.utility_other && <p className="error-message">{errors.utility_other}</p>}
+              {errors.utility && <p className="error-message">{errors.utility}</p>}
 
-          <div className="radio-group">
-            <label><input type="radio" name="utility" value="Budget Announcement" checked={form.utility === "Budget Announcement"} onChange={handleChange} /> Budget Announcement</label>
-            <label><input type="radio" name="utility" value="CM Announcement" checked={form.utility === "CM Announcement"} onChange={handleChange} /> CM Announcement</label>
-            <label><input type="radio" name="utility" value="General Application" checked={form.utility === "General Application"} onChange={handleChange} /> General Application</label>
-            <label><input type="radio" name="utility" value="Other Priority Event" checked={form.utility === "Other Priority Event"} onChange={handleChange} /> Other Priority Event</label>
-          </div>
-        </div>
+            </div>
+            <div className="form-row purpose-file">
+              <label className="required nowrap">Purpose of Application</label>
+              <div className="textarea-wrapper">
+                <textarea
+                  rows="1"
+                  name="purpose"
+                  value={form.purpose}
+                  onChange={handleChange}
+                  placeholder="Enter brief note about the application"
+                  maxLength={500}
+                ></textarea>
+                <span className="char-counter">
+                  {form.purpose.length}/500
+                </span>
+              </div>
+              {errors.purpose && <p className="error-message">{errors.purpose}</p>}
 
-        <div className="form-row">
-          <label>Purpose of Application</label>
+              <input type="file" />
 
-          <textarea
-            rows="5"
-            name="purpose"
-            value={form.purpose}
-            onChange={handleChange}
-            placeholder="Enter the purpose of the application"
-          ></textarea>
 
-          <p className="maintenance-text">
-            Please also attach a brief note about the application as per Annexure-6.
-          </p>
-        </div>
+            </div>
 
-        <div className="form-row">
-          <label>Proposed Sub Domain ( xyz.rajasthan.gov.in) :</label>
-          <input
-            type="text"
-            name="subdomain"
-            value={form.subdomain}
-            onChange={handleChange}
-            placeholder="Enter proposed sub domain"
-          />
-        </div>
-
-        <div className="form-row">
-          <label>Approved Primary URL from Department</label>
-          <input
-            type="text"
-            name="url"
-            value={form.url}
-            onChange={handleChange}
-            placeholder="Enter approved primary URL"
-          />
-        </div>
-
-        <div className="form-row">
-          <label>Alternate URL</label>
-          <input
-            type="text"
-            name="alternate_url"
-            value={form.alternate_url}
-            onChange={handleChange}
-            placeholder="Enter alternate URL"
-          />
-
-          <p className="maintenance-text">
-            Alternate URL will be assigned if the primary URL is not available.
-          </p>
-        </div>
-
-        <div className="form-row">
-          <label>Domain Name Approval :</label>
-        </div>
-
-        <div className="two-column">
-
-          <div className="form-row">
-            <label>Authority Name</label>
-            <input type="text" name="approval_authority" value={form.approval_authority} onChange={handleChange} />
-          </div>
-
-          <div className="form-row">
-            <label>Designation</label>
-            <input type="text" name="approval_designation" value={form.approval_designation} onChange={handleChange} />
-          </div>
-
-        </div>
-
-        <div className="form-row">
-          <label>Attach Approval Document (if available)</label>
-          <input type="file" />
-          <p className="maintenance-text">
-            File uploads aren't wired up to the backend yet — this field is UI-only for now.
-          </p>
-        </div>
-
-        <div className="form-row">
-          <label>SEMT / Administrative Approval for Project :</label>
-        </div>
-        
-
-        <div className="form-row">
-
-          <div className="radio-group">
-            <label><input type="radio" name="semt_approved" value="Yes" checked={form.semt_approved === "Yes"} onChange={handleChange} /> Yes</label>
-            <label><input type="radio" name="semt_approved" value="No" checked={form.semt_approved === "No"} onChange={handleChange} /> No</label>
-          </div>
-        </div>
-
-        <div className="two-column">
-
-          <div className="form-row">
-            <label>MoM / Document Reference No.</label>
-            <input type="text" name="mom_ref_no" value={form.mom_ref_no} onChange={handleChange} />
-          </div>
-
-          <div className="form-row">
-            <label>Date</label>
-            <input type="date" name="mom_date" value={form.mom_date} onChange={handleChange} />
           </div>
 
         </div>
 
-        <div className="form-row">
-          <label>Attach MoM / Document</label>
-          <input type="file" />
+
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">2.3</span>
+            <h3>Proposed Sub Domain( xyz.rajasthan.gov.in)</h3>
+          </div>
+
+          <div className="form-section-grid">
+
+            <div className="form-row">
+              <label className="required">Approved Primary URL from Department</label>
+              <input
+                type="text"
+                name="url"
+                value={form.url}
+                onChange={handleChange}
+                placeholder="Enter approved primary URL"
+              />
+              {errors.url && <p className="error-message">{errors.url}</p>}
+            </div>
+
+            <div className="form-row">
+              <label className="required">Alternate URL</label>
+              <input
+                type="text"
+                name="alternate_url"
+                value={form.alternate_url}
+                onChange={handleChange}
+                placeholder="Enter alternate URL"
+              />
+              {errors.alternate_url && <p className="error-message">{errors.alternate_url}</p>}
+
+              <p className="maintenance-text">
+                Alternate URL will be assigned if the primary URL is not available.
+              </p>
+            </div>
+          </div>
         </div>
 
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">2.4</span>
+            <h3>Domain Name Approval</h3>
+          </div>
+          <div className="form-section-grid">
+
+            <div className="form-row">
+              <label className="required">Authority Name</label>
+              <input type="text" name="approval_authority" placeholder="Enter Authority Name" value={form.approval_authority} onChange={handleChange} />
+              {errors.approval_authority && <p className="error-message">{errors.approval_authority} </p>}
+            </div>
+
+            <div className="form-row">
+              <label className="required">Designation</label>
+              <input type="text" name="approval_designation" placeholder="Enter Designation" value={form.approval_designation} onChange={handleChange} />
+              {errors.approval_designation && <p className="error-message">{errors.approval_designation}</p>}
+            </div>
+
+            <div className="form-row">
+              <label>Attach Approval Document (if available)</label>
+              <input type="file" />
+              <p className="maintenance-text">
+                File uploads aren't wired up to the backend yet — this field is UI-only for now.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">2.5</span>
+            <h3>Administrative Approval</h3>
+          </div>
+
+          <div className="form-section-grid">
+            <div className="form-row full-width">
+              <label className="required">SEMT / Administrative Approval for Project</label>
+
+              <div className="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    name="semt_approved"
+                    value="Yes"
+                    checked={form.semt_approved === "Yes"}
+                    onChange={handleChange}
+                  />
+                  Yes
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="semt_approved"
+                    value="No"
+                    checked={form.semt_approved === "No"}
+                    onChange={handleChange}
+                  />
+                  No
+                </label>
+              </div>
+              {errors.semt_approved && <p className="error-message">{errors.semt_approved}</p>}
+            </div>
+
+            {form.semt_approved === "Yes" && (
+              <>
+                <div className="form-row">
+                  <label className="required">MoM / Document Reference No.</label>
+                  <input
+                    type="text"
+                    name="mom_ref_no"
+                    value={form.mom_ref_no}
+                    onChange={handleChange}
+                  />
+                  {errors.mom_ref_no && <p className="error-message">{errors.mom_ref_no}</p>}
+                </div>
+
+                <div className="form-row">
+                  <label className="required">Date</label>
+                  <input
+                    type="date"
+                    name="mom_date"
+                    value={form.mom_date}
+                    onChange={handleChange}
+                  />
+                  {errors.mom_date && <p className="error-message">{errors.mom_date}</p>}
+                </div>
+
+                <div className="form-row">
+                  <label className="required">Attach MoM / Document</label>
+                  <input
+                    type="file"
+                    onChange={(e) => setMomDoc(e.target.files[0])}
+                  />
+                  {errors.momDoc && <p className="error-message">{errors.momDoc}</p>}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
-     <FormButtons
+
+      <FormButtons
         showBack={true}
         onBack={Backpage}
         onNext={Nextpage}

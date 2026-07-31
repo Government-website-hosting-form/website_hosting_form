@@ -59,3 +59,10 @@ export function validateFileSize(file, maxSize) {
 
   return "";
 }
+
+export function validateNumber(value) {
+  if (!/^\d+$/.test(value)) {
+    return "Only numbers are allowed.";
+  }
+  return "";
+}

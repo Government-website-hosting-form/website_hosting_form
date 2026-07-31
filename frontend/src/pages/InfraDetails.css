@@ -12,3 +12,36 @@ textarea {
 input[type="file"] {
     margin-top: 8px;
 }
+
+.form-subsection {
+  margin-left: 24px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.subsection-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.subsection-badge {
+  background-color:  #1f5d99;
+  color: white;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.server-block-heading {
+  font-size: 1.2em;
+  font-weight: bold;
+  color:  #114375;
+  margin: 0;
+}

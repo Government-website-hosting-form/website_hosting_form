@@ -22,8 +22,7 @@ function Checklist() {
   const navigate = useNavigate();
   const { ids } = useFormContext();
 
-  // answers keyed by "security-0", "other-0", "implementation-0" ... like the
-  // original radio "name" attributes, holding "yes" | "no" | "na"
+  
   const [answers, setAnswers] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -39,7 +38,7 @@ function Checklist() {
     const mapGroup = (columns, prefix) => {
       columns.forEach((col, index) => {
         const answer = answers[`${prefix}-${index}`];
-        payload[col] = answer ? answer.toUpperCase() : "NA"; // matches ENUM('YES','NO','NA')
+        payload[col] = answer ? answer.toUpperCase() : "NA"; 
       });
     };
     mapGroup(securityColumns, "security");
@@ -72,168 +71,106 @@ function Checklist() {
 
   return (
     <Layout>
-      <div className="form-container">
+     <h2 className="section-heading">
+  Website Hosting Request Form Checklist for Secure Code Programming in Applications (Annexure 8)
+</h2>
 
-        <h2 className="section-heading">
-          Website Hosting Request Form Checklist for Secure Code Programming in Applications
-        </h2>
+{error && <p className="form-error">{error}</p>}
+{submitted && (
+  <p className="form-success">
+    Form submitted successfully — all your data has been saved.
+  </p>
+)}
 
-        {error && <p className="form-error">{error}</p>}
-        {submitted && (
-          <p className="form-success">
-            Form submitted successfully — all your data has been saved.
-          </p>
-        )}
+<div className="form-section">
+  <div className="section-header">
+    <span className="section-badge">8.1</span>
+    <h3>Action Item(s)</h3>
+  </div>
 
-    
-        {securityChecklist.map((item, index) => (
-          <div className="checklist-row" key={index}>
-
-            <div className="question">
-              <strong>{index + 1}.</strong> {item}
-            </div>
-
-            <div className="radio-group">
-
-              <label>
-                <input
-                  type="radio"
-                  name={`security-${index}`}
-                  value="yes"
-                  checked={answers[`security-${index}`] === "yes"}
-                  onChange={handleAnswer}
-                />
-                YES
-              </label>
-
-              <label>
-                <input
-                  type="radio"
-                  name={`security-${index}`}
-                  value="no"
-                  checked={answers[`security-${index}`] === "no"}
-                  onChange={handleAnswer}
-                />
-                NO
-              </label>
-
-              <label>
-                <input
-                  type="radio"
-                  name={`security-${index}`}
-                  value="na"
-                  checked={answers[`security-${index}`] === "na"}
-                  onChange={handleAnswer}
-                />
-                Not Applicable
-              </label>
-
-            </div>
-
-          </div>
-        ))}
-
-
-        <h3 className="checklist-title">Other Action Item(s)</h3>
-
-        {otherActionItems.map((item, index) => (
-          <div className="checklist-row" key={index}>
-
-            <div className="question">
-              <strong>{index + 1}.</strong> {item}
-            </div>
-
-            <div className="radio-group">
-
-              <label>
-                <input
-                  type="radio"
-                  name={`other-${index}`}
-                  value="yes"
-                  checked={answers[`other-${index}`] === "yes"}
-                  onChange={handleAnswer}
-                />
-                YES
-              </label>
-
-              <label>
-                <input
-                  type="radio"
-                  name={`other-${index}`}
-                  value="no"
-                  checked={answers[`other-${index}`] === "no"}
-                  onChange={handleAnswer}
-                />
-                NO
-              </label>
-
-              <label>
-                <input
-                  type="radio"
-                  name={`other-${index}`}
-                  value="na"
-                  checked={answers[`other-${index}`] === "na"}
-                  onChange={handleAnswer}
-                />
-                Not Applicable
-              </label>
-
-            </div>
-
-          </div>
-        ))}
-
-
-        <h3 className="checklist-title">Implementation Guidelines</h3>
-
-        {implementationGuidelines.map((item, index) => (
-          <div className="checklist-row" key={index}>
-
-            <div className="question">
-              <strong>{index + 1}.</strong> {item}
-            </div>
-
-            <div className="radio-group">
-
-              <label>
-                <input
-                  type="radio"
-                  name={`implementation-${index}`}
-                  value="yes"
-                  checked={answers[`implementation-${index}`] === "yes"}
-                  onChange={handleAnswer}
-                />
-                YES
-              </label>
-
-              <label>
-                <input
-                  type="radio"
-                  name={`implementation-${index}`}
-                  value="no"
-                  checked={answers[`implementation-${index}`] === "no"}
-                  onChange={handleAnswer}
-                />
-                NO
-              </label>
-
-              <label>
-                <input
-                  type="radio"
-                  name={`implementation-${index}`}
-                  value="na"
-                  checked={answers[`implementation-${index}`] === "na"}
-                  onChange={handleAnswer}
-                />
-                Not Applicable
-              </label>
-
-            </div>
-
-          </div>
-        ))}
-
+  {securityChecklist.map((item, index) => (
+    <div className="checklist-row" key={index}>
+      <div className="question">
+        <strong>{index + 1}.</strong> {item}
       </div>
+
+      <div className="radio-group">
+        <label>
+          <input type="radio" name={`security-${index}`} value="yes" checked={answers[`security-${index}`] === "yes"} onChange={handleAnswer} />
+          YES
+        </label>
+        <label>
+          <input type="radio" name={`security-${index}`} value="no" checked={answers[`security-${index}`] === "no"} onChange={handleAnswer} />
+          NO
+        </label>
+        <label>
+          <input type="radio" name={`security-${index}`} value="na" checked={answers[`security-${index}`] === "na"} onChange={handleAnswer} />
+          Not Applicable
+        </label>
+      </div>
+    </div>
+  ))}
+</div>
+
+<div className="form-section">
+  <div className="section-header">
+    <span className="section-badge">8.2</span>
+    <h3>Other Action Item(s)</h3>
+  </div>
+
+  {otherActionItems.map((item, index) => (
+    <div className="checklist-row" key={index}>
+      <div className="question">
+        <strong>{index + 1}.</strong> {item}
+      </div>
+
+      <div className="radio-group">
+        <label>
+          <input type="radio" name={`other-${index}`} value="yes" checked={answers[`other-${index}`] === "yes"} onChange={handleAnswer} />
+          YES
+        </label>
+        <label>
+          <input type="radio" name={`other-${index}`} value="no" checked={answers[`other-${index}`] === "no"} onChange={handleAnswer} />
+          NO
+        </label>
+        <label>
+          <input type="radio" name={`other-${index}`} value="na" checked={answers[`other-${index}`] === "na"} onChange={handleAnswer} />
+          Not Applicable
+        </label>
+      </div>
+    </div>
+  ))}
+</div>
+
+<div className="form-section">
+  <div className="section-header">
+    <span className="section-badge">8.3</span>
+    <h3>Implementation Guidelines</h3>
+  </div>
+
+  {implementationGuidelines.map((item, index) => (
+    <div className="checklist-row" key={index}>
+      <div className="question">
+        <strong>{index + 1}.</strong> {item}
+      </div>
+
+      <div className="radio-group">
+        <label>
+          <input type="radio" name={`implementation-${index}`} value="yes" checked={answers[`implementation-${index}`] === "yes"} onChange={handleAnswer} />
+          YES
+        </label>
+        <label>
+          <input type="radio" name={`implementation-${index}`} value="no" checked={answers[`implementation-${index}`] === "no"} onChange={handleAnswer} />
+          NO
+        </label>
+        <label>
+          <input type="radio" name={`implementation-${index}`} value="na" checked={answers[`implementation-${index}`] === "na"} onChange={handleAnswer} />
+          Not Applicable
+        </label>
+      </div>
+    </div>
+  ))}
+</div>
 
       <FormButtons
         showBack={true}

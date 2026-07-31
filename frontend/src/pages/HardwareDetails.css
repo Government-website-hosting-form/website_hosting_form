@@ -12,3 +12,41 @@ textarea {
 input[type="file"] {
     margin-top: 8px;
 }
+
+.hw-radio-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hw-radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+}
+
+.hw-table {
+  display: grid;
+  grid-template-columns: 200px 300px 300px;
+  gap: 12px 16px;
+  align-items: start;
+}
+
+.hw-table-header,
+.hw-table-row {
+  display: contents;
+}
+
+.hw-table-header div {
+  font-weight: bold;
+}
+
+.hw-table input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 16px;
+}

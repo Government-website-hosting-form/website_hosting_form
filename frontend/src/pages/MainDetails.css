@@ -27,7 +27,7 @@
     margin-top:25px;
 }
 
-.form-row label{
+.form-row > label{
     display:block;
     font-weight:bold;
     margin-bottom:10px;
@@ -44,19 +44,28 @@
     font-size:16px;
 }
 
-.checkbox-group{
+.maintenance-radio-group{
     display:flex;
     align-items:center;
-    gap:20px;
-    flex-wrap:wrap;
+    gap:30px;
+    flex-wrap:nowrap;
 }
 
-.checkbox-group label{
+.maintenance-radio-group label{
     display:flex;
     align-items:center;
-    gap:5px;
+    gap:2px;
     font-weight:normal;
     margin:0;
+    white-space:nowrap;
+}
+
+.maintenance-radio-group input[type="radio"]{
+    width:auto;
+    margin:0;
+    padding:0;
+    flex:none;
+    flex-shrink:0;
 }
 
 .small-input{
@@ -76,13 +85,6 @@
     font-weight:normal;
 }
 
-.maintenance-row{
-    display:flex;
-    align-items:center;
-    gap:25px;
-    flex-wrap:wrap;
-}
-
 .expiry-box{
     display:flex;
     align-items:center;
@@ -95,4 +97,10 @@
 
 .expiry-box input{
     width:180px;
+}
+
+.expiry-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
