@@ -76,18 +76,44 @@ function InfraDetails() {
     });
   }
 
+  function validateServerList(servers, envType, newErrors) {
+  servers.forEach((server, index) => {
+    const prefix = `${envType}_${index}`;
+
+    if (!server.processor.trim()) newErrors[`${prefix}_processor`] = "This field is required.";
+    if (!server.ram.trim()) newErrors[`${prefix}_ram`] = "This field is required.";
+    if (!server.internal_storage.trim()) newErrors[`${prefix}_internal_storage`] = "This field is required.";
+    if (!server.external_storage) newErrors[`${prefix}_external_storage`] = "This field is required.";
+    if (server.external_storage === "Other" && !server.external_storage_other.trim()) {
+      newErrors[`${prefix}_external_storage_other`] = "Please specify.";
+    }
+    if (!server.os) newErrors[`${prefix}_os`] = "This field is required.";
+    if (server.version !== undefined && !server.version.trim()) {
+      newErrors[`${prefix}_version`] = "This field is required.";
+    }
+  });
+}
+
   function validateForm() {
   const newErrors = {};
 
   if (!form.staging_web_count.toString().trim()) newErrors.staging_web_count = "This field is required.";
+  validateServerList(form.staging_webServers, "staging_web", newErrors);
   if (!form.staging_app_count.toString().trim()) newErrors.staging_app_count = "This field is required.";
+  validateServerList(form.staging_appServers, "staging_app", newErrors);
   if (!form.staging_db_count.toString().trim()) newErrors.staging_db_count = "This field is required.";
+  validateServerList(form.staging_dbServers, "staging_db", newErrors);
   if (!form.staging_other_count.toString().trim()) newErrors.staging_other_count = "This field is required.";
+  validateServerList(form.staging_otherServers, "staging_other", newErrors);
 
   if (!form.production_web_count.toString().trim()) newErrors.production_web_count = "This field is required.";
+  validateServerList(form.production_webServers, "production_web", newErrors);
   if (!form.production_app_count.toString().trim()) newErrors.production_app_count = "This field is required.";
+  validateServerList(form.production_appServers, "production_app", newErrors);
   if (!form.production_db_count.toString().trim()) newErrors.production_db_count = "This field is required.";
+  validateServerList(form.production_dbServers, "production_db", newErrors);
   if (!form.production_other_count.toString().trim()) newErrors.production_other_count = "This field is required.";
+  validateServerList(form.production_otherServers, "production_other", newErrors);
 
   if (form.backup === "Yes" && !form.backup_retention.trim()) {
     newErrors.backup_retention = "This field is required.";
@@ -121,95 +147,104 @@ function InfraDetails() {
   function Backpage() {
     navigate("/certificatedetails");
   }
-  function renderServerBlock(env, type, label) {
-    const servers = form[`${env}_${type}Servers`];
-    return servers.map((server, index) => (
+ function renderServerBlock(env, type, label, errors) {
+  const servers = form[`${env}_${type}Servers`];
+  return servers.map((server, index) => {
+    const prefix = `${env}_${type}_${index}`;
+    return (
       <div className="form-section-grid" key={index}>
         <div className="form-row full-width">
           <h4 className="server-block-heading">{label} {index + 1} Configuration Details : </h4>
         </div>
 
         <div className="form-row">
-          <label>Processor</label>
+          <label className="required">Processor</label>
           <input
             type="text"
             value={server.processor}
             onChange={(e) => handleServerFieldChange(env, type, index, "processor", e.target.value)}
             placeholder="i.e. 2-core, 4-core, 8-core"
           />
+          {errors[`${prefix}_processor`] && <p className="error-message">{errors[`${prefix}_processor`]}</p>}
         </div>
 
         <div className="form-row">
-          <label>RAM</label>
+          <label className="required">RAM</label>
           <input
             type="text"
             value={server.ram}
             onChange={(e) => handleServerFieldChange(env, type, index, "ram", e.target.value)}
             placeholder="i.e. 16 GB, 32 GB etc"
           />
+          {errors[`${prefix}_ram`] && <p className="error-message">{errors[`${prefix}_ram`]}</p>}
         </div>
 
-       <div className="form-row">
-  <label>Internal Storage</label>
-  <input
-    type="text"
-    value={server.internal_storage}
-    onChange={(e) => handleServerFieldChange(env, type, index, "internal_storage", e.target.value)}
-    placeholder="i.e. 100 GB, 500 GB, 1TB etc"
-  />
-</div>
+        <div className="form-row">
+          <label className="required">Internal Storage</label>
+          <input
+            type="text"
+            value={server.internal_storage}
+            onChange={(e) => handleServerFieldChange(env, type, index, "internal_storage", e.target.value)}
+            placeholder="i.e. 100 GB, 500 GB, 1TB etc"
+          />
+          {errors[`${prefix}_internal_storage`] && <p className="error-message">{errors[`${prefix}_internal_storage`]}</p>}
+        </div>
 
-<div className="form-row">
-  <label>External Storage</label>
-  <select
-    value={server.external_storage}
-    onChange={(e) => handleServerFieldChange(env, type, index, "external_storage", e.target.value)}
-  >
-    <option value="">-- Select --</option>
-    <option value="SAN">SAN</option>
-    <option value="NAS">NAS</option>
-    <option value="Unified">Unified</option>
-    <option value="Other">Other</option>
-  </select>
+        <div className="form-row">
+          <label className="required">External Storage</label>
+          <select
+            value={server.external_storage}
+            onChange={(e) => handleServerFieldChange(env, type, index, "external_storage", e.target.value)}
+          >
+            <option value="">-- Select --</option>
+            <option value="SAN">SAN</option>
+            <option value="NAS">NAS</option>
+            <option value="Unified">Unified</option>
+            <option value="Other">Other</option>
+          </select>
 
-  {server.external_storage === "Other" && (
-    <input
-      type="text"
-      value={server.external_storage_other}
-      onChange={(e) => handleServerFieldChange(env, type, index, "external_storage_other", e.target.value)}
-      placeholder="Please specify"
-    />
-  )}
-</div>
+          {server.external_storage === "Other" && (
+            <input
+              type="text"
+              value={server.external_storage_other}
+              onChange={(e) => handleServerFieldChange(env, type, index, "external_storage_other", e.target.value)}
+              placeholder="Please specify"
+            />
+          )}
+          {errors[`${prefix}_external_storage`] && <p className="error-message">{errors[`${prefix}_external_storage`]}</p>}
+          {errors[`${prefix}_external_storage_other`] && <p className="error-message">{errors[`${prefix}_external_storage_other`]}</p>}
+        </div>
 
-<div className="form-row">
-  <label>Operating System</label>
-  <select
-    value={server.os}
-    onChange={(e) => handleServerFieldChange(env, type, index, "os", e.target.value)}
-  >
-    <option value="">-- Select --</option>
-    <option value="Windows Server Standard">Windows Server Standard</option>
-    <option value="RHEL Standard">RHEL Standard</option>
-    <option value="Linux Community">Linux Community</option>
-  </select>
-</div>
+        <div className="form-row">
+          <label className="required">Operating System</label>
+          <select
+            value={server.os}
+            onChange={(e) => handleServerFieldChange(env, type, index, "os", e.target.value)}
+          >
+            <option value="">-- Select --</option>
+            <option value="Windows Server Standard">Windows Server Standard</option>
+            <option value="RHEL Standard">RHEL Standard</option>
+            <option value="Linux Community">Linux Community</option>
+          </select>
+          {errors[`${prefix}_os`] && <p className="error-message">{errors[`${prefix}_os`]}</p>}
+        </div>
 
         {type === "db" && (
           <div className="form-row">
-            <label>Database Version</label>
+            <label className="required">Database Version</label>
             <input
               type="text"
               value={server.version}
               onChange={(e) => handleServerFieldChange(env, type, index, "version", e.target.value)}
               placeholder="i.e. Oracle10g, Sql 2005 etc"
             />
+            {errors[`${prefix}_version`] && <p className="error-message">{errors[`${prefix}_version`]}</p>}
           </div>
         )}
       </div>
-    ));
-  }
-
+    );
+  });
+}
   return (
     <Layout>
       <div className="form-container">
@@ -256,11 +291,11 @@ function InfraDetails() {
                 {errors.staging_other_count && <p className="error-message">{errors.staging_other_count}</p>}
               </div>
             </div>
+{renderServerBlock("staging", "web", "Web Server", errors)}
+{renderServerBlock("staging", "app", "Application Server", errors)}
+{renderServerBlock("staging", "db", "Database Server", errors)}
+{renderServerBlock("staging", "other", "Other Server", errors)}
 
-            {renderServerBlock("staging", "web", "Web Server")}
-            {renderServerBlock("staging", "app", "Application Server")}
-            {renderServerBlock("staging", "db", "Database Server")}
-            {renderServerBlock("staging", "other", "Other Server")}
           </div>
 
           <div className="form-subsection">
@@ -296,10 +331,10 @@ function InfraDetails() {
               </div>
             </div>
 
-            {renderServerBlock("production", "web", "Web Server")}
-            {renderServerBlock("production", "app", "Application Server")}
-            {renderServerBlock("production", "db", "Database Server")}
-            {renderServerBlock("production", "other", "Other Server")}
+            {renderServerBlock("production", "web", "Web Server", errors)}
+            {renderServerBlock("production", "app", "Application Server", errors)}
+            {renderServerBlock("production", "db", "Database Server", errors)}
+            {renderServerBlock("production", "other", "Other Server", errors)}
           </div>
         </div>
         <div className="form-section">

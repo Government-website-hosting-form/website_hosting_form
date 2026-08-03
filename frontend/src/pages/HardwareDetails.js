@@ -322,11 +322,11 @@ function HardwareDetails() {
               <div className="hw-table-row">
                 <label>Name of the Company / Agency</label>
                 <div>
-                  <input type="text" name="hw_fms_company" value={form.hw_fms_company} onChange={handleChange} />
+                  <input type="text" placeholder="Enter Company / Agency Name" name="hw_fms_company" value={form.hw_fms_company} onChange={handleChange} />
                   {errors.hw_fms_company && <p className="error-message">{errors.hw_fms_company}</p>}
                 </div>
                 <div>
-                  <input type="text" name="hw_amc_company" value={form.hw_amc_company} onChange={handleChange} />
+                  <input type="text" placeholder="Enter Company / Agency Name" name="hw_amc_company" value={form.hw_amc_company} onChange={handleChange} />
                   {errors.hw_amc_company && <p className="error-message">{errors.hw_amc_company}</p>}
                 </div>
               </div>
@@ -334,29 +334,29 @@ function HardwareDetails() {
               <div className="hw-table-row">
                 <label>Name of Contact Person</label>
                 <div>
-                  <input type="text" name="hw_fms_contact_person" value={form.hw_fms_contact_person} onChange={handleChange} />
+                  <input type="text" placeholder="Enter Contact Person Name" name="hw_fms_contact_person" value={form.hw_fms_contact_person} onChange={handleChange} />
                   {errors.hw_fms_contact_person && <p className="error-message">{errors.hw_fms_contact_person}</p>}
                 </div>
                 <div>
-                  <input type="text" name="hw_amc_contact_person" value={form.hw_amc_contact_person} onChange={handleChange} />
+                  <input type="text" placeholder="Enter Contact Person Name" name="hw_amc_contact_person" value={form.hw_amc_contact_person} onChange={handleChange} />
                   {errors.hw_amc_contact_person && <p className="error-message">{errors.hw_amc_contact_person}</p>}
                 </div>
               </div>
 
               <div className="hw-table-row">
                 <label>Address of Contact Person</label>
-                <input type="text" name="hw_fms_address" value={form.hw_fms_address} onChange={handleChange} />
-                <input type="text" name="hw_amc_address" value={form.hw_amc_address} onChange={handleChange} />
+                <input type="text" placeholder="Enter Address" name="hw_fms_address" value={form.hw_fms_address} onChange={handleChange} />
+                <input type="text" placeholder="Enter Address" name="hw_amc_address" value={form.hw_amc_address} onChange={handleChange} />
               </div>
 
               <div className="hw-table-row">
                 <label>Phone No. (Office)</label>
                 <div>
-                  <input type="text" name="hw_fms_phone_office" value={form.hw_fms_phone_office} onChange={handleChange} />
+                  <input type="text" placeholder="Enter Office Phone No." name="hw_fms_phone_office" value={form.hw_fms_phone_office} onChange={handleChange} />
                   {errors.hw_fms_phone_office && <p className="error-message">{errors.hw_fms_phone_office}</p>}
                 </div>
                 <div>
-                  <input type="text" name="hw_amc_phone_office" value={form.hw_amc_phone_office} onChange={handleChange} />
+                  <input type="text" placeholder="Enter Office Phone No." name="hw_amc_phone_office" value={form.hw_amc_phone_office} onChange={handleChange} />
                   {errors.hw_amc_phone_office && <p className="error-message">{errors.hw_amc_phone_office}</p>}
                 </div>
               </div>
@@ -364,11 +364,11 @@ function HardwareDetails() {
               <div className="hw-table-row">
                 <label>Phone No. (Mobile)</label>
                 <div>
-                  <input type="text" name="hw_fms_phone_mobile" value={form.hw_fms_phone_mobile} onChange={handleChange} />
+                  <input type="text" placeholder="Enter Mobile Phone No." name="hw_fms_phone_mobile" value={form.hw_fms_phone_mobile} onChange={handleChange} />
                   {errors.hw_fms_phone_mobile && <p className="error-message">{errors.hw_fms_phone_mobile}</p>}
                 </div>
                 <div>
-                  <input type="text" name="hw_amc_phone_mobile" value={form.hw_amc_phone_mobile} onChange={handleChange} />
+                  <input type="text" placeholder="Enter Mobile Phone No." name="hw_amc_phone_mobile" value={form.hw_amc_phone_mobile} onChange={handleChange} />
                   {errors.hw_amc_phone_mobile && <p className="error-message">{errors.hw_amc_phone_mobile}</p>}
                 </div>
               </div>
@@ -376,46 +376,46 @@ function HardwareDetails() {
               <div className="hw-table-row">
                 <label>e-Mail Address</label>
                 <div>
-                  <input type="email" name="hw_fms_email" value={form.hw_fms_email} onChange={handleChange} />
+                  <input type="email" placeholder="Enter e-Mail Address" name="hw_fms_email" value={form.hw_fms_email} onChange={handleChange} />
                   {errors.hw_fms_email && <p className="error-message">{errors.hw_fms_email}</p>}
                 </div>
                 <div>
-                  <input type="email" name="hw_amc_email" value={form.hw_amc_email} onChange={handleChange} />
+                  <input type="email" placeholder="Enter e-Mail Address" name="hw_amc_email" value={form.hw_amc_email} onChange={handleChange} />
                   {errors.hw_amc_email && <p className="error-message">{errors.hw_amc_email}</p>}
                 </div>
               </div>
               <div className="hw-table-row">
-  <label>Contract Expiry Date</label>
-  <input type="date" name="hw_fms_contract_expiry" value={form.hw_fms_contract_expiry} onChange={handleChange} />
-  <input type="date" name="hw_amc_contract_expiry" value={form.hw_amc_contract_expiry} onChange={handleChange} />
-</div>
+                <label>Contract Expiry Date</label>
+                <input type="date" name="hw_fms_contract_expiry" value={form.hw_fms_contract_expiry} onChange={handleChange} />
+                <input type="date" name="hw_amc_contract_expiry" value={form.hw_amc_contract_expiry} onChange={handleChange} />
+              </div>
 
-<div className="hw-table-row">
-  <label>Contract Copies attached</label>
-  <div className="hw-radio-group">
-    <label>
-      <input type="radio" name="hw_fms_contract_attached" value="Yes" checked={form.hw_fms_contract_attached === "Yes"} onChange={handleChange} />
-      Yes
-    </label>
-    <label>
-      <input type="radio" name="hw_fms_contract_attached" value="No" checked={form.hw_fms_contract_attached === "No"} onChange={handleChange} />
-      No
-    </label>
-  </div>
-  <div className="hw-radio-group">
-    <label>
-      <input type="radio" name="hw_amc_contract_attached" value="Yes" checked={form.hw_amc_contract_attached === "Yes"} onChange={handleChange} />
-      Yes
-    </label>
-    <label>
-      <input type="radio" name="hw_amc_contract_attached" value="No" checked={form.hw_amc_contract_attached === "No"} onChange={handleChange} />
-      No
-    </label>
-  </div>
-</div>
+              <div className="hw-table-row">
+                <label>Contract Copies attached</label>
+                <div className="hw-radio-group">
+                  <label>
+                    <input type="radio" name="hw_fms_contract_attached" value="Yes" checked={form.hw_fms_contract_attached === "Yes"} onChange={handleChange} />
+                    Yes
+                  </label>
+                  <label>
+                    <input type="radio" name="hw_fms_contract_attached" value="No" checked={form.hw_fms_contract_attached === "No"} onChange={handleChange} />
+                    No
+                  </label>
+                </div>
+                <div className="hw-radio-group">
+                  <label>
+                    <input type="radio" name="hw_amc_contract_attached" value="Yes" checked={form.hw_amc_contract_attached === "Yes"} onChange={handleChange} />
+                    Yes
+                  </label>
+                  <label>
+                    <input type="radio" name="hw_amc_contract_attached" value="No" checked={form.hw_amc_contract_attached === "No"} onChange={handleChange} />
+                    No
+                  </label>
+                </div>
+              </div>
             </div>
 
-           
+
           </div>
         )}
       </div>
