@@ -104,3 +104,9 @@
   align-items: center;
   gap: 8px;
 }
+
+.inline-label-radio {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
