@@ -47,8 +47,23 @@ function Checklist() {
     return payload;
   }
 
-  async function Nextpage() {
+  function validateForm() {
+  const allAnswered =
+    securityChecklist.every((_, index) => answers[`security-${index}`]) &&
+    otherActionItems.every((_, index) => answers[`other-${index}`]) &&
+    implementationGuidelines.every((_, index) => answers[`implementation-${index}`]);
+
+  if (!allAnswered) {
+    setError("Please select an option for all the fields.");
+    return false;
+  }
+
+  return true;
+}
+
+ async function Nextpage() {
     setError("");
+    if (!validateForm()) return;
     if (!ids.appId) {
       setError("Application record not found yet — please complete earlier steps first.");
       return;
@@ -90,7 +105,7 @@ function Checklist() {
 
   {securityChecklist.map((item, index) => (
     <div className="checklist-row" key={index}>
-      <div className="question">
+      <div className="question required">
         <strong>{index + 1}.</strong> {item}
       </div>
 
@@ -120,7 +135,7 @@ function Checklist() {
 
   {otherActionItems.map((item, index) => (
     <div className="checklist-row" key={index}>
-      <div className="question">
+      <div className="question required">
         <strong>{index + 1}.</strong> {item}
       </div>
 
@@ -150,7 +165,7 @@ function Checklist() {
 
   {implementationGuidelines.map((item, index) => (
     <div className="checklist-row" key={index}>
-      <div className="question">
+      <div className="question required">
         <strong>{index + 1}.</strong> {item}
       </div>
 

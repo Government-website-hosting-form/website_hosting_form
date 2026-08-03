@@ -9,19 +9,19 @@ import { apiPost } from "../api";
 const emptyServer = { processor: "", ram: "", storage: "", os: "" };
 
 const initialState = {
-  staging_web_count: "",
-  staging_app_count: "",
-  staging_db_count: "",
-  staging_other_count: "",
+  staging_web_count: "0",
+  staging_app_count: "0",
+  staging_db_count: "0",
+  staging_other_count: "0",
   staging_webServers: [],
   staging_appServers: [],
   staging_dbServers: [],
   staging_otherServers: [],
 
-  production_web_count: "",
-  production_app_count: "",
-  production_db_count: "",
-  production_other_count: "",
+  production_web_count: "0",
+  production_app_count: "0",
+  production_db_count: "0",
+  production_other_count: "0",
   production_webServers: [],
   production_appServers: [],
   production_dbServers: [],
@@ -38,6 +38,7 @@ const initialState = {
   apm_required: "",
   backup: "",
   backup_retention: "",
+
 };
 
 function InfraDetails() {
@@ -46,6 +47,7 @@ function InfraDetails() {
   const [form, setForm] = useState(initialState);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -58,11 +60,12 @@ function InfraDetails() {
       const listKey = `${env}_${type}Servers`;
       const arr = [...prev[listKey]];
       while (arr.length < count) {
-        arr.push(type === "db" ? { processor: "", ram: "", storage: "", os: "", version: "" } : { processor: "", ram: "", storage: "", os: "" });
+        arr.push(type === "db"? { processor: "", ram: "", internal_storage: "", external_storage: "", external_storage_other: "", os: "", version: "" } : { processor: "", ram: "", internal_storage: "", external_storage: "", external_storage_other: "", os: "" }
+);
       }
       arr.length = count;
       return { ...prev, [countKey]: value, [listKey]: arr };
-    });
+});
   }
   function handleServerFieldChange(env, type, index, field, value) {
     setForm((prev) => {
@@ -73,7 +76,29 @@ function InfraDetails() {
     });
   }
 
+  function validateForm() {
+  const newErrors = {};
+
+  if (!form.staging_web_count.toString().trim()) newErrors.staging_web_count = "This field is required.";
+  if (!form.staging_app_count.toString().trim()) newErrors.staging_app_count = "This field is required.";
+  if (!form.staging_db_count.toString().trim()) newErrors.staging_db_count = "This field is required.";
+  if (!form.staging_other_count.toString().trim()) newErrors.staging_other_count = "This field is required.";
+
+  if (!form.production_web_count.toString().trim()) newErrors.production_web_count = "This field is required.";
+  if (!form.production_app_count.toString().trim()) newErrors.production_app_count = "This field is required.";
+  if (!form.production_db_count.toString().trim()) newErrors.production_db_count = "This field is required.";
+  if (!form.production_other_count.toString().trim()) newErrors.production_other_count = "This field is required.";
+
+  if (form.backup === "Yes" && !form.backup_retention.trim()) {
+    newErrors.backup_retention = "This field is required.";
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+}
+
   async function Nextpage() {
+     if (!validateForm()) return;
     setError("");
     if (!ids.appId) {
       setError("Application record not found yet — please complete earlier steps first.");
@@ -96,68 +121,94 @@ function InfraDetails() {
   function Backpage() {
     navigate("/certificatedetails");
   }
-function renderServerBlock(env, type, label) {
-  const servers = form[`${env}_${type}Servers`];
-  return servers.map((server, index) => (
-    <div className="form-section-grid" key={index}>
-    <div className="form-row full-width">
-  <h4 className="server-block-heading">{label} {index + 1} Configuration Details : </h4>
-</div>
+  function renderServerBlock(env, type, label) {
+    const servers = form[`${env}_${type}Servers`];
+    return servers.map((server, index) => (
+      <div className="form-section-grid" key={index}>
+        <div className="form-row full-width">
+          <h4 className="server-block-heading">{label} {index + 1} Configuration Details : </h4>
+        </div>
 
-      <div className="form-row">
-        <label>Processor</label>
-        <input
-          type="text"
-          value={server.processor}
-          onChange={(e) => handleServerFieldChange(env, type, index, "processor", e.target.value)}
-          placeholder="Enter Processor Details"
-        />
-      </div>
-
-      <div className="form-row">
-        <label>RAM</label>
-        <input
-          type="text"
-          value={server.ram}
-          onChange={(e) => handleServerFieldChange(env, type, index, "ram", e.target.value)}
-          placeholder="Enter RAM Capacity"
-        />
-      </div>
-
-      <div className="form-row">
-        <label>Storage Space</label>
-        <input
-          type="text"
-          value={server.storage}
-          onChange={(e) => handleServerFieldChange(env, type, index, "storage", e.target.value)}
-          placeholder="Enter Storage Space"
-        />
-      </div>
-
-      <div className="form-row">
-        <label>Operating System</label>
-        <input
-          type="text"
-          value={server.os}
-          onChange={(e) => handleServerFieldChange(env, type, index, "os", e.target.value)}
-          placeholder="Enter Operating System"
-        />
-      </div>
-
-      {type === "db" && (
         <div className="form-row">
-          <label>Database Version</label>
+          <label>Processor</label>
           <input
             type="text"
-            value={server.version}
-            onChange={(e) => handleServerFieldChange(env, type, index, "version", e.target.value)}
-            placeholder="Enter Database Version"
+            value={server.processor}
+            onChange={(e) => handleServerFieldChange(env, type, index, "processor", e.target.value)}
+            placeholder="i.e. 2-core, 4-core, 8-core"
           />
         </div>
-      )}
-    </div>
-  ));
-}
+
+        <div className="form-row">
+          <label>RAM</label>
+          <input
+            type="text"
+            value={server.ram}
+            onChange={(e) => handleServerFieldChange(env, type, index, "ram", e.target.value)}
+            placeholder="i.e. 16 GB, 32 GB etc"
+          />
+        </div>
+
+       <div className="form-row">
+  <label>Internal Storage</label>
+  <input
+    type="text"
+    value={server.internal_storage}
+    onChange={(e) => handleServerFieldChange(env, type, index, "internal_storage", e.target.value)}
+    placeholder="i.e. 100 GB, 500 GB, 1TB etc"
+  />
+</div>
+
+<div className="form-row">
+  <label>External Storage</label>
+  <select
+    value={server.external_storage}
+    onChange={(e) => handleServerFieldChange(env, type, index, "external_storage", e.target.value)}
+  >
+    <option value="">-- Select --</option>
+    <option value="SAN">SAN</option>
+    <option value="NAS">NAS</option>
+    <option value="Unified">Unified</option>
+    <option value="Other">Other</option>
+  </select>
+
+  {server.external_storage === "Other" && (
+    <input
+      type="text"
+      value={server.external_storage_other}
+      onChange={(e) => handleServerFieldChange(env, type, index, "external_storage_other", e.target.value)}
+      placeholder="Please specify"
+    />
+  )}
+</div>
+
+<div className="form-row">
+  <label>Operating System</label>
+  <select
+    value={server.os}
+    onChange={(e) => handleServerFieldChange(env, type, index, "os", e.target.value)}
+  >
+    <option value="">-- Select --</option>
+    <option value="Windows Server Standard">Windows Server Standard</option>
+    <option value="RHEL Standard">RHEL Standard</option>
+    <option value="Linux Community">Linux Community</option>
+  </select>
+</div>
+
+        {type === "db" && (
+          <div className="form-row">
+            <label>Database Version</label>
+            <input
+              type="text"
+              value={server.version}
+              onChange={(e) => handleServerFieldChange(env, type, index, "version", e.target.value)}
+              placeholder="i.e. Oracle10g, Sql 2005 etc"
+            />
+          </div>
+        )}
+      </div>
+    ));
+  }
 
   return (
     <Layout>
@@ -166,124 +217,135 @@ function renderServerBlock(env, type, label) {
 
         {error && <p className="form-error">{error}</p>}
 
-<div className="form-section">
-  <div className="section-header">
-    <span className="section-badge">5.1</span>
-    <h3>VM / Server Requirements</h3>
-  </div>
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">5.1</span>
+            <h3>VM / Server Requirements</h3>
+          </div>
+          <p className="maintenance-text">Note: Fill 0 if not required.</p>
 
-  <div className="form-subsection">
-    <div className="subsection-header">
-      <span className="subsection-badge">A</span>
-      <h3>For Staging Server</h3>
-    </div>
+          <div className="form-subsection">
+            <div className="subsection-header">
+              <span className="subsection-badge">A</span>
+              <h3>For Staging Server</h3>
+            </div>
 
-    <div className="form-section-grid">
-      <div className="form-row">
-        <label>No. of Web Servers</label>
-        <input type="number" min="0" placeholder="Enter Number of Web Servers" value={form.staging_web_count} onChange={(e) => handleCountChange("staging", "web", e.target.value)} />
-      </div>
+            <div className="form-section-grid">
+              <div className="form-row">
+                <label className="required">No. of Web Servers</label>
+                <input type="number" min="0" placeholder="Enter Number of Web Servers" value={form.staging_web_count} onChange={(e) => handleCountChange("staging", "web", e.target.value)} />
+                {errors.staging_web_count && <p className="error-message">{errors.staging_web_count}</p>}
+              </div>
 
-      <div className="form-row">
-        <label>No. of Application Servers</label>
-        <input type="number" min="0" placeholder="Enter Number of Application Servers" value={form.staging_app_count} onChange={(e) => handleCountChange("staging", "app", e.target.value)} />
-      </div>
+              <div className="form-row">
+                <label className="required">No. of Application Servers</label>
+                <input type="number" min="0" placeholder="Enter Number of Application Servers" value={form.staging_app_count} onChange={(e) => handleCountChange("staging", "app", e.target.value)} />
+                {errors.staging_app_count && <p className="error-message">{errors.staging_app_count}</p>}
+                <p className="maintenance-text">Note : If application is having 3 tier architecture then specify Number of App Servers.</p>
+              </div>
 
-      <div className="form-row">
-        <label>No. of Database Servers</label>
-        <input type="number" min="0" placeholder="Enter Number of Database Servers" value={form.staging_db_count} onChange={(e) => handleCountChange("staging", "db", e.target.value)} />
-      </div>
+              <div className="form-row">
+                <label className="required">No. of Database Servers</label>
+                <input type="number" min="0" placeholder="Enter Number of Database Servers" value={form.staging_db_count} onChange={(e) => handleCountChange("staging", "db", e.target.value)} />
+                {errors.staging_db_count && <p className="error-message">{errors.staging_db_count}</p>}
+              </div>
 
-      <div className="form-row">
-        <label>No. of Other Servers</label>
-        <input type="number" min="0" placeholder="Enter Number of Other Servers" value={form.staging_other_count} onChange={(e) => handleCountChange("staging", "other", e.target.value)} />
-      </div>
-    </div>
+              <div className="form-row">
+                <label className="required">No. of Other Servers</label>
+                <input type="number" min="0" placeholder="Enter Number of Other Servers" value={form.staging_other_count} onChange={(e) => handleCountChange("staging", "other", e.target.value)} />
+                {errors.staging_other_count && <p className="error-message">{errors.staging_other_count}</p>}
+              </div>
+            </div>
 
-    {renderServerBlock("staging", "web", "Web Server")}
-    {renderServerBlock("staging", "app", "Application Server")}
-    {renderServerBlock("staging", "db", "Database Server")}
-    {renderServerBlock("staging", "other", "Other Server")}
-  </div>
+            {renderServerBlock("staging", "web", "Web Server")}
+            {renderServerBlock("staging", "app", "Application Server")}
+            {renderServerBlock("staging", "db", "Database Server")}
+            {renderServerBlock("staging", "other", "Other Server")}
+          </div>
 
-  <div className="form-subsection">
-    <div className="subsection-header">
-      <span className="subsection-badge">B</span>
-      <h3>For Production Server</h3>
-    </div>
+          <div className="form-subsection">
+            <div className="subsection-header">
+              <span className="subsection-badge">B</span>
+              <h3>For Production Server</h3>
+            </div>
 
-    <div className="form-section-grid">
-      <div className="form-row">
-        <label>No. of Web Servers</label>
-        <input type="number" min="0" placeholder="Enter Number of Web Servers" value={form.production_web_count} onChange={(e) => handleCountChange("production", "web", e.target.value)} />
-      </div>
+            <div className="form-section-grid">
+              <div className="form-row">
+                <label className="required">No. of Web Servers</label>
+                <input type="number" min="0" placeholder="Enter Number of Web Servers" value={form.production_web_count} onChange={(e) => handleCountChange("production", "web", e.target.value)} />
+                {errors.production_web_count && <p className="error-message">{errors.production_web_count}</p>}
+              </div>
 
-      <div className="form-row">
-        <label>No. of Application Servers</label>
-        <input type="number" min="0" placeholder="Enter Number of Application Servers" value={form.production_app_count} onChange={(e) => handleCountChange("production", "app", e.target.value)} />
-      </div>
+              <div className="form-row">
+                <label className="required">No. of Application Servers</label>
+                <input type="number" min="0" placeholder="Enter Number of Application Servers" value={form.production_app_count} onChange={(e) => handleCountChange("production", "app", e.target.value)} />
+                {errors.production_app_count && <p className="error-message">{errors.production_app_count}</p>}
+                <p className="maintenance-text">Note : If application is having 3 tier architecture then specify Number of App Servers.</p>
+              </div>
 
-      <div className="form-row">
-        <label>No. of Database Servers</label>
-        <input type="number" min="0" placeholder="Enter Number of Database Servers" value={form.production_db_count} onChange={(e) => handleCountChange("production", "db", e.target.value)} />
-      </div>
+              <div className="form-row">
+                <label className="required">No. of Database Servers</label>
+                <input type="number" min="0" placeholder="Enter Number of Database Servers" value={form.production_db_count} onChange={(e) => handleCountChange("production", "db", e.target.value)} />
+                {errors.production_db_count && <p className="error-message">{errors.production_db_count}</p>}
+              </div>
 
-      <div className="form-row">
-        <label>No. of Other Servers</label>
-        <input type="number" min="0" placeholder="Enter Number of Other Servers" value={form.production_other_count} onChange={(e) => handleCountChange("production", "other", e.target.value)} />
-      </div>
-    </div>
+              <div className="form-row">
+                <label className="required">No. of Other Servers</label>
+                <input type="number" min="0" placeholder="Enter Number of Other Servers" value={form.production_other_count} onChange={(e) => handleCountChange("production", "other", e.target.value)} />
+                {errors.production_other_count && <p className="error-message">{errors.production_other_count}</p>}
+              </div>
+            </div>
 
-    {renderServerBlock("production", "web", "Web Server")}
-    {renderServerBlock("production", "app", "Application Server")}
-    {renderServerBlock("production", "db", "Database Server")}
-    {renderServerBlock("production", "other", "Other Server")}
-  </div>
-</div>
-<div className="form-section">
-  <div className="section-header">
-    <span className="section-badge">5.2</span>
-    <h3>Software Requirements</h3>
-  </div>
+            {renderServerBlock("production", "web", "Web Server")}
+            {renderServerBlock("production", "app", "Application Server")}
+            {renderServerBlock("production", "db", "Database Server")}
+            {renderServerBlock("production", "other", "Other Server")}
+          </div>
+        </div>
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">5.2</span>
+            <h3>Software Requirements</h3>
+          </div>
 
-  <div className="form-subsection">
-    <div className="subsection-header">
-      <span className="subsection-badge">A</span>
-      <h3>Other Software Requirements for Hosting</h3>
-    </div>
+          <div className="form-subsection">
+            <div className="subsection-header">
+              <span className="subsection-badge">A</span>
+              <h3>Other Software Requirements for Hosting</h3>
+            </div>
 
-    <div className="form-section-grid">
-      <div className="form-row">
-        <label>Web Server Software with Version</label>
-        <input type="text" name="software" value={form.software} onChange={handleChange} placeholder="Example: Apache, IIS, Nginx" />
-      </div>
+            <div className="form-section-grid">
+              <div className="form-row">
+                <label>Web Server Software with Version</label>
+                <input type="text" name="software" value={form.software} onChange={handleChange} placeholder="i.e. Apache, IIS etc" />
+              </div>
 
-      <div className="form-row">
-        <label>Application Server with Version</label>
-        <input type="text" name="app_server_software" value={form.app_server_software} onChange={handleChange} placeholder="Example: Tomcat, JBoss" />
-      </div>
-    </div>
-  </div>
+              <div className="form-row">
+                <label>Application Server with Version</label>
+                <input type="text" name="app_server_software" value={form.app_server_software} onChange={handleChange} placeholder="i.e. Tomcat, JBoss etc" />
+              </div>
+            </div>
+          </div>
 
-  <div className="form-subsection">
-    <div className="subsection-header">
-      <span className="subsection-badge">B</span>
-      <h3>Integration with Other Software Systems Required</h3>
-    </div>
+          <div className="form-subsection">
+            <div className="subsection-header">
+              <span className="subsection-badge">B</span>
+              <h3>Integration with Other Software Systems Required</h3>
+            </div>
 
-    <div className="form-section-grid">
-      <div className="form-row full-width">
-        <label>Specify Details</label>
-        <textarea rows="4" name="integration_software" value={form.integration_software} onChange={handleChange} placeholder="Example: DMS, GIS, SMS Gateway etc."></textarea>
-      </div>
-    </div>
-  </div>
-</div>
+            <div className="form-section-grid">
+              <div className="form-row full-width">
+                <label>Specify Details</label>
+                <textarea rows="1" name="integration_software" value={form.integration_software} onChange={handleChange} placeholder="i.e. DMS, GIS, SMS Gateway etc."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="form-section">
           <div className="section-header">
             <span className="section-badge">5.3</span>
-            <h3>Network & Access Requirements</h3>
+            <h3>SFTP Access Required in Demilitarized Zone</h3>
           </div>
 
           <div className="form-section-grid">
@@ -302,17 +364,30 @@ function renderServerBlock(env, type, label) {
             </div>
 
             {form.sftp_needed === "Yes" && (
-              <div className="form-row">
-                <label>Provide Real IP</label>
-                <input type="text" name="sftp_ip" value={form.sftp_ip} onChange={handleChange} placeholder="Enter Real IP" />
-              </div>
+              <>
+                <div className="form-row">
+                  <label>Provide Real IP</label>
+                  <input type="text" name="sftp_ip" value={form.sftp_ip} onChange={handleChange} placeholder="Enter Real IP" />
+                </div>
+
+                <div className="form-row">
+                  <label>Proposed SFTP User Name demanded by the Department</label>
+                  <input type="text" name="sftp_username" value={form.sftp_username} onChange={handleChange} placeholder="Enter Proposed SFTP User Name" />
+                </div>
+              </>
             )}
+          </div>
+        </div>
 
-            <div className="form-row">
-              <label>Proposed SFTP User Name demanded by the Department</label>
-              <input type="text" name="sftp_username" value={form.sftp_username} onChange={handleChange} placeholder="Enter Proposed SFTP User Name" />
-            </div>
+       
 
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">5.4</span>
+            <h3>Network Configuration</h3>
+          </div>
+
+          <div className="form-section-grid">
             <div className="form-row">
               <label>Public IP</label>
               <input type="text" name="public_ip" value={form.public_ip} onChange={handleChange} placeholder="Enter Public IP Address" />
@@ -331,8 +406,17 @@ function renderServerBlock(env, type, label) {
                 </label>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div className="form-row">
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">5.5</span>
+            <h3>Monitoring</h3>
+          </div>
+
+          <div className="form-section-grid">
+            <div className="form-row full-width">
               <label>Application Performance Management (APM) Required</label>
               <div className="radio-group">
                 <label>
@@ -345,8 +429,17 @@ function renderServerBlock(env, type, label) {
                 </label>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div className="form-row">
+        <div className="form-section">
+          <div className="section-header">
+            <span className="section-badge">5.6</span>
+            <h3>Backup Services</h3>
+          </div>
+
+          <div className="form-section-grid">
+            <div className="form-row full-width">
               <label>Backup Services Required</label>
               <div className="radio-group">
                 <label>
@@ -361,21 +454,22 @@ function renderServerBlock(env, type, label) {
             </div>
 
             {form.backup === "Yes" && (
-              <div className="form-row">
-                <label>Retention Period Approved from Department</label>
-                <input type="text" name="backup_retention" value={form.backup_retention} onChange={handleChange} />
-              </div>
-            )}
+  <div className="form-row">
+    <label className="required">Retention Period Approved from Department</label>
+    <input type="text" placeholder="Enter Retention Period" name="backup_retention" value={form.backup_retention} onChange={handleChange} />
+    {errors.backup_retention && <p className="error-message">{errors.backup_retention}</p>}
+  </div>
+)}
           </div>
         </div>
-      </div>
 
-      <FormButtons
-        showBack={true}
-        onBack={Backpage}
-        onNext={Nextpage}
-        disabled={saving} saving={saving}
-      />
+        <FormButtons
+          showBack={true}
+          onBack={Backpage}
+          onNext={Nextpage}
+          disabled={saving} saving={saving}
+        />
+        </div>
     </Layout>
   );
 }

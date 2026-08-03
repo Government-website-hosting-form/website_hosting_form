@@ -6,7 +6,7 @@ import "./ApplicationDetails.css";
 import { useFormContext } from "../context/FormContext";
 import { apiPost } from "../api";
 
-// Field names match the `apps` table columns in web_hosting_db_flow.xlsx
+
 const initialState = {
   name: "",
   type: "",
@@ -226,7 +226,7 @@ function ApplicationDetails() {
         <div className="form-section">
           <div className="section-header">
             <span className="section-badge">2.3</span>
-            <h3>Proposed Sub Domain( xyz.rajasthan.gov.in)</h3>
+            <h3>Proposed Sub Domain</h3>
           </div>
 
           <div className="form-section-grid">
@@ -238,7 +238,7 @@ function ApplicationDetails() {
                 name="url"
                 value={form.url}
                 onChange={handleChange}
-                placeholder="Enter approved primary URL"
+                placeholder="i.e. xyz.rajasthan.gov.in"
               />
               {errors.url && <p className="error-message">{errors.url}</p>}
             </div>
@@ -255,7 +255,7 @@ function ApplicationDetails() {
               {errors.alternate_url && <p className="error-message">{errors.alternate_url}</p>}
 
               <p className="maintenance-text">
-                Alternate URL will be assigned if the primary URL is not available.
+                Note : Alternate URL will be assigned if the primary URL is not available.
               </p>
             </div>
           </div>
@@ -335,6 +335,7 @@ function ApplicationDetails() {
                   <input
                     type="text"
                     name="mom_ref_no"
+                    placeholder="Enter MoM / Document Reference No."
                     value={form.mom_ref_no}
                     onChange={handleChange}
                   />
@@ -356,6 +357,7 @@ function ApplicationDetails() {
                   <label className="required">Attach MoM / Document</label>
                   <input
                     type="file"
+                    
                     onChange={(e) => setMomDoc(e.target.files[0])}
                   />
                   {errors.momDoc && <p className="error-message">{errors.momDoc}</p>}

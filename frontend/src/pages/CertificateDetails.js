@@ -45,13 +45,15 @@ function CertificateDetails() {
     const newErrors = {};
 
     if (!form.safehost_agency) newErrors.safehost_agency = "This field is required.";
-    if (!form.safehost_empanel_no.trim()) {
-      newErrors.safehost_empanel_no = "This field is required.";
-    } else {
-      const empanelNoError = validateNumber(form.safehost_empanel_no);
-      if (empanelNoError) newErrors.safehost_empanel_no = empanelNoError;
+    if (form.safehost_agency === "CERT-In Empanelled") {
+      if (!form.safehost_empanel_no.trim()) {
+        newErrors.safehost_empanel_no = "This field is required.";
+      } else {
+        const empanelNoError = validateNumber(form.safehost_empanel_no);
+        if (empanelNoError) newErrors.safehost_empanel_no = empanelNoError;
+      }
+      if (!form.safehost_empanel_valid_till) newErrors.safehost_empanel_valid_till = "This field is required.";
     }
-    if (!form.safehost_empanel_valid_till) newErrors.safehost_empanel_valid_till = "This field is required.";
     if (!form.safehost_ref_no.trim()) {
       newErrors.safehost_ref_no = "This field is required.";
     } else {
@@ -61,7 +63,7 @@ function CertificateDetails() {
     if (!safehostDoc) newErrors.safehostDoc = "Please attach the certificate copy.";
     if (!form.safehost_issue_date) newErrors.safehost_issue_date = "This field is required.";
     if (!form.safehost_valid_till) newErrors.safehost_valid_till = "This field is required.";
-    if (form.safehost_agency === "Other CERT-In Empanelled Agency" && !form.safehost_agency_other.trim()) {
+    if (form.safehost_agency === "Other Agency" && !form.safehost_agency_other.trim()) {
       newErrors.safehost_agency_other = "Please specify the agency.";
     }
     setErrors(newErrors);
@@ -77,7 +79,14 @@ function CertificateDetails() {
     }
     setSaving(true);
     try {
-      await apiPut(`/apps/${ids.appId}`, form);
+     const payload = {
+  ...form,
+  safehost_empanel_valid_till: form.safehost_empanel_valid_till || null,
+  loadtest_issue_date: form.loadtest_issue_date || null,
+  loadtest_valid_till: form.loadtest_valid_till || null,
+  load_users: form.load_users || null,
+};
+await apiPut(`/apps/${ids.appId}`, payload);
       navigate("/infradetails");
     } catch (err) {
       console.error(err);
@@ -123,11 +132,16 @@ function CertificateDetails() {
                 </label>
 
                 <label>
-                  <input type="radio" name="safehost_agency" value="Other CERT-In Empanelled Agency" checked={form.safehost_agency === "Other CERT-In Empanelled Agency"} onChange={handleChange} />
-                  Other CERT-In Empanelled Agency
+                  <input type="radio" name="safehost_agency" value="CERT-In Empanelled" checked={form.safehost_agency === "CERT-In Empanelled"} onChange={handleChange} />
+                  CERT-In Empanelled
+                </label>
+
+                <label>
+                  <input type="radio" name="safehost_agency" value="Other Agency" checked={form.safehost_agency === "Other Agency"} onChange={handleChange} />
+                  Other Agency
                 </label>
               </div>
-              {form.safehost_agency === "Other CERT-In Empanelled Agency" && (
+              {form.safehost_agency === "Other Agency" && (
                 <>
                   <input
                     type="text"
@@ -142,29 +156,33 @@ function CertificateDetails() {
               )}
               {errors.safehost_agency && <p className="error-message">{errors.safehost_agency}</p>}
             </div>
+            {form.safehost_agency === "CERT-In Empanelled" && (
+              <>
+                <div className="form-row">
+                  <label className="required">CERT-In Empanelment Number</label>
+                  <input
+                    type="text"
+                    name="safehost_empanel_no"
+                    value={form.safehost_empanel_no}
+                    onChange={handleChange}
+                    placeholder="Enter Empanelment Number"
+                  />
+                  {errors.safehost_empanel_no && <p className="error-message">{errors.safehost_empanel_no}</p>}
+                </div>
+
+                <div className="form-row">
+                  <label className="required">Empanelment Valid Till</label>
+                  <input type="date" name="safehost_empanel_valid_till" value={form.safehost_empanel_valid_till} onChange={handleChange} />
+                  {errors.safehost_empanel_valid_till && <p className="error-message">{errors.safehost_empanel_valid_till}</p>}
+                </div>
+
+              </>
+            )}
+
+
 
             <div className="form-row">
-              <label className="required">CERT-In Empanelment Number</label>
-              <input
-                type="text"
-                name="safehost_empanel_no"
-                value={form.safehost_empanel_no}
-                onChange={handleChange}
-                placeholder="Enter Empanelment Number"
-              />
-              {errors.safehost_empanel_no && <p className="error-message">{errors.safehost_empanel_no}</p>}
-            </div>
-
-            <div className="form-row">
-              <label className="required">Empanelment Valid Till</label>
-              <input type="date" name="safehost_empanel_valid_till" value={form.safehost_empanel_valid_till} onChange={handleChange} />
-              {errors.safehost_empanel_valid_till && <p className="error-message">{errors.safehost_empanel_valid_till}</p>}
-            </div>
-
-
-
-            <div className="form-row">
-              <label className="required">Certificate Reference Number</label>
+              <label className="required">Security Audit Certificate Reference Number</label>
               <input
                 type="text"
                 name="safehost_ref_no"

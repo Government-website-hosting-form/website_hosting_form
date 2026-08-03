@@ -163,3 +163,25 @@ body{
 .form-row textarea {
   flex: 1;
 }
+
+.header-top {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.header-btn {
+  background-color: white;
+  color: #123d6d;
+  border: 1px solid white;
+  padding: 6px 16px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.header-btn:hover {
+  background-color: #eef2f5;
+}

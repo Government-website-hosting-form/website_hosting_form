@@ -49,10 +49,12 @@ function MainDetails() {
     newErrors.dev_company_other = "Please specify the agency.";
   }
 
-  if (form.dev_contact_person.trim()) {
-    const err = validateText(form.dev_contact_person, 50);
-    if (err) newErrors.dev_contact_person = err;
-  }
+ if (!form.dev_contact_person.trim()) {
+  newErrors.dev_contact_person = "This field is required.";
+} else {
+  const err = validateText(form.dev_contact_person, 50);
+  if (err) newErrors.dev_contact_person = err;
+}
 
   if (form.dev_phone_office.trim()) {
     const err = validatePhone(form.dev_phone_office);
@@ -74,17 +76,22 @@ function MainDetails() {
   if (!form.maint_active) newErrors.maint_active = "This field is required.";
 
   if (form.maint_active === "Yes") {
+    if (!form.maint_expiry) newErrors.maint_expiry = "This field is required.";
     if (!form.maint_company.trim()) newErrors.maint_company = "This field is required.";
 
-    if (form.maint_contact_person.trim()) {
-      const err = validateText(form.maint_contact_person, 50);
-      if (err) newErrors.maint_contact_person = err;
-    }
+  
 
     if (form.maint_phone_office.trim()) {
       const err = validatePhone(form.maint_phone_office);
       if (err) newErrors.maint_phone_office = err;
     }
+
+     if (!form.maint_contact_person.trim()) {
+  newErrors.maint_contact_person = "This field is required.";
+} else {
+  const err = validateText(form.maint_contact_person, 50);
+  if (err) newErrors.maint_contact_person = err;
+}
 
     if (!form.maint_phone_mobile.trim()) {
       newErrors.maint_phone_mobile = "This field is required.";
@@ -127,7 +134,12 @@ function MainDetails() {
     }
     setSaving(true);
     try {
-      await apiPut(`/apps/${ids.appId}`, form);
+     const payload = {
+  ...form,
+  maint_expiry: form.maint_expiry || null,
+  maint_contract_attached: form.maint_contract_attached || null,
+};
+await apiPut(`/apps/${ids.appId}`, payload);
       navigate("/certificatedetails");
     } catch (err) {
       console.error(err);
@@ -174,35 +186,35 @@ function MainDetails() {
           </div>
 
           <div className="form-row">
-            <label>Name of Contact Person</label>
-            <input type="text" name="dev_contact_person" value={form.dev_contact_person} onChange={handleChange} />
+            <label className="required">Name of Contact Person</label>
+            <input type="text" name="dev_contact_person" placeholder="Enter Name of Contract Person" value={form.dev_contact_person} onChange={handleChange} />
                {errors.dev_contact_person && <p className="error-message">{errors.dev_contact_person}</p>}
           </div>
        
 
           <div className="form-row">
             <label>Address (Company / Agency)</label>
-            <input type="text" name="dev_address" value={form.dev_address} onChange={handleChange} />
+            <input type="text" name="dev_address" placeholder="Enter Address (Company/Agency)" value={form.dev_address} onChange={handleChange} />
 
           </div>
 
 
           <div className="form-row">
             <label>Phone No. (Office)</label>
-            <input type="text" name="dev_phone_office" value={form.dev_phone_office} onChange={handleChange} />
+            <input type="text" name="dev_phone_office" placeholder="Enter Phone No. (Office) " value={form.dev_phone_office} onChange={handleChange} />
             {errors.dev_phone_office && <p className="error-message">{errors.dev_phone_office}</p>}
           </div>
 
          <div className="form-row">
   <label className="required">Phone No. (Mobile)</label>
-  <input type="text" name="dev_phone" value={form.dev_phone} onChange={handleChange} />
+  <input type="text" name="dev_phone" placeholder="Enter Phone No. (Mobile) " value={form.dev_phone} onChange={handleChange} />
   {errors.dev_phone && <p className="error-message">{errors.dev_phone}</p>}
 </div>
 
 
           <div className="form-row">
             <label>E-Mail Address</label>
-            <input type="email" name="dev_email" value={form.dev_email} onChange={handleChange} />
+            <input type="email" name="dev_email" placeholder="Enter E-Mail Address" value={form.dev_email} onChange={handleChange} />
             {errors.dev_email && <p className="error-message">{errors.dev_email}</p>}
           </div>
 
@@ -229,99 +241,105 @@ function MainDetails() {
                   <input type="radio" name="maint_active" value="No" checked={form.maint_active === "No"} onChange={handleChange} />
                   No
                 </label>
-                <div className="expiry-box">
-                  <span>Expiry</span>
-                  <input type="date" name="maint_expiry" value={form.maint_expiry} onChange={handleChange} />
-                </div>
+                 {form.maint_active === "Yes" && (
+  <div className="expiry-box">
+    <span className="required">Expiry</span>
+    <input type="date" name="maint_expiry" value={form.maint_expiry} onChange={handleChange} />
+    {errors.maint_expiry && <p className="error-message">{errors.maint_expiry}</p>}
+  </div>
+)}
               </div>
             </div>
              {errors.maint_active && <p className="error-message">{errors.maint_active}</p>}
           </div>
-          {form.maint_active === "Yes" && (
-            <div className="form-row full-width">
-              <label>Same as Application Developed by</label>
-              <div className="maintenance-radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    name="same_as_developer"
-                    value="Yes"
-                    checked={sameAsDeveloper === true}
-                    onChange={() => handleSameAsDeveloper(true)}
-                  />
-                  Yes
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="same_as_developer"
-                    value="No"
-                    checked={sameAsDeveloper === false}
-                    onChange={() => handleSameAsDeveloper(false)}
-                  />
-                  No
-                </label>
-              </div>
-            </div>
-          )}
+         {form.maint_active === "Yes" && (
+  <div className="form-row full-width">
+     <div className="inline-label-radio">
+    <label>Application Development and Maintainence Team both are same </label>
+    
+    <div className="maintenance-radio-group">
+      <label>
+        <input
+          type="radio"
+          name="same_as_developer"
+          value="Yes"
+          checked={sameAsDeveloper === true}
+          onChange={() => handleSameAsDeveloper(true)}
+        />
+        Yes
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="same_as_developer"
+          value="No"
+          checked={sameAsDeveloper === false}
+          onChange={() => handleSameAsDeveloper(false)}
+        />
+        No
+      </label>
+    </div>
+    </div>
+       <p className="maintenance-text">
+    Note: If it is maintained by development team only or maintenance only then choose Yes, or if maintenance is done by a different team please enter the details.
+  </p>
+   
+  </div>
+)}
 
-          {form.maint_active === "Yes" && (
-            <>
-             <div className="form-row">
-  <label className="required">
-    Name of the Company / Agency maintaining the Web Site/Application
-  </label>
-  <input type="text" name="maint_company" value={form.maint_company} onChange={handleChange} />
-  {errors.maint_company && <p className="error-message">{errors.maint_company}</p>}
-</div>
+{form.maint_active === "Yes" && sameAsDeveloper === false && (
+  <>
+    <div className="form-row">
+      <label className="required">
+        Name of the Company / Agency maintaining the Web Site/Application
+      </label>
+      <input type="text" name="maint_company" placeholder="Enter Name of Company/Agency" value={form.maint_company} onChange={handleChange} />
+      {errors.maint_company && <p className="error-message">{errors.maint_company}</p>}
+    </div>
 
-              <div className="form-row">
-                <label>Name of Contact Person</label>
-                <input type="text" name="maint_contact_person" value={form.maint_contact_person} onChange={handleChange} />
-                {errors.maint_contact_person && <p className="error-message">{errors.maint_contact_person}</p>}
-              </div>
+    <div className="form-row">
+      <label className="required">Name of Contact Person</label>
+      <input type="text" name="maint_contact_person" placeholder="Enter Name of Contact Person" value={form.maint_contact_person} onChange={handleChange} />
+      {errors.maint_contact_person && <p className="error-message">{errors.maint_contact_person}</p>}
+    </div>
 
-              <div className="form-row">
-                <label>Address of Contact Person</label>
-                <input type="text" name="maint_address" value={form.maint_address} onChange={handleChange} />
-              </div>
+    <div className="form-row">
+      <label>Address of Contact Person</label>
+      <input type="text" name="maint_address" placeholder="Enter of Address of Contact Person" value={form.maint_address} onChange={handleChange} />
+    </div>
 
+    <div className="form-row">
+      <label>Phone No. (Office)</label>
+      <input type="text" name="maint_phone_office" placeholder="Enter Phone No.(Office)" value={form.maint_phone_office} onChange={handleChange} />
+      {errors.maint_phone_office && <p className="error-message">{errors.maint_phone_office}</p>}
+    </div>
 
-              <div className="form-row">
-                <label>Phone No. (Office)</label>
-                <input type="text" name="maint_phone_office" value={form.maint_phone_office} onChange={handleChange} />
-                {errors.maint_phone_office && <p className="error-message">{errors.maint_phone_office}</p>}
-              </div>
+    <div className="form-row">
+      <label className="required">Phone No. (Mobile)</label>
+      <input type="text" name="maint_phone_mobile" placeholder="Enter Phone No.(Mobile)" value={form.maint_phone_mobile} onChange={handleChange} />
+      {errors.maint_phone_mobile && <p className="error-message">{errors.maint_phone_mobile}</p>}
+    </div>
 
-             <div className="form-row">
-  <label className="required">Phone No. (Mobile)</label>
-  <input type="text" name="maint_phone_mobile" value={form.maint_phone_mobile} onChange={handleChange} />
-  {errors.maint_phone_mobile && <p className="error-message">{errors.maint_phone_mobile}</p>}
-</div>
+    <div className="form-row">
+      <label>E-Mail Address</label>
+      <input type="email" name="maint_email" placeholder="Enter E-Mail Address" value={form.maint_email} onChange={handleChange} />
+      {errors.maint_email && <p className="error-message">{errors.maint_email}</p>}
+    </div>
+  </>
+)}
 
+{form.maint_active === "Yes" && (
+  <div className="form-row full-width">
+    <label>Contract Copy(ies) Attached</label>
 
-              <div className="form-row">
-                <label>E-Mail Address</label>
-                <input type="email" name="maint_email" value={form.maint_email} onChange={handleChange} />
-                {errors.maint_email && <p className="error-message">{errors.maint_email}</p>}
-              </div>
-
-              <div className="form-row full-width">
-                <label>Contract Copy(ies) Attached</label>
-
-                <div className="maintenance-radio-group">
-                  <label><input type="radio" name="maint_contract_attached" value="Yes" checked={form.maint_contract_attached === "Yes"} onChange={handleChange} />
-                    Yes</label>
-                  <label><input type="radio" name="maint_contract_attached" value="No" checked={form.maint_contract_attached === "No"} onChange={handleChange} />
-                    No</label>
-                </div>
-              </div>
-
-
-
-            </>
-
-          )}
+    <div className="maintenance-radio-group">
+      <label><input type="radio" name="maint_contract_attached" value="Yes" checked={form.maint_contract_attached === "Yes"} onChange={handleChange} />
+        Yes</label>
+      <label><input type="radio" name="maint_contract_attached" value="No" checked={form.maint_contract_attached === "No"} onChange={handleChange} />
+        No</label>
+    </div>
+  </div>
+)}
         </div>
       </div>
 
