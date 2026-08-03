@@ -1,17 +1,28 @@
 const express = require('express')
 const cors = require('cors')
 const db = require('./db')
-
+const ssoAuthRoutes = require('./routes/ssoAuthRoutes')
+const mappingRoutes = require('./routes/mappingRoutes')
 const app = express()
 
 app.use(cors())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))   
+app.use('/api/auth/sso', ssoAuthRoutes)            
+app.use('/api/sso/mapping', mappingRoutes)         
+app.use('/uploads', express.static('uploads'))     
+
+
+app.use((req, res, next) => {
+  if (!req.body) req.body = {}
+  next()
+})
 
 app.get('/', (req, res) => {
   res.send('server running')
 })
 
-// ================= USERS =================
+
 app.get('/users', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM users')
   res.json(rows)
@@ -24,8 +35,7 @@ app.get('/users/:id', async (req, res) => {
 
 app.post('/users', async (req, res) => {
   try {
-    // agar yeh email/sso_id ka user pehle se hai to usi ko use kar lo
-    // (users table mein sso_id aur email dono UNIQUE hain)
+    
     const [existing] = await db.query(
       'SELECT * FROM users WHERE sso_id = ? OR email = ? LIMIT 1',
       [req.body.sso_id, req.body.email]
@@ -44,7 +54,7 @@ app.post('/users', async (req, res) => {
   }
 })
 
-// ================= ORG =================
+
 app.get('/org', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM org')
   res.json(rows)
@@ -71,7 +81,7 @@ app.delete('/org/:id', async (req, res) => {
   res.json({ msg: 'deleted' })
 })
 
-// ================= APPS =================
+
 app.get('/apps', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM apps')
   res.json(rows)
@@ -98,7 +108,7 @@ app.delete('/apps/:id', async (req, res) => {
   res.json({ msg: 'deleted' })
 })
 
-// ================= INFRA =================
+
 app.get('/infra', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM infra')
   res.json(rows)
@@ -120,7 +130,7 @@ app.delete('/infra/:id', async (req, res) => {
   res.json({ msg: 'deleted' })
 })
 
-// ================= CHECKLIST =================
+
 app.get('/checklist', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM checklist')
   res.json(rows)
@@ -141,6 +151,80 @@ app.delete('/checklist/:id', async (req, res) => {
   await db.query('DELETE FROM checklist WHERE checklist_id = ?', [req.params.id])
   res.json({ msg: 'deleted' })
 })
+
+
+
+
+
+
+const ssoRoutes = require('./routes/ssoRoutes')
+app.use('/api/sso', ssoRoutes)
+
+
+app.post('/api/web-hosting-form/submit', async (req, res) => {
+  try {
+    const {
+      ssoId,
+      name,
+      type,
+      nature,
+      utility,
+      purpose,
+      subdomain,
+      url,
+      alternate_url,
+      approval_authority,
+      approval_designation,
+      dev_company,
+      dev_contact_person,
+      dev_address,
+      dev_phone_office,
+      dev_phone,
+      dev_email
+    } = req.body
+
+    if (!ssoId || !name) {
+      return res.status(400).json({ success: false, message: 'ssoId and name are required' })
+    }
+
+    
+    const [userRows] = await db.query('SELECT user_id FROM users WHERE sso_id = ?', [ssoId])
+    if (userRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' })
+    }
+    const userId = userRows[0].user_id
+
+    
+    const [orgRows] = await db.query('SELECT org_id FROM org WHERE user_id = ?', [userId])
+    if (orgRows.length === 0) {
+      return res.status(400).json({ success: false, message: 'No organization mapped for this user. Complete org details first.' })
+    }
+    const orgId = orgRows[0].org_id
+
+    
+    const [result] = await db.query(
+      `INSERT INTO apps
+        (org_id, user_id, name, type, nature, utility, purpose, subdomain, url, alternate_url,
+         approval_authority, approval_designation, dev_company, dev_contact_person, dev_address,
+         dev_phone_office, dev_phone, dev_email)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [orgId, userId, name, type, nature, utility, purpose, subdomain, url, alternate_url,
+       approval_authority, approval_designation, dev_company, dev_contact_person, dev_address,
+       dev_phone_office, dev_phone, dev_email]
+    )
+
+    
+    res.json({
+      success: true,
+      message: 'Request submitted successfully, on process',
+      requestNo: result.insertId
+    })
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ success: false, message: err.message })
+  }
+})
+
 
 app.listen(5000, () => {
   console.log('server running on port 5000')

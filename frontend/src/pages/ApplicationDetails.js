@@ -6,7 +6,7 @@ import "./ApplicationDetails.css";
 import { useFormContext } from "../context/FormContext";
 import { apiPost } from "../api";
 
-// Field names match the `apps` table columns in web_hosting_db_flow.xlsx
+
 const initialState = {
   name: "",
   type: "",

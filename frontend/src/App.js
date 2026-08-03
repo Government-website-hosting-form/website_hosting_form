@@ -11,6 +11,11 @@ import InfraDetails from "./pages/InfraDetails";
 import HardwareDetails from "./pages/HardwareDetails";
 import SslDetails from "./pages/SslDetails";
 import Checklist from "./pages/Checklist";
+import SsoSuccess from "./pages/SsoSuccess";
+import SsoFailed from "./pages/SsoFailed";
+import Mapping from "./pages/Mapping";
+import SsoPending from "./pages/SsoPending";
+import SsoNotActive from "./pages/SsoNotActive";
 
 function App() {
   return (
@@ -26,6 +31,11 @@ function App() {
           <Route path="/hardwaredetails" element={<HardwareDetails />} />
           <Route path="/ssldetails" element={<SslDetails />} />
           <Route path="/checklist" element={<Checklist />} />
+          <Route path="/sso/success" element={<SsoSuccess />} />
+          <Route path="/sso/failed" element={<SsoFailed />} />
+          <Route path="/sso/mapping" element={<Mapping />} />
+          <Route path="/sso/pending" element={<SsoPending />} />
+          <Route path="/sso/not-active" element={<SsoNotActive />} />
         </Routes>
       </BrowserRouter>
     </FormProvider>

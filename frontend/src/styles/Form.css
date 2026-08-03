@@ -163,3 +163,76 @@ body{
 .form-row textarea {
   flex: 1;
 }
+
+
+
+.mapping-intro {
+  color: #444;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.mapping-loading {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 16px;
+}
+
+.badge-autofill {
+  display: inline-block;
+  background: #e8eff5;
+  color: #123d6d;
+  font-size: 11px;
+  font-weight: normal;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 6px;
+}
+
+.mapping-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.file-hint {
+  color: #777;
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+
+.file-selected {
+  color: #1e7e34;
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.error-message {
+  color: #b71c1c;
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.button-group {
+  margin-top: 30px;
+}
+
+.next-btn {
+  background: #123d6d;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.next-btn:disabled {
+  background: #7f9bb8;
+  cursor: not-allowed;
+}
