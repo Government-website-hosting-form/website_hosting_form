@@ -4,7 +4,8 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
-import { apiPost } from "../api";
+import { apiPost, apiGet, apiPut } from "../api";
+import { useEffect } from "react";
 import {
   validateText,
   validateEmail,
@@ -36,6 +37,31 @@ function OrganizationDetails() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+
+//this function is used to load existing organization details if orgId is present in the context. It fetches the data from the API and populates the form state with the retrieved values. If any value is null, it replaces it with an empty string to avoid issues with controlled components in React.
+  useEffect(() => {
+    async function loadExisting() {
+        if (!ids.orgId) return;
+        try {
+            const data = await apiGet(`/org/${ids.orgId}`);
+            if (data) {
+                const cleaned = {};
+                //Object.entries(data)- JavaScript converts the object into an array of key-value pairs
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved organization details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.orgId]);
+
+
+
+
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -46,9 +72,7 @@ function OrganizationDetails() {
 
     if (!form.name.trim()) {
       newErrors.name = "This field is required.";
-    } else {
-      const nameError = validateText(form.name, 150);
-      if (nameError) newErrors.name = nameError;
+    
     }
 
     if (!form.type) {
@@ -152,8 +176,12 @@ function OrganizationDetails() {
     setSaving(true);
     try {
       const payload = { ...form, user_id: ids.userId || null };
-      const res = await apiPost("/org", payload);
-      setId("orgId", res.id);
+     if (ids.orgId) {
+    await apiPut(`/org/${ids.orgId}`, payload);
+} else {
+    const res = await apiPost("/org", payload);
+    setId("orgId", res.id);
+}
       navigate("/ApplicationDetails");
     } catch (err) {
       console.error(err);

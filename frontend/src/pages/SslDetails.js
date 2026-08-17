@@ -4,7 +4,8 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import "./SslDetails.css";
 import { useFormContext } from "../context/FormContext";
-import { apiPut } from "../api";
+import { useEffect } from "react";
+import { apiPut, apiGet } from "../api";
 
 const initialState = {
   ssl_needed: "",
@@ -30,6 +31,25 @@ function SslDetails() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    async function loadExisting() {
+        if (!ids.infraId) return;
+        try {
+            const data = await apiGet(`/infra/${ids.infraId}`);
+            if (data) {
+                const cleaned = {};
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved SSL details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.infraId]);
+
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -51,7 +71,6 @@ function SslDetails() {
     if (!form.ssl_needed) newErrors.ssl_needed = "This field is required.";
 
     if (form.ssl_needed === "Yes") {
-      if (!form.ssl_provider_type.trim()) newErrors.ssl_provider_type = "This field is required.";
       if (!form.ssl_environment) newErrors.ssl_environment = "This field is required.";
       if (!form.ssl_fqdn.trim()) newErrors.ssl_fqdn = "This field is required.";
       if (form.ssl_type.length === 0) newErrors.ssl_type = "Please select at least one SSL type.";

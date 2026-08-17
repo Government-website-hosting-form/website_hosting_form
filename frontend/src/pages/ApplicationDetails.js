@@ -4,7 +4,8 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import "./ApplicationDetails.css";
 import { useFormContext } from "../context/FormContext";
-import { apiPost } from "../api";
+import { apiPost, apiGet, apiPut } from "../api";
+import { useEffect } from "react";
 
 
 const initialState = {
@@ -33,6 +34,25 @@ function ApplicationDetails() {
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
   const [momDoc, setMomDoc] = useState(null);
+
+useEffect(() => {
+    async function loadExisting() {
+        if (!ids.appId) return;
+        try {
+            const data = await apiGet(`/apps/${ids.appId}`);
+            if (data) {
+                const cleaned = {};
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved application details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.appId]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -76,15 +96,15 @@ function ApplicationDetails() {
     setError("");
     setSaving(true);
     try {
-      const payload = {
-        ...form,
-        org_id: ids.orgId || null,
-        user_id: ids.userId || null,
-      };
-
-      const res = await apiPost("/apps", payload);
-      setId("appId", res.id);
-      navigate("/maindetails");
+     const payload = { ...form, org_id: ids.orgId || null, user_id: ids.userId || null };
+if (ids.appId) {
+    await apiPut(`/apps/${ids.appId}`, payload);
+} else {
+    const res = await apiPost("/apps", payload);
+    setId("appId", res.id);
+}
+navigate("/maindetails");
+     
     } catch (err) {
       console.error(err);
       setError("Could not save Application Details. Please check the backend server and try again.");
@@ -357,7 +377,7 @@ function ApplicationDetails() {
                   <label className="required">Attach MoM / Document</label>
                   <input
                     type="file"
-                    
+
                     onChange={(e) => setMomDoc(e.target.files[0])}
                   />
                   {errors.momDoc && <p className="error-message">{errors.momDoc}</p>}

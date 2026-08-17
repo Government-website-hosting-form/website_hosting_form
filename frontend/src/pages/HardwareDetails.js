@@ -4,7 +4,8 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
-import { apiPut } from "../api";
+import { useEffect } from "react";
+import { apiPut, apiGet } from "../api";
 import { validateEmail, validateMobile, validatePhone, validateText } from "../helpers/Validation";
 
 const initialState = {
@@ -55,6 +56,25 @@ function HardwareDetails() {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+ useEffect(() => {
+    async function loadExisting() {
+        if (!ids.infraId) return;
+        try {
+            const data = await apiGet(`/infra/${ids.infraId}`);
+            if (data) {
+                const cleaned = {};
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved hardware details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.infraId]);
 
   function handleChange(e) {
     const { name, value } = e.target;

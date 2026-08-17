@@ -4,8 +4,9 @@ import "./MainDetails.css";
 import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
-import { apiPut } from "../api";
 import { validateText, validateEmail, validateMobile, validatePhone } from "../helpers/Validation";
+import { useEffect } from "react";
+import { apiPut, apiGet } from "../api";
 
 
 const initialState = {
@@ -36,6 +37,25 @@ function MainDetails() {
   const [error, setError] = useState("");
   const [sameAsDeveloper, setSameAsDeveloper] = useState(false);
   const [errors, setErrors] = useState({});
+
+ useEffect(() => {
+    async function loadExisting() {
+        if (!ids.appId) return;
+        try {
+            const data = await apiGet(`/apps/${ids.appId}`);
+            if (data) {
+                const cleaned = {};
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved main details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.appId]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -281,8 +301,10 @@ await apiPut(`/apps/${ids.appId}`, payload);
     </div>
     </div>
        <p className="maintenance-text">
-    Note: If it is maintained by development team only or maintenance only then choose Yes, or if maintenance is done by a different team please enter the details.
+    Note 1: If it is maintained by development team only or maintenance only then choose Yes (only after filling Application Developed by Details), or if maintenance is done by a different team please enter the details.
   </p>
+   
+
    
   </div>
 )}
@@ -345,11 +367,6 @@ await apiPut(`/apps/${ids.appId}`, payload);
 
 
 
-
-
-
-
-
       <FormButtons
         showBack={true}
         onBack={Backpage}
@@ -363,7 +380,3 @@ await apiPut(`/apps/${ids.appId}`, payload);
 }
 
 export default MainDetails;
-
-
-
-

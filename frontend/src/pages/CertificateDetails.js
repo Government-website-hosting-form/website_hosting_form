@@ -4,8 +4,10 @@ import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { useFormContext } from "../context/FormContext";
-import { apiPut } from "../api";
 import { validateNumber } from "../helpers/Validation";
+import { useEffect } from "react";
+import { apiPut, apiGet } from "../api";
+
 
 
 
@@ -20,11 +22,11 @@ const initialState = {
   load_users: "",
   loadtest_avg_response: "",
   loadtest_agency: "",
-  loadtest_agency_other: "",  //new
+  loadtest_agency_other: "",  
   loadtest_ref_no: "",
   loadtest_issue_date: "",
   loadtest_valid_till: "",
-  other_certificate_details: "",  //new
+  other_certificate_details: "",  
 };
 
 function CertificateDetails() {
@@ -35,6 +37,25 @@ function CertificateDetails() {
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
   const [safehostDoc, setSafehostDoc] = useState(null);
+
+useEffect(() => {
+    async function loadExisting() {
+        if (!ids.appId) return;
+        try {
+            const data = await apiGet(`/apps/${ids.appId}`);
+            if (data) {
+                const cleaned = {};
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved certificate details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.appId]);
 
   function handleChange(e) {
     const { name, value } = e.target;
