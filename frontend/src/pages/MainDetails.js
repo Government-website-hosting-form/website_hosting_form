@@ -38,128 +38,163 @@ function MainDetails() {
   const [sameAsDeveloper, setSameAsDeveloper] = useState(false);
   const [errors, setErrors] = useState({});
 
- useEffect(() => {
+  useEffect(() => {
     async function loadExisting() {
-        if (!ids.appId) return;
-        try {
-            const data = await apiGet(`/apps/${ids.appId}`);
-            if (data) {
-                const cleaned = {};
-                for (const [key, value] of Object.entries(data)) {
-                    cleaned[key] = value === null ? "" : value;
-                }
-                setForm((prev) => ({ ...prev, ...cleaned }));
-            }
-        } catch (err) {
-            console.error("Could not load saved main details:", err);
+      if (!ids.appId) return;
+      try {
+        const data = await apiGet(`/apps/${ids.appId}`);
+        if (data) {
+          const cleaned = {};
+          for (const [key, value] of Object.entries(data)) {
+            cleaned[key] = value === null ? "" : value;
+          }
+          setForm((prev) => ({ ...prev, ...cleaned }));
         }
+      } catch (err) {
+        console.error("Could not load saved main details:", err);
+      }
     }
     loadExisting();
-}, [ids.appId]);
+  }, [ids.appId]);
 
-  function handleChange(e) {
+ function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+    setForm((prev) => {
+        const updated = { ...prev, [name]: value };
+
+        if (name === "dev_company" && value !== "other") {
+            updated.dev_company_other = "";
+        }
+
+        if (name === "maint_active" && value !== "Yes") {
+            updated.maint_expiry = "";
+            updated.maint_company = "";
+            updated.maint_contact_person = "";
+            updated.maint_address = "";
+            updated.maint_phone_office = "";
+            updated.maint_phone_mobile = "";
+            updated.maint_email = "";
+            updated.maint_contract_attached = "";
+        }
+
+        return updated;
+    });
+
+    if (name === "maint_active" && value !== "Yes") {
+        setSameAsDeveloper(false);
+    }
+}
+
+
   function validateForm() {
-  const newErrors = {};
+    const newErrors = {};
 
-  if (!form.dev_company) newErrors.dev_company = "This field is required.";
-  if (form.dev_company === "other" && !form.dev_company_other.trim()) {
-    newErrors.dev_company_other = "Please specify the agency.";
-  }
-
- if (!form.dev_contact_person.trim()) {
-  newErrors.dev_contact_person = "This field is required.";
-} else {
-  const err = validateText(form.dev_contact_person, 50);
-  if (err) newErrors.dev_contact_person = err;
-}
-
-  if (form.dev_phone_office.trim()) {
-    const err = validatePhone(form.dev_phone_office);
-    if (err) newErrors.dev_phone_office = err;
-  }
-
-  if (!form.dev_phone.trim()) {
-    newErrors.dev_phone = "This field is required.";
-  } else {
-    const err = validateMobile(form.dev_phone);
-    if (err) newErrors.dev_phone = err;
-  }
-
-  if (form.dev_email.trim()) {
-    const err = validateEmail(form.dev_email);
-    if (err) newErrors.dev_email = err;
-  }
-
-  if (!form.maint_active) newErrors.maint_active = "This field is required.";
-
-  if (form.maint_active === "Yes") {
-    if (!form.maint_expiry) newErrors.maint_expiry = "This field is required.";
-    if (!form.maint_company.trim()) newErrors.maint_company = "This field is required.";
-
-  
-
-    if (form.maint_phone_office.trim()) {
-      const err = validatePhone(form.maint_phone_office);
-      if (err) newErrors.maint_phone_office = err;
+    if (!form.dev_company) newErrors.dev_company = "This field is required.";
+    if (form.dev_company === "other" && !form.dev_company_other.trim()) {
+      newErrors.dev_company_other = "Please specify the agency.";
     }
 
-     if (!form.maint_contact_person.trim()) {
-  newErrors.maint_contact_person = "This field is required.";
-} else {
-  const err = validateText(form.maint_contact_person, 50);
-  if (err) newErrors.maint_contact_person = err;
-}
-
-    if (!form.maint_phone_mobile.trim()) {
-      newErrors.maint_phone_mobile = "This field is required.";
+    if (!form.dev_contact_person.trim()) {
+      newErrors.dev_contact_person = "This field is required.";
     } else {
-      const err = validateMobile(form.maint_phone_mobile);
-      if (err) newErrors.maint_phone_mobile = err;
+      const err = validateText(form.dev_contact_person, 50);
+      if (err) newErrors.dev_contact_person = err;
     }
 
-    if (form.maint_email.trim()) {
-      const err = validateEmail(form.maint_email);
-      if (err) newErrors.maint_email = err;
+    if (form.dev_phone_office.trim()) {
+      const err = validatePhone(form.dev_phone_office);
+      if (err) newErrors.dev_phone_office = err;
     }
+
+    if (!form.dev_phone.trim()) {
+      newErrors.dev_phone = "This field is required.";
+    } else {
+      const err = validateMobile(form.dev_phone);
+      if (err) newErrors.dev_phone = err;
+    }
+
+    if (form.dev_email.trim()) {
+      const err = validateEmail(form.dev_email);
+      if (err) newErrors.dev_email = err;
+    }
+
+    if (!form.maint_active) newErrors.maint_active = "This field is required.";
+
+    if (form.maint_active === "Yes") {
+      if (!form.maint_expiry) newErrors.maint_expiry = "This field is required.";
+      if (!form.maint_company.trim()) newErrors.maint_company = "This field is required.";
+
+
+
+      if (form.maint_phone_office.trim()) {
+        const err = validatePhone(form.maint_phone_office);
+        if (err) newErrors.maint_phone_office = err;
+      }
+
+      if (!form.maint_contact_person.trim()) {
+        newErrors.maint_contact_person = "This field is required.";
+      } else {
+        const err = validateText(form.maint_contact_person, 50);
+        if (err) newErrors.maint_contact_person = err;
+      }
+
+      if (!form.maint_phone_mobile.trim()) {
+        newErrors.maint_phone_mobile = "This field is required.";
+      } else {
+        const err = validateMobile(form.maint_phone_mobile);
+        if (err) newErrors.maint_phone_mobile = err;
+      }
+
+      if (form.maint_email.trim()) {
+        const err = validateEmail(form.maint_email);
+        if (err) newErrors.maint_email = err;
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }
-
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-}
-  function handleSameAsDeveloper(isSame) {
+ function handleSameAsDeveloper(isSame) {
     setSameAsDeveloper(isSame);
 
     if (isSame) {
-      setForm((prev) => ({
-        ...prev,
-        maint_company: prev.dev_company,
-        maint_contact_person: prev.dev_contact_person,
-        maint_address: prev.dev_address,
-        maint_phone_office: prev.dev_phone_office,
-        maint_phone_mobile: prev.dev_phone,
-        maint_email: prev.dev_email,
-      }));
+        setForm((prev) => ({
+            ...prev,
+            maint_company: prev.dev_company,
+            maint_contact_person: prev.dev_contact_person,
+            maint_address: prev.dev_address,
+            maint_phone_office: prev.dev_phone_office,
+            maint_phone_mobile: prev.dev_phone,
+            maint_email: prev.dev_email,
+        }));
+    } else {
+        setForm((prev) => ({
+            ...prev,
+            maint_company: "",
+            maint_contact_person: "",
+            maint_address: "",
+            maint_phone_office: "",
+            maint_phone_mobile: "",
+            maint_email: "",
+        }));
     }
-  }
+}
 
   async function Nextpage() {
     if (!validateForm()) return;
-  setError("");
+    setError("");
     if (!ids.appId) {
-      setError("Application record not found yet — please go back and fill Application Details first.");
+      setError("Application record not found yet , please go back and fill Application Details first.");
       return;
     }
     setSaving(true);
     try {
-     const payload = {
-  ...form,
-  maint_expiry: form.maint_expiry || null,
-  maint_contract_attached: form.maint_contract_attached || null,
-};
-await apiPut(`/apps/${ids.appId}`, payload);
+      const payload = {
+        ...form,
+        maint_expiry: form.maint_expiry || null,
+        maint_contract_attached: form.maint_contract_attached || null,
+      };
+      await apiPut(`/apps/${ids.appId}`, payload);
       navigate("/certificatedetails");
     } catch (err) {
       console.error(err);
@@ -196,21 +231,21 @@ await apiPut(`/apps/${ids.appId}`, payload);
               <option value="other">Other</option>
             </select>
 
-         {form.dev_company === "other" && (
-    <>
-      <input type="text" name="dev_company_other" placeholder="Please specify" value={form.dev_company_other} onChange={handleChange} maxLength={100} />
-      {errors.dev_company_other && <p className="error-message">{errors.dev_company_other}</p>}
-    </>
-  )}
-  {errors.dev_company && <p className="error-message">{errors.dev_company}</p>}
+            {form.dev_company === "other" && (
+              <>
+                <input type="text" name="dev_company_other" placeholder="Please specify" value={form.dev_company_other} onChange={handleChange} maxLength={100} />
+                {errors.dev_company_other && <p className="error-message">{errors.dev_company_other}</p>}
+              </>
+            )}
+            {errors.dev_company && <p className="error-message">{errors.dev_company}</p>}
           </div>
 
           <div className="form-row">
             <label className="required">Name of Contact Person</label>
             <input type="text" name="dev_contact_person" placeholder="Enter Name of Contract Person" value={form.dev_contact_person} onChange={handleChange} />
-               {errors.dev_contact_person && <p className="error-message">{errors.dev_contact_person}</p>}
+            {errors.dev_contact_person && <p className="error-message">{errors.dev_contact_person}</p>}
           </div>
-       
+
 
           <div className="form-row">
             <label>Address (Company / Agency)</label>
@@ -225,11 +260,11 @@ await apiPut(`/apps/${ids.appId}`, payload);
             {errors.dev_phone_office && <p className="error-message">{errors.dev_phone_office}</p>}
           </div>
 
-         <div className="form-row">
-  <label className="required">Phone No. (Mobile)</label>
-  <input type="text" name="dev_phone" placeholder="Enter Phone No. (Mobile) " value={form.dev_phone} onChange={handleChange} />
-  {errors.dev_phone && <p className="error-message">{errors.dev_phone}</p>}
-</div>
+          <div className="form-row">
+            <label className="required">Phone No. (Mobile)</label>
+            <input type="text" name="dev_phone" placeholder="Enter Phone No. (Mobile) " value={form.dev_phone} onChange={handleChange} />
+            {errors.dev_phone && <p className="error-message">{errors.dev_phone}</p>}
+          </div>
 
 
           <div className="form-row">
@@ -261,107 +296,107 @@ await apiPut(`/apps/${ids.appId}`, payload);
                   <input type="radio" name="maint_active" value="No" checked={form.maint_active === "No"} onChange={handleChange} />
                   No
                 </label>
-                 {form.maint_active === "Yes" && (
-  <div className="expiry-box">
-    <span className="required">Expiry</span>
-    <input type="date" name="maint_expiry" value={form.maint_expiry} onChange={handleChange} />
-    {errors.maint_expiry && <p className="error-message">{errors.maint_expiry}</p>}
-  </div>
-)}
+                {form.maint_active === "Yes" && (
+                  <div className="expiry-box">
+                    <span className="required">Expiry</span>
+                    <input type="date" name="maint_expiry" value={form.maint_expiry} onChange={handleChange} />
+                    {errors.maint_expiry && <p className="error-message">{errors.maint_expiry}</p>}
+                  </div>
+                )}
               </div>
             </div>
-             {errors.maint_active && <p className="error-message">{errors.maint_active}</p>}
+            {errors.maint_active && <p className="error-message">{errors.maint_active}</p>}
           </div>
-         {form.maint_active === "Yes" && (
-  <div className="form-row full-width">
-     <div className="inline-label-radio">
-    <label>Application Development and Maintainence Team both are same </label>
-    
-    <div className="maintenance-radio-group">
-      <label>
-        <input
-          type="radio"
-          name="same_as_developer"
-          value="Yes"
-          checked={sameAsDeveloper === true}
-          onChange={() => handleSameAsDeveloper(true)}
-        />
-        Yes
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="same_as_developer"
-          value="No"
-          checked={sameAsDeveloper === false}
-          onChange={() => handleSameAsDeveloper(false)}
-        />
-        No
-      </label>
-    </div>
-    </div>
-       <p className="maintenance-text">
-    Note 1: If it is maintained by development team only or maintenance only then choose Yes (only after filling Application Developed by Details), or if maintenance is done by a different team please enter the details.
-  </p>
-   
+          {form.maint_active === "Yes" && (
+            <div className="form-row full-width">
+              <div className="inline-label-radio">
+                <label>Application Development and Maintainence Team both are same </label>
 
-   
-  </div>
-)}
+                <div className="maintenance-radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="same_as_developer"
+                      value="Yes"
+                      checked={sameAsDeveloper === true}
+                      onChange={() => handleSameAsDeveloper(true)}
+                    />
+                    Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="same_as_developer"
+                      value="No"
+                      checked={sameAsDeveloper === false}
+                      onChange={() => handleSameAsDeveloper(false)}
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
+              <p className="maintenance-text">
+                Note 1: If it is maintained by development team only or maintenance only then choose Yes (only after filling Application Developed by Details), or if maintenance is done by a different team please enter the details.
+              </p>
 
-{form.maint_active === "Yes" && sameAsDeveloper === false && (
-  <>
-    <div className="form-row">
-      <label className="required">
-        Name of the Company / Agency maintaining the Web Site/Application
-      </label>
-      <input type="text" name="maint_company" placeholder="Enter Name of Company/Agency" value={form.maint_company} onChange={handleChange} />
-      {errors.maint_company && <p className="error-message">{errors.maint_company}</p>}
-    </div>
 
-    <div className="form-row">
-      <label className="required">Name of Contact Person</label>
-      <input type="text" name="maint_contact_person" placeholder="Enter Name of Contact Person" value={form.maint_contact_person} onChange={handleChange} />
-      {errors.maint_contact_person && <p className="error-message">{errors.maint_contact_person}</p>}
-    </div>
 
-    <div className="form-row">
-      <label>Address of Contact Person</label>
-      <input type="text" name="maint_address" placeholder="Enter of Address of Contact Person" value={form.maint_address} onChange={handleChange} />
-    </div>
+            </div>
+          )}
 
-    <div className="form-row">
-      <label>Phone No. (Office)</label>
-      <input type="text" name="maint_phone_office" placeholder="Enter Phone No.(Office)" value={form.maint_phone_office} onChange={handleChange} />
-      {errors.maint_phone_office && <p className="error-message">{errors.maint_phone_office}</p>}
-    </div>
+          {form.maint_active === "Yes" && sameAsDeveloper === false && (
+            <>
+              <div className="form-row">
+                <label className="required">
+                  Name of the Company / Agency maintaining the Web Site/Application
+                </label>
+                <input type="text" name="maint_company" placeholder="Enter Name of Company/Agency" value={form.maint_company} onChange={handleChange} />
+                {errors.maint_company && <p className="error-message">{errors.maint_company}</p>}
+              </div>
 
-    <div className="form-row">
-      <label className="required">Phone No. (Mobile)</label>
-      <input type="text" name="maint_phone_mobile" placeholder="Enter Phone No.(Mobile)" value={form.maint_phone_mobile} onChange={handleChange} />
-      {errors.maint_phone_mobile && <p className="error-message">{errors.maint_phone_mobile}</p>}
-    </div>
+              <div className="form-row">
+                <label className="required">Name of Contact Person</label>
+                <input type="text" name="maint_contact_person" placeholder="Enter Name of Contact Person" value={form.maint_contact_person} onChange={handleChange} />
+                {errors.maint_contact_person && <p className="error-message">{errors.maint_contact_person}</p>}
+              </div>
 
-    <div className="form-row">
-      <label>E-Mail Address</label>
-      <input type="email" name="maint_email" placeholder="Enter E-Mail Address" value={form.maint_email} onChange={handleChange} />
-      {errors.maint_email && <p className="error-message">{errors.maint_email}</p>}
-    </div>
-  </>
-)}
+              <div className="form-row">
+                <label>Address of Contact Person</label>
+                <input type="text" name="maint_address" placeholder="Enter of Address of Contact Person" value={form.maint_address} onChange={handleChange} />
+              </div>
 
-{form.maint_active === "Yes" && (
-  <div className="form-row full-width">
-    <label>Contract Copy(ies) Attached</label>
+              <div className="form-row">
+                <label>Phone No. (Office)</label>
+                <input type="text" name="maint_phone_office" placeholder="Enter Phone No.(Office)" value={form.maint_phone_office} onChange={handleChange} />
+                {errors.maint_phone_office && <p className="error-message">{errors.maint_phone_office}</p>}
+              </div>
 
-    <div className="maintenance-radio-group">
-      <label><input type="radio" name="maint_contract_attached" value="Yes" checked={form.maint_contract_attached === "Yes"} onChange={handleChange} />
-        Yes</label>
-      <label><input type="radio" name="maint_contract_attached" value="No" checked={form.maint_contract_attached === "No"} onChange={handleChange} />
-        No</label>
-    </div>
-  </div>
-)}
+              <div className="form-row">
+                <label className="required">Phone No. (Mobile)</label>
+                <input type="text" name="maint_phone_mobile" placeholder="Enter Phone No.(Mobile)" value={form.maint_phone_mobile} onChange={handleChange} />
+                {errors.maint_phone_mobile && <p className="error-message">{errors.maint_phone_mobile}</p>}
+              </div>
+
+              <div className="form-row">
+                <label>E-Mail Address</label>
+                <input type="email" name="maint_email" placeholder="Enter E-Mail Address" value={form.maint_email} onChange={handleChange} />
+                {errors.maint_email && <p className="error-message">{errors.maint_email}</p>}
+              </div>
+            </>
+          )}
+
+          {form.maint_active === "Yes" && (
+            <div className="form-row full-width">
+              <label>Contract Copy(ies) Attached</label>
+
+              <div className="maintenance-radio-group">
+                <label><input type="radio" name="maint_contract_attached" value="Yes" checked={form.maint_contract_attached === "Yes"} onChange={handleChange} />
+                  Yes</label>
+                <label><input type="radio" name="maint_contract_attached" value="No" checked={form.maint_contract_attached === "No"} onChange={handleChange} />
+                  No</label>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

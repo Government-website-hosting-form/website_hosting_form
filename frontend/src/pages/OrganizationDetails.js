@@ -62,10 +62,16 @@ function OrganizationDetails() {
 
 
 
-  function handleChange(e) {
+ function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+    setForm((prev) => {
+        const updated = { ...prev, [name]: value };
+        if (name === "type" && value !== "other") {
+            updated.type_other = "";
+        }
+        return updated;
+    });
+}
 
   function validateForm() {
     const newErrors = {};
@@ -120,14 +126,15 @@ function OrganizationDetails() {
       if (mobileError) newErrors.phone = mobileError;
     }
 
+    if (form.phone_office) {
+  const phoneOfficeError = validatePhone(form.phone_office);
+  if (phoneOfficeError) newErrors.phone_office = phoneOfficeError;
+}
+
 
     if (!form.address.trim()) {
       newErrors.address = "This field is required.";
-    } else {
-      const addressError = validateText(form.address, 250);
-      if (addressError) newErrors.address = addressError;
     }
-
 
     if (!form.contact_name.trim()) {
       newErrors.contact_name = "This field is required.";

@@ -54,10 +54,29 @@ useEffect(() => {
     loadExisting();
 }, [ids.appId]);
 
-  function handleChange(e) {
+ function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+    setForm((prev) => {
+        const updated = { ...prev, [name]: value };
+
+        if (name === "type" && value !== "Other") {
+            updated.type_other = "";
+        }
+        if (name === "utility" && value !== "Other Priority Event") {
+            updated.utility_other = "";
+        }
+        if (name === "semt_approved" && value !== "Yes") {
+            updated.mom_ref_no = "";
+            updated.mom_date = "";
+        }
+
+        return updated;
+    });
+
+    if (name === "semt_approved" && value !== "Yes") {
+        setMomDoc(null);
+    }
+}
 
   function validateForm() {
     const newErrors = {};
@@ -155,6 +174,7 @@ navigate("/maindetails");
                 <option value="Portal">Portal</option>
                 <option value="Application">Application</option>
                 <option value="Mobile App">Mobile App</option>
+                <option value="Microservices">Microservices</option>
                 <option value="Api">Api</option>
                 <option value="Other">Other</option>
               </select>

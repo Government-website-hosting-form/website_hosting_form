@@ -56,29 +56,83 @@ function HardwareDetails() {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [fmsContractFile, setFmsContractFile] = useState(null);
+  const [amcContractFile, setAmcContractFile] = useState(null);
 
- useEffect(() => {
+  useEffect(() => {
     async function loadExisting() {
-        if (!ids.infraId) return;
-        try {
-            const data = await apiGet(`/infra/${ids.infraId}`);
-            if (data) {
-                const cleaned = {};
-                for (const [key, value] of Object.entries(data)) {
-                    cleaned[key] = value === null ? "" : value;
-                }
-                setForm((prev) => ({ ...prev, ...cleaned }));
-            }
-        } catch (err) {
-            console.error("Could not load saved hardware details:", err);
+      if (!ids.infraId) return;
+      try {
+        const data = await apiGet(`/infra/${ids.infraId}`);
+        if (data) {
+          const cleaned = {};
+          for (const [key, value] of Object.entries(data)) {
+            cleaned[key] = value === null ? "" : value;
+          }
+          setForm((prev) => ({ ...prev, ...cleaned }));
         }
+      } catch (err) {
+        console.error("Could not load saved hardware details:", err);
+      }
     }
     loadExisting();
-}, [ids.infraId]);
+  }, [ids.infraId]);
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => {
+      const updated = { ...prev, [name]: value };
+
+      if (name === "hw_type" && value !== "Dedicated") {
+        updated.hw_brand = "";
+        updated.hw_model = "";
+        updated.hw_cpu = "";
+        updated.hw_ram = "";
+        updated.hw_hdd = "";
+        updated.hw_hba_card = "";
+        updated.hw_fiber_cable = "";
+        updated.hw_power = "";
+        updated.hw_rack_provided = "";
+        updated.hw_rack_type = "";
+        updated.hw_insurance = "";
+        updated.hw_antivirus_name = "";
+        updated.hw_antivirus_expiry = "";
+        updated.hw_po_attached = "";
+        updated.hw_special_env = "";
+        updated.hw_fms = "";
+        updated.hw_amc = "";
+      }
+
+      if (name === "hw_rack_provided" && value !== "Yes") {
+        updated.hw_rack_type = "";
+      }
+
+      if (name === "hw_fms" && value !== "Yes") {
+        updated.hw_fms_company = "";
+        updated.hw_fms_contact_person = "";
+        updated.hw_fms_address = "";
+        updated.hw_fms_phone_office = "";
+        updated.hw_fms_phone_mobile = "";
+        updated.hw_fms_email = "";
+        updated.hw_fms_contract_expiry = "";
+        updated.hw_fms_contract_attached = "";
+      }
+
+      if (name === "hw_amc" && value !== "Yes") {
+        updated.hw_amc_company = "";
+        updated.hw_amc_contact_person = "";
+        updated.hw_amc_address = "";
+        updated.hw_amc_phone_office = "";
+        updated.hw_amc_phone_mobile = "";
+        updated.hw_amc_email = "";
+        updated.hw_amc_contract_expiry = "";
+        updated.hw_amc_contract_attached = "";
+      }
+      if (name === "hw_fms_contract_attached" && value !== "Yes") setFmsContractFile(null);
+      if (name === "hw_amc_contract_attached" && value !== "Yes") setAmcContractFile(null);
+
+      return updated;
+    });
   }
 
   function validateForm() {
@@ -141,7 +195,7 @@ function HardwareDetails() {
   }
 
   function Backpage() {
-    navigate("/infradetails");
+    navigate("/infraotherdetails");
   }
 
   return (
@@ -339,103 +393,194 @@ function HardwareDetails() {
                 </div>
               </div>
 
-              <div className="hw-table-row">
-                <label>Name of the Company / Agency</label>
-                <div>
-                  <input type="text" placeholder="Enter Company / Agency Name" name="hw_fms_company" value={form.hw_fms_company} onChange={handleChange} />
-                  {errors.hw_fms_company && <p className="error-message">{errors.hw_fms_company}</p>}
-                </div>
-                <div>
-                  <input type="text" placeholder="Enter Company / Agency Name" name="hw_amc_company" value={form.hw_amc_company} onChange={handleChange} />
-                  {errors.hw_amc_company && <p className="error-message">{errors.hw_amc_company}</p>}
-                </div>
-              </div>
+              {(form.hw_fms === "Yes" || form.hw_amc === "Yes") && (
+                <>
+                  <div className="hw-table-row">
+                    <label>Name of the Company / Agency</label>
+                    <div>
+                      {form.hw_fms === "Yes" && (
+                        <>
+                          <input type="text" placeholder="Enter Company / Agency Name" name="hw_fms_company" value={form.hw_fms_company} onChange={handleChange} />
+                          {errors.hw_fms_company && <p className="error-message">{errors.hw_fms_company}</p>}
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      {form.hw_amc === "Yes" && (
+                        <>
+                          <input type="text" placeholder="Enter Company / Agency Name" name="hw_amc_company" value={form.hw_amc_company} onChange={handleChange} />
+                          {errors.hw_amc_company && <p className="error-message">{errors.hw_amc_company}</p>}
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="hw-table-row">
-                <label>Name of Contact Person</label>
-                <div>
-                  <input type="text" placeholder="Enter Contact Person Name" name="hw_fms_contact_person" value={form.hw_fms_contact_person} onChange={handleChange} />
-                  {errors.hw_fms_contact_person && <p className="error-message">{errors.hw_fms_contact_person}</p>}
-                </div>
-                <div>
-                  <input type="text" placeholder="Enter Contact Person Name" name="hw_amc_contact_person" value={form.hw_amc_contact_person} onChange={handleChange} />
-                  {errors.hw_amc_contact_person && <p className="error-message">{errors.hw_amc_contact_person}</p>}
-                </div>
-              </div>
+                  <div className="hw-table-row">
+                    <label>Name of Contact Person</label>
+                    <div>
+                      {form.hw_fms === "Yes" && (
+                        <>
+                          <input type="text" placeholder="Enter Contact Person Name" name="hw_fms_contact_person" value={form.hw_fms_contact_person} onChange={handleChange} />
+                          {errors.hw_fms_contact_person && <p className="error-message">{errors.hw_fms_contact_person}</p>}
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      {form.hw_amc === "Yes" && (
+                        <>
+                          <input type="text" placeholder="Enter Contact Person Name" name="hw_amc_contact_person" value={form.hw_amc_contact_person} onChange={handleChange} />
+                          {errors.hw_amc_contact_person && <p className="error-message">{errors.hw_amc_contact_person}</p>}
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="hw-table-row">
-                <label>Address of Contact Person</label>
-                <input type="text" placeholder="Enter Address" name="hw_fms_address" value={form.hw_fms_address} onChange={handleChange} />
-                <input type="text" placeholder="Enter Address" name="hw_amc_address" value={form.hw_amc_address} onChange={handleChange} />
-              </div>
+                  <div className="hw-table-row">
+                    <label>Address of Contact Person</label>
+                    <div>
+                      {form.hw_fms === "Yes" && (
+                        <input type="text" placeholder="Enter Address" name="hw_fms_address" value={form.hw_fms_address} onChange={handleChange} />
+                      )}
+                    </div>
+                    <div>
+                      {form.hw_amc === "Yes" && (
+                        <input type="text" placeholder="Enter Address" name="hw_amc_address" value={form.hw_amc_address} onChange={handleChange} />
+                      )}
+                    </div>
+                  </div>
 
-              <div className="hw-table-row">
-                <label>Phone No. (Office)</label>
-                <div>
-                  <input type="text" placeholder="Enter Office Phone No." name="hw_fms_phone_office" value={form.hw_fms_phone_office} onChange={handleChange} />
-                  {errors.hw_fms_phone_office && <p className="error-message">{errors.hw_fms_phone_office}</p>}
-                </div>
-                <div>
-                  <input type="text" placeholder="Enter Office Phone No." name="hw_amc_phone_office" value={form.hw_amc_phone_office} onChange={handleChange} />
-                  {errors.hw_amc_phone_office && <p className="error-message">{errors.hw_amc_phone_office}</p>}
-                </div>
-              </div>
+                  <div className="hw-table-row">
+                    <label>Phone No. (Office)</label>
+                    <div>
+                      {form.hw_fms === "Yes" && (
+                        <>
+                          <input type="text" placeholder="Enter Office Phone No." name="hw_fms_phone_office" value={form.hw_fms_phone_office} onChange={handleChange} />
+                          {errors.hw_fms_phone_office && <p className="error-message">{errors.hw_fms_phone_office}</p>}
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      {form.hw_amc === "Yes" && (
+                        <>
+                          <input type="text" placeholder="Enter Office Phone No." name="hw_amc_phone_office" value={form.hw_amc_phone_office} onChange={handleChange} />
+                          {errors.hw_amc_phone_office && <p className="error-message">{errors.hw_amc_phone_office}</p>}
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="hw-table-row">
-                <label>Phone No. (Mobile)</label>
-                <div>
-                  <input type="text" placeholder="Enter Mobile Phone No." name="hw_fms_phone_mobile" value={form.hw_fms_phone_mobile} onChange={handleChange} />
-                  {errors.hw_fms_phone_mobile && <p className="error-message">{errors.hw_fms_phone_mobile}</p>}
-                </div>
-                <div>
-                  <input type="text" placeholder="Enter Mobile Phone No." name="hw_amc_phone_mobile" value={form.hw_amc_phone_mobile} onChange={handleChange} />
-                  {errors.hw_amc_phone_mobile && <p className="error-message">{errors.hw_amc_phone_mobile}</p>}
-                </div>
-              </div>
+                  <div className="hw-table-row">
+                    <label>Phone No. (Mobile)</label>
+                    <div>
+                      {form.hw_fms === "Yes" && (
+                        <>
+                          <input type="text" placeholder="Enter Mobile Phone No." name="hw_fms_phone_mobile" value={form.hw_fms_phone_mobile} onChange={handleChange} />
+                          {errors.hw_fms_phone_mobile && <p className="error-message">{errors.hw_fms_phone_mobile}</p>}
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      {form.hw_amc === "Yes" && (
+                        <>
+                          <input type="text" placeholder="Enter Mobile Phone No." name="hw_amc_phone_mobile" value={form.hw_amc_phone_mobile} onChange={handleChange} />
+                          {errors.hw_amc_phone_mobile && <p className="error-message">{errors.hw_amc_phone_mobile}</p>}
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="hw-table-row">
-                <label>e-Mail Address</label>
-                <div>
-                  <input type="email" placeholder="Enter e-Mail Address" name="hw_fms_email" value={form.hw_fms_email} onChange={handleChange} />
-                  {errors.hw_fms_email && <p className="error-message">{errors.hw_fms_email}</p>}
-                </div>
-                <div>
-                  <input type="email" placeholder="Enter e-Mail Address" name="hw_amc_email" value={form.hw_amc_email} onChange={handleChange} />
-                  {errors.hw_amc_email && <p className="error-message">{errors.hw_amc_email}</p>}
-                </div>
-              </div>
-              <div className="hw-table-row">
-                <label>Contract Expiry Date</label>
-                <input type="date" name="hw_fms_contract_expiry" value={form.hw_fms_contract_expiry} onChange={handleChange} />
-                <input type="date" name="hw_amc_contract_expiry" value={form.hw_amc_contract_expiry} onChange={handleChange} />
-              </div>
+                  <div className="hw-table-row">
+                    <label>e-Mail Address</label>
+                    <div>
+                      {form.hw_fms === "Yes" && (
+                        <>
+                          <input type="email" placeholder="Enter e-Mail Address" name="hw_fms_email" value={form.hw_fms_email} onChange={handleChange} />
+                          {errors.hw_fms_email && <p className="error-message">{errors.hw_fms_email}</p>}
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      {form.hw_amc === "Yes" && (
+                        <>
+                          <input type="email" placeholder="Enter e-Mail Address" name="hw_amc_email" value={form.hw_amc_email} onChange={handleChange} />
+                          {errors.hw_amc_email && <p className="error-message">{errors.hw_amc_email}</p>}
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="hw-table-row">
-                <label>Contract Copies attached</label>
-                <div className="hw-radio-group">
-                  <label>
-                    <input type="radio" name="hw_fms_contract_attached" value="Yes" checked={form.hw_fms_contract_attached === "Yes"} onChange={handleChange} />
-                    Yes
-                  </label>
-                  <label>
-                    <input type="radio" name="hw_fms_contract_attached" value="No" checked={form.hw_fms_contract_attached === "No"} onChange={handleChange} />
-                    No
-                  </label>
-                </div>
-                <div className="hw-radio-group">
-                  <label>
-                    <input type="radio" name="hw_amc_contract_attached" value="Yes" checked={form.hw_amc_contract_attached === "Yes"} onChange={handleChange} />
-                    Yes
-                  </label>
-                  <label>
-                    <input type="radio" name="hw_amc_contract_attached" value="No" checked={form.hw_amc_contract_attached === "No"} onChange={handleChange} />
-                    No
-                  </label>
-                </div>
-              </div>
+                  <div className="hw-table-row">
+                    <label>Contract Expiry Date</label>
+                    <div>
+                      {form.hw_fms === "Yes" && (
+                        <input type="date" name="hw_fms_contract_expiry" value={form.hw_fms_contract_expiry} onChange={handleChange} />
+                      )}
+                    </div>
+                    <div>
+                      {form.hw_amc === "Yes" && (
+                        <input type="date" name="hw_amc_contract_expiry" value={form.hw_amc_contract_expiry} onChange={handleChange} />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="hw-table-row">
+                    <label>Contract Copies attached</label>
+                    <div>
+                      {form.hw_fms === "Yes" && (
+                        <>
+                          <div className="hw-radio-group">
+                            <label>
+                              <input type="radio" name="hw_fms_contract_attached" value="Yes" checked={form.hw_fms_contract_attached === "Yes"} onChange={handleChange} />
+                              Yes
+                            </label>
+                            <label>
+                              <input type="radio" name="hw_fms_contract_attached" value="No" checked={form.hw_fms_contract_attached === "No"} onChange={handleChange} />
+                              No
+                            </label>
+                          </div>
+                          {form.hw_fms_contract_attached === "Yes" && (
+                            <>
+                              <input
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg"
+                                onChange={(e) => setFmsContractFile(e.target.files[0])}
+                              />
+                              {errors.fmsContractFile && <p className="error-message">{errors.fmsContractFile}</p>}
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      {form.hw_amc === "Yes" && (
+                        <>
+                          <div className="hw-radio-group">
+                            <label>
+                              <input type="radio" name="hw_amc_contract_attached" value="Yes" checked={form.hw_amc_contract_attached === "Yes"} onChange={handleChange} />
+                              Yes
+                            </label>
+                            <label>
+                              <input type="radio" name="hw_amc_contract_attached" value="No" checked={form.hw_amc_contract_attached === "No"} onChange={handleChange} />
+                              No
+                            </label>
+                          </div>
+                          {form.hw_amc_contract_attached === "Yes" && (
+                            <>
+                              <input
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg"
+                                onChange={(e) => setAmcContractFile(e.target.files[0])}
+                              />
+                              {errors.amcContractFile && <p className="error-message">{errors.amcContractFile}</p>}
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-
-
           </div>
         )}
       </div>

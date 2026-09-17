@@ -7,6 +7,10 @@ import { useFormContext } from "../context/FormContext";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 
+// in my sql we will need do, ALTER TABLE infra ADD COLUMN ssl_type JSON NULL; as we can select multiple ssl types so we will 
+// store them in json format in the database and when we fetch the data from the database we will parse it back to array 
+// and populate the form with the selected values
+
 const initialState = {
   ssl_needed: "",
   ssl_provider_type: "",
@@ -50,10 +54,27 @@ function SslDetails() {
     loadExisting();
 }, [ids.infraId]);
 
-  function handleChange(e) {
+ function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+    setForm((prev) => {
+        const updated = { ...prev, [name]: value };
+        if (name === "ssl_needed" && value !== "Yes") {
+            updated.ssl_provider_type = "";
+            updated.ssl_environment = "";
+            updated.ssl_fqdn = "";
+            updated.ssl_type = [];
+            updated.ssl_tls_version = "";
+            updated.ssl_issue_date = "";
+            updated.ssl_expiry = "";
+            updated.ssl_validity_period = "";
+            updated.ssl_ca = "";
+            updated.ssl_vendor = "";
+            updated.ssl_renewal_responsibility = "";
+            updated.ssl_renewal_contact = "";
+        }
+        return updated;
+    });
+}
 
   function handleSslTypeChange(value) {
     setForm((prev) => {
@@ -160,7 +181,9 @@ function SslDetails() {
                   {errors.ssl_fqdn && <p className="error-message">{errors.ssl_fqdn}</p>}
                 </div>
 
-                <div className="form-row full-width">
+
+
+                <div className="form-row full-width">  
                   <label className="required">SSL Type Required</label>
                   <div className="ssl-checkbox-group">
                     <label>
@@ -188,7 +211,7 @@ function SslDetails() {
                 </div>
 
                 <div className="form-row">
-                  <label>TLS Version Required</label>
+                  <label>TLS Version</label>
                   <input type="text" name="ssl_tls_version" value={form.ssl_tls_version} onChange={handleChange} placeholder="Enter TLS Version" />
                 </div>
 

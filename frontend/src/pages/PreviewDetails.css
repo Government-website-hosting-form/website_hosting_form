@@ -1,0 +1,161 @@
+/* ---------- On-screen chrome (not part of the PDF) ---------- */
+.box {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: center;
+    background: #eaf7ec;
+    border: 1px solid #b7e1bd;
+    border-radius: 8px;
+}
+
+.grey {
+    color: #555;
+}
+
+.download-button,
+.back-button,
+.submit-button {
+    margin: 16px 8px 0;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.download-button {
+    background: #14532d;
+    color: white;
+}
+
+.back-button {
+    background: #e5e7eb;
+}
+
+.submit-button {
+    background: #14355e;
+    color: white;
+}
+
+
+
+/*pdf css*/
+.doc-section {
+    max-width: 800px;
+    margin: 16px auto;
+    padding: 20px 30px;
+    font-family: Arial,"Times New Roman", serif;
+    color: #222;
+}
+
+.doc-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid #14355e;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+}
+
+.doc-section-header h3 {
+    margin: 0;
+    font-size: 15px;
+    color: #14355e;
+}
+
+.doc-badge {
+    background: #14355e;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+}
+
+.doc-subheading {
+    font-size: 13px;
+    font-weight: bold;
+    color: #14355e;
+    margin: 14px 0 6px;
+}
+
+.doc-subsubheading {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 8px 0 4px 12px;
+}
+
+.doc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+}
+
+.doc-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 3px 0;
+    font-size: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.doc-row label {
+    font-weight: bold;
+}
+
+.doc-row p {
+    margin: 0;
+    text-align: right;
+}
+
+.doc-full-width {
+    grid-column: 1 / -1;
+}
+
+.doc-checklist-row label {
+    font-weight: normal;
+}
+
+.doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin: 4px 0 12px;
+}
+
+.doc-table th,
+.doc-table td {
+    border: 1px solid #ccc;
+    padding: 5px 8px;
+    text-align: left;
+}
+
+.doc-table th {
+    background: #f2f2f2;
+}
+
+.doc-empty-row {
+    color: #888;
+}
+
+.form-error {
+    max-width: 800px;
+    margin: 10px auto;
+    color: #b00020;
+    text-align: center;
+}
+
+.doc-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.doc-table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}

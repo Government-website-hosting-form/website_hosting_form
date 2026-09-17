@@ -1,0 +1,80 @@
+.section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.add-server-button {
+    background-color: #123d6d;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.add-server-button:hover {
+    background-color: #0d2c50;
+}
+
+.server-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.server-table th,
+.server-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-top: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.server-table thead th {
+    background-color: #e8eff5;
+    color: #123d6d;
+    font-weight: bold;
+    border-top: none;
+}
+
+.server-table input,
+.server-table select {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.empty-row {
+    text-align: center;
+    color: #777;
+    padding: 14px;
+}
+
+.delete-row-button {
+    background: white;
+    color: #b71c1c;
+    border: 1px solid #b71c1c;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.delete-row-button:hover {
+    background: #fdecea;
+}
+
+.error-message {
+    color: #b71c1c;
+    font-size: 12px;
+    margin: 4px 0 0 0;
+}

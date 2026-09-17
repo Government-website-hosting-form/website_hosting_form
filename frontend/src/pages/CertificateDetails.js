@@ -4,7 +4,6 @@ import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { useFormContext } from "../context/FormContext";
-import { validateNumber } from "../helpers/Validation";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 
@@ -13,7 +12,7 @@ import { apiPut, apiGet } from "../api";
 
 const initialState = {
   safehost_agency: "",
-  safehost_agency_other: "", //new
+  safehost_agency_other: "",
   safehost_empanel_no: "",
   safehost_empanel_valid_till: "",
   safehost_ref_no: "",
@@ -22,11 +21,11 @@ const initialState = {
   load_users: "",
   loadtest_avg_response: "",
   loadtest_agency: "",
-  loadtest_agency_other: "",  
+  loadtest_agency_other: "",
   loadtest_ref_no: "",
   loadtest_issue_date: "",
   loadtest_valid_till: "",
-  other_certificate_details: "",  
+  other_certificate_details: "",
 };
 
 function CertificateDetails() {
@@ -38,29 +37,47 @@ function CertificateDetails() {
   const [errors, setErrors] = useState({});
   const [safehostDoc, setSafehostDoc] = useState(null);
 
-useEffect(() => {
+  useEffect(() => {
     async function loadExisting() {
-        if (!ids.appId) return;
-        try {
-            const data = await apiGet(`/apps/${ids.appId}`);
-            if (data) {
-                const cleaned = {};
-                for (const [key, value] of Object.entries(data)) {
-                    cleaned[key] = value === null ? "" : value;
-                }
-                setForm((prev) => ({ ...prev, ...cleaned }));
-            }
-        } catch (err) {
-            console.error("Could not load saved certificate details:", err);
+      if (!ids.appId) return;
+      try {
+        const data = await apiGet(`/apps/${ids.appId}`);
+        if (data) {
+          const cleaned = {};
+          for (const [key, value] of Object.entries(data)) {
+            cleaned[key] = value === null ? "" : value;
+          }
+          setForm((prev) => ({ ...prev, ...cleaned }));
         }
+      } catch (err) {
+        console.error("Could not load saved certificate details:", err);
+      }
     }
     loadExisting();
-}, [ids.appId]);
+  }, [ids.appId]);
 
-  function handleChange(e) {
+function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+    setForm((prev) => {
+        const updated = { ...prev, [name]: value };
+
+        if (name === "safehost_agency") {
+            if (value !== "Other Agency") {
+                updated.safehost_agency_other = "";
+            }
+            if (value !== "CERT-In Empanelled") {
+                updated.safehost_empanel_no = "";
+                updated.safehost_empanel_valid_till = "";
+            }
+        }
+
+        if (name === "loadtest_agency" && value !== "Other Agency") {
+            updated.loadtest_agency_other = "";
+        }
+
+        return updated;
+    });
+}
 
   function validateForm() {
     const newErrors = {};
@@ -69,17 +86,11 @@ useEffect(() => {
     if (form.safehost_agency === "CERT-In Empanelled") {
       if (!form.safehost_empanel_no.trim()) {
         newErrors.safehost_empanel_no = "This field is required.";
-      } else {
-        const empanelNoError = validateNumber(form.safehost_empanel_no);
-        if (empanelNoError) newErrors.safehost_empanel_no = empanelNoError;
       }
       if (!form.safehost_empanel_valid_till) newErrors.safehost_empanel_valid_till = "This field is required.";
     }
     if (!form.safehost_ref_no.trim()) {
       newErrors.safehost_ref_no = "This field is required.";
-    } else {
-      const refNoError = validateNumber(form.safehost_ref_no);
-      if (refNoError) newErrors.safehost_ref_no = refNoError;
     }
     if (!safehostDoc) newErrors.safehostDoc = "Please attach the certificate copy.";
     if (!form.safehost_issue_date) newErrors.safehost_issue_date = "This field is required.";
@@ -95,20 +106,20 @@ useEffect(() => {
     if (!validateForm()) return;
     setError("");
     if (!ids.appId) {
-      setError("Application record not found yet — please go back and fill Application Details first.");
+      setError("Application record not found yet , please go back and fill Application Details first.");
       return;
     }
     setSaving(true);
     try {
-     const payload = {
-  ...form,
-  safehost_empanel_valid_till: form.safehost_empanel_valid_till || null,
-  loadtest_issue_date: form.loadtest_issue_date || null,
-  loadtest_valid_till: form.loadtest_valid_till || null,
-  load_users: form.load_users || null,
-};
-await apiPut(`/apps/${ids.appId}`, payload);
-      navigate("/infradetails");
+      const payload = {
+        ...form,
+        safehost_empanel_valid_till: form.safehost_empanel_valid_till || null,
+        loadtest_issue_date: form.loadtest_issue_date || null,
+        loadtest_valid_till: form.loadtest_valid_till || null,
+        load_users: form.load_users || null,
+      };
+      await apiPut(`/apps/${ids.appId}`, payload);
+      navigate("/stagingdetails");
     } catch (err) {
       console.error(err);
       setError("Could not save Certificate Details.");

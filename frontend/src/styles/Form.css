@@ -185,3 +185,14 @@ body{
 .header-btn:hover {
   background-color: #eef2f5;
 }
+
+.error-message {
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.form-section .form-row p.error-message {
+  color: red;
+}

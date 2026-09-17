@@ -44,25 +44,3 @@ export function validatePhone(phone) {
   return "";
 }
 
-export function validateFileType(file, allowedTypes) {
-  if (file && !allowedTypes.includes(file.type)) {
-    return "Invalid file type.";
-  }
-
-  return "";
-}
-
-export function validateFileSize(file, maxSize) {
-  if (file && file.size > maxSize) {
-    return "File size exceeds the allowed limit.";
-  }
-
-  return "";
-}
-
-export function validateNumber(value) {
-  if (!/^\d+$/.test(value)) {
-    return "Only numbers are allowed.";
-  }
-  return "";
-}
