@@ -28,49 +28,38 @@ function formatDates(row) {
   return out
 }
 
-// bundles all staging_*/production_* keys into two JSON columns,
-// and JSON-stringifies ssl_type (frontend sends it as an array)
+// staging_servers/production_servers JSON columns are gone — that data now
+// lives in the infra_servers table instead. packInfraPayload only needs to
+// keep handling ssl_type now (still JSON, unrelated to that change).
 function packInfraPayload(body) {
-  const staging = {}
-  const production = {}
   const rest = {}
 
   for (const [key, value] of Object.entries(body)) {
-    if (key.startsWith('staging_')) {
-      staging[key] = value
-    } else if (key.startsWith('production_')) {
-      production[key] = value
-    } else if (key === 'ssl_type') {
+    if (key === 'ssl_type') {
       rest.ssl_type = JSON.stringify(value)   // array -> JSON string
     } else {
       rest[key] = value
     }
   }
 
-  return {
-    ...rest,
-    staging_servers: JSON.stringify(staging),
-    production_servers: JSON.stringify(production),
-  }
+  return rest
 }
 
-// reverses packInfraPayload — used when reading a saved row back
+// no more staging/production JSON to parse out — just formats dates and
+// parses ssl_type back into an array.
 function unpackInfraPayload(row) {
   if (!row) return row
   const formatted = formatDates(row)
-  const parse = (val) => {
-    if (!val) return {}
-    return typeof val === 'object' ? val : JSON.parse(val)
+  const result = { ...formatted }
+  const sslType = result.ssl_type
+
+  if (sslType) {
+    result.ssl_type = typeof sslType === 'object' ? sslType : JSON.parse(sslType)
+  } else {
+    result.ssl_type = []
   }
-  const staging = parse(formatted.staging_servers)
-  const production = parse(formatted.production_servers)
-  const { staging_servers, production_servers, ssl_type, ...rest } = formatted
-  return {
-    ...rest,
-    ssl_type: ssl_type ? (typeof ssl_type === 'object' ? ssl_type : JSON.parse(ssl_type)) : [],
-    ...staging,
-    ...production,
-  }
+
+  return result
 }
 
 
@@ -214,6 +203,125 @@ app.put('/infra/:id', async (req, res) => {
 app.delete('/infra/:id', async (req, res) => {
   await db.query('DELETE FROM infra WHERE infra_id = ?', [req.params.id])
   res.json({ msg: 'deleted' })
+})
+
+// ================= INFRA SERVERS =================
+// One row per server in infra_servers, instead of a JSON blob.
+app.get('/infra/:id/servers', async (req, res) => {
+  const infraId = req.params.id
+  const environment = req.query.environment
+
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM infra_servers WHERE infra_id = ? AND environment = ?',
+      [infraId, environment]
+    )
+
+    const grouped = { web: [], app: [], db: [], other: [] }
+
+   for (const row of rows) {
+  const server = {
+    processor: row.processor || '',
+    ram: row.ram || '',
+    internal_storage: row.internal_storage || '',
+    external_storage: row.external_storage || '',
+    external_storage_other: row.external_storage_other || '',
+    os: row.os || '',
+    os_other: row.os_other || '',
+    external_storage_capacity: row.external_storage_capacity || ''
+
+  }
+  // only db servers have a Database Version field in the UI —
+  // attaching `version` to web/app/other rows makes validateServer()
+  // treat them as if that field exists and is empty, and there's
+  // no input on screen to ever satisfy it.
+  if (row.server_type === 'db') {
+    server.version = row.version || ''
+  }
+  grouped[row.server_type].push(server)
+}
+
+    res.json(grouped)
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.put('/infra/:id/servers', async (req, res) => {
+  const infraId = req.params.id
+  const environment = req.body.environment
+  const web = req.body.web || []
+  const appServers = req.body.app || []
+  const dbServers = req.body.db || []
+  const other = req.body.other || []
+
+  try {
+    await db.query(
+      'DELETE FROM infra_servers WHERE infra_id = ? AND environment = ?',
+      [infraId, environment]
+    )
+
+    const allServers = []
+
+    for (const server of web) {
+      allServers.push({
+        ...server,
+        server_type: 'web'
+      })
+    }
+
+    for (const server of appServers) {
+      allServers.push({
+        ...server,
+        server_type: 'app'
+      })
+    }
+
+    for (const server of dbServers) {
+      allServers.push({
+        ...server,
+        server_type: 'db'
+      })
+    }
+
+    for (const server of other) {
+      allServers.push({
+        ...server,
+        server_type: 'other'
+      })
+    }
+
+    for (const server of allServers) {
+      await db.query(
+        `INSERT INTO infra_servers
+        (infra_id, environment, server_type, processor, ram,
+         internal_storage, external_storage,
+         external_storage_other, os, version, os_other, external_storage_capacity)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          infraId,
+          environment,
+          server.server_type,
+          server.processor || null,
+          server.ram || null,
+          server.internal_storage || null,
+          server.external_storage || null,
+          server.external_storage_other || null,
+          server.os || null,
+          server.version || null,
+          server.os_other || null, 
+          server.external_storage_capacity || null
+        ]
+      )
+    }
+
+    res.json({ msg: 'saved' })
+
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ error: err.message })
+  }
 })
 
 // ================= CHECKLIST =================
