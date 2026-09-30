@@ -4,7 +4,9 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import "./SslDetails.css";
 import { useFormContext } from "../context/FormContext";
-import { apiPut } from "../api";
+import { useEffect } from "react";
+import { apiPut, apiGet } from "../api";
+
 
 const initialState = {
   ssl_needed: "",
@@ -30,10 +32,46 @@ function SslDetails() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  function handleChange(e) {
+  useEffect(() => {
+    async function loadExisting() {
+        if (!ids.infraId) return;
+        try {
+            const data = await apiGet(`/infra/${ids.infraId}`);
+            if (data) {
+                const cleaned = {};
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved SSL details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.infraId]);
+
+ function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+    setForm((prev) => {
+        const updated = { ...prev, [name]: value };
+        if (name === "ssl_needed" && value !== "Yes") {
+            updated.ssl_provider_type = "";
+            updated.ssl_environment = "";
+            updated.ssl_fqdn = "";
+            updated.ssl_type = [];
+            updated.ssl_tls_version = "";
+            updated.ssl_issue_date = "";
+            updated.ssl_expiry = "";
+            updated.ssl_validity_period = "";
+            updated.ssl_ca = "";
+            updated.ssl_vendor = "";
+            updated.ssl_renewal_responsibility = "";
+            updated.ssl_renewal_contact = "";
+        }
+        return updated;
+    });
+}
 
   function handleSslTypeChange(value) {
     setForm((prev) => {
@@ -51,7 +89,6 @@ function SslDetails() {
     if (!form.ssl_needed) newErrors.ssl_needed = "This field is required.";
 
     if (form.ssl_needed === "Yes") {
-      if (!form.ssl_provider_type.trim()) newErrors.ssl_provider_type = "This field is required.";
       if (!form.ssl_environment) newErrors.ssl_environment = "This field is required.";
       if (!form.ssl_fqdn.trim()) newErrors.ssl_fqdn = "This field is required.";
       if (form.ssl_type.length === 0) newErrors.ssl_type = "Please select at least one SSL type.";
@@ -74,13 +111,23 @@ function SslDetails() {
       navigate("/checklist");
     } catch (err) {
       console.error(err);
-      setError("Could not save SSL Details.");
+      setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save SSL Details.");
     } finally {
       setSaving(false);
     }
   }
 
-  function Backpage() {
+  async function saveQuietly() {
+    try {
+      if (!ids.infraId) return;
+      await apiPut(`/infra/${ids.infraId}`, form);
+    } catch (err) {
+      console.error("Could not save draft on Back:", err);
+    }
+  }
+
+  async function Backpage() {
+    await saveQuietly();
     navigate("/hardwaredetails");
   }
 
@@ -141,7 +188,9 @@ function SslDetails() {
                   {errors.ssl_fqdn && <p className="error-message">{errors.ssl_fqdn}</p>}
                 </div>
 
-                <div className="form-row full-width">
+
+
+                <div className="form-row full-width">  
                   <label className="required">SSL Type Required</label>
                   <div className="ssl-checkbox-group">
                     <label>
@@ -169,7 +218,7 @@ function SslDetails() {
                 </div>
 
                 <div className="form-row">
-                  <label>TLS Version Required</label>
+                  <label>TLS Version</label>
                   <input type="text" name="ssl_tls_version" value={form.ssl_tls_version} onChange={handleChange} placeholder="Enter TLS Version" />
                 </div>
 

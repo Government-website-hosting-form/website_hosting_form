@@ -1,15 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { apiPost } from "../api";
-
-
-const DUMMY_USER = {
-  sso_id: "DUMMY-SSO-0001",
-  full_name: "Test User",
-  email: "dummy.user@example.com",
-  phone: "9999999999",
-  designation: "Tester",
- 
-};
+import { apiGet } from "../api";
 
 const STORAGE_KEY = "bsdc_form_ids";
 
@@ -28,38 +18,48 @@ export function FormProvider({ children }) {
   const [ids, setIds] = useState(loadIds);
   const [userReady, setUserReady] = useState(false);
 
-
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
   }, [ids]);
 
-  
   useEffect(() => {
-    async function ensureDummyUser() {
+    async function ensureRealUser() {
       if (ids.userId) {
         setUserReady(true);
         return;
       }
+
+      const ssoId = localStorage.getItem("ssoId");
+      if (!ssoId) {
+        setUserReady(true);
+        return;
+      }
+
       try {
-        const res = await apiPost("/users", DUMMY_USER);
-        setIds((prev) => ({ ...prev, userId: res.id }));
+        const res = await apiGet(
+          "/api/sso/mapping/me?ssoId=" + encodeURIComponent(ssoId)
+        );
+        if (res.success && res.user) {
+          setIds((prev) => ({ ...prev, userId: res.user.user_id }));
+        }
       } catch (err) {
-        console.error("Could not create/fetch dummy user:", err);
+        console.error("Could not fetch logged-in user:", err);
       } finally {
         setUserReady(true);
       }
     }
-    ensureDummyUser();
-   
+    ensureRealUser();
   }, []);
 
   function setId(key, value) {
     setIds((prev) => ({ ...prev, [key]: value }));
   }
 
-  function resetForm() {
+  function resetForm(opts = {}) {
     localStorage.removeItem(STORAGE_KEY);
-    setIds({});
+    setIds((prev) =>
+      opts.keepUser && prev.userId ? { userId: prev.userId } : {}
+    );
   }
 
   return (

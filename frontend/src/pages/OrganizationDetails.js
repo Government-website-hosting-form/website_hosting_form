@@ -4,7 +4,8 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
-import { apiPost } from "../api";
+import { apiPost, apiGet, apiPut } from "../api";
+import { useEffect } from "react";
 import {
   validateText,
   validateEmail,
@@ -36,19 +37,46 @@ function OrganizationDetails() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  function handleChange(e) {
+
+  useEffect(() => {
+    async function loadExisting() {
+        if (!ids.orgId) return;
+        try {
+            const data = await apiGet(`/org/${ids.orgId}`);
+            if (data) {
+                const cleaned = {};
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved organization details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.orgId]);
+
+
+
+
+ function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+    setForm((prev) => {
+        const updated = { ...prev, [name]: value };
+        if (name === "type" && value !== "other") {
+            updated.type_other = "";
+        }
+        return updated;
+    });
+}
 
   function validateForm() {
     const newErrors = {};
 
     if (!form.name.trim()) {
       newErrors.name = "This field is required.";
-    } else {
-      const nameError = validateText(form.name, 150);
-      if (nameError) newErrors.name = nameError;
+    
     }
 
     if (!form.type) {
@@ -96,14 +124,15 @@ function OrganizationDetails() {
       if (mobileError) newErrors.phone = mobileError;
     }
 
+    if (form.phone_office) {
+  const phoneOfficeError = validatePhone(form.phone_office);
+  if (phoneOfficeError) newErrors.phone_office = phoneOfficeError;
+}
+
 
     if (!form.address.trim()) {
       newErrors.address = "This field is required.";
-    } else {
-      const addressError = validateText(form.address, 250);
-      if (addressError) newErrors.address = addressError;
     }
-
 
     if (!form.contact_name.trim()) {
       newErrors.contact_name = "This field is required.";
@@ -152,14 +181,16 @@ function OrganizationDetails() {
     setSaving(true);
     try {
       const payload = { ...form, user_id: ids.userId || null };
-      const res = await apiPost("/org", payload);
-      setId("orgId", res.id);
+     if (ids.orgId) {
+    await apiPut(`/org/${ids.orgId}`, payload);
+} else {
+    const res = await apiPost("/org", payload);
+    setId("orgId", res.id);
+}
       navigate("/ApplicationDetails");
     } catch (err) {
       console.error(err);
-      setError(
-        "Could not save Organization Details. Please check the backend server and try again."
-      );
+      setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save Organization Details. Please check the backend server and try again.");
     } finally {
       setSaving(false);
     }

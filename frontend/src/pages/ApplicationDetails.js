@@ -4,7 +4,8 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import "./ApplicationDetails.css";
 import { useFormContext } from "../context/FormContext";
-import { apiPost } from "../api";
+import { apiPost, apiGet, apiPut } from "../api";
+import { useEffect } from "react";
 
 
 const initialState = {
@@ -34,10 +35,48 @@ function ApplicationDetails() {
   const [errors, setErrors] = useState({});
   const [momDoc, setMomDoc] = useState(null);
 
-  function handleChange(e) {
+useEffect(() => {
+    async function loadExisting() {
+        if (!ids.appId) return;
+        try {
+            const data = await apiGet(`/apps/${ids.appId}`);
+            if (data) {
+                const cleaned = {};
+                for (const [key, value] of Object.entries(data)) {
+                    cleaned[key] = value === null ? "" : value;
+                }
+                setForm((prev) => ({ ...prev, ...cleaned }));
+            }
+        } catch (err) {
+            console.error("Could not load saved application details:", err);
+        }
+    }
+    loadExisting();
+}, [ids.appId]);
+
+ function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+    setForm((prev) => {
+        const updated = { ...prev, [name]: value };
+
+        if (name === "type" && value !== "Other") {
+            updated.type_other = "";
+        }
+        if (name === "utility" && value !== "Other Priority Event") {
+            updated.utility_other = "";
+        }
+        if (name === "semt_approved" && value !== "Yes") {
+            updated.mom_ref_no = "";
+            updated.mom_date = "";
+        }
+
+        return updated;
+    });
+
+    if (name === "semt_approved" && value !== "Yes") {
+        setMomDoc(null);
+    }
+}
 
   function validateForm() {
     const newErrors = {};
@@ -76,24 +115,38 @@ function ApplicationDetails() {
     setError("");
     setSaving(true);
     try {
-      const payload = {
-        ...form,
-        org_id: ids.orgId || null,
-        user_id: ids.userId || null,
-      };
-
-      const res = await apiPost("/apps", payload);
-      setId("appId", res.id);
-      navigate("/maindetails");
+     const payload = { ...form, org_id: ids.orgId || null, user_id: ids.userId || null };
+if (ids.appId) {
+    await apiPut(`/apps/${ids.appId}`, payload);
+} else {
+    const res = await apiPost("/apps", payload);
+    setId("appId", res.id);
+}
+navigate("/maindetails");
+     
     } catch (err) {
       console.error(err);
-      setError("Could not save Application Details. Please check the backend server and try again.");
+      setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save Application Details. Please check the backend server and try again.");
     } finally {
       setSaving(false);
     }
   }
 
-  function Backpage() {
+  async function saveQuietly() {
+    try {
+      if (ids.appId) {
+        await apiPut(`/apps/${ids.appId}`, { ...form, org_id: ids.orgId || null });
+      } else if (form.name && form.name.trim()) {
+        const res = await apiPost("/apps", { ...form, org_id: ids.orgId || null });
+        setId("appId", res.id);
+      }
+    } catch (err) {
+      console.error("Could not save draft on Back:", err);
+    }
+  }
+
+  async function Backpage() {
+    await saveQuietly();
     navigate("/organization");
   }
 
@@ -135,6 +188,7 @@ function ApplicationDetails() {
                 <option value="Portal">Portal</option>
                 <option value="Application">Application</option>
                 <option value="Mobile App">Mobile App</option>
+                <option value="Microservices">Microservices</option>
                 <option value="Api">Api</option>
                 <option value="Other">Other</option>
               </select>
@@ -357,7 +411,7 @@ function ApplicationDetails() {
                   <label className="required">Attach MoM / Document</label>
                   <input
                     type="file"
-                    
+
                     onChange={(e) => setMomDoc(e.target.files[0])}
                   />
                   {errors.momDoc && <p className="error-message">{errors.momDoc}</p>}

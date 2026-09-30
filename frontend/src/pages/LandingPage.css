@@ -24,6 +24,57 @@
     background: #0f3158;
 }
 
+.landing-question {
+    font-size: 17px;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.landing-choice-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.landing-choice-buttons .start-button {
+    margin: 0 0 40px;
+}
+
+.secondary-button {
+    background: #ffffff;
+    color: #123d6d;
+    border: 2px solid #123d6d !important;
+}
+
+.secondary-button:hover {
+    background: #f0f4fa;
+}
+
+.landing-continue {
+    max-width: 360px;
+    margin: 0 auto 30px;
+    text-align: center;
+}
+
+.landing-continue label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.landing-continue input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
 .landing-note {
     background: #f8fbff;
     border-left: 5px solid #123d6d;
