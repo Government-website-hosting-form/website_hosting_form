@@ -68,6 +68,7 @@ body{
 .two-column .form-row{
     flex:1;
 }
+
 .radio-group {
     display: flex;
     align-items: center;
@@ -81,8 +82,9 @@ body{
     gap: 2px;
     white-space: nowrap;
 }
+
 .radio-group input[type="radio"] {
-    width: auto ;
+    width: auto;
     margin: 0;
     padding: 0;
     flex-shrink: 0;
@@ -107,7 +109,6 @@ body{
   margin-bottom: 16px;
   font-size: 14px;
 }
-
 
 .form-success {
   background: #eaf7ec;
@@ -185,6 +186,17 @@ body{
   background-color: #eef2f5;
 }
 
+.header-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.header-user {
+  margin-right: auto;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
 .error-message {
   color: red;
   font-size: 13px;
@@ -195,7 +207,6 @@ body{
 .form-section .form-row p.error-message {
   color: red;
 }
-
 
 .mapping-intro {
   color: #444;
@@ -243,35 +254,42 @@ body{
   margin: 6px 0 0;
 }
 
+/* ===== Back / Save / Next buttons (all identical) ===== */
 .button-group {
   margin-top: 30px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.next-btn {
-  background: #123d6d;
-  color: white;
-  border: none;
+.next-btn,
+.back-btn,
+.save-btn {
+  min-width: 110px;
   padding: 12px 28px;
-  border-radius: 6px;
   font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
+  background: #123d6d;
+  color: #fff;
+  transition: background 0.2s;
 }
 
-.next-btn:disabled {
+.next-btn:hover,
+.back-btn:hover,
+.save-btn:hover {
+  background: #0d2f55;
+}
+
+.next-btn:disabled,
+.back-btn:disabled,
+.save-btn:disabled {
   background: #7f9bb8;
   cursor: not-allowed;
 }
 
-.header-user {
-  margin-right: auto;
-  font-size: 13px;
-  opacity: 0.85;
-}
-
-.header-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 .home-btn {
   display: inline-block;
   margin-bottom: 12px;
@@ -283,6 +301,7 @@ body{
   cursor: pointer;
   font-size: 13px;
 }
+
 .home-btn:hover {
   background: #0d2f55;
 }

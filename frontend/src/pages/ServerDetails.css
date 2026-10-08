@@ -6,6 +6,9 @@
 }
 
 .add-server-button {
+    display: block;
+    margin-left: auto;
+    margin-top: 10px;
     background-color: #123d6d;
     color: white;
     border: none;
@@ -19,6 +22,8 @@
 .add-server-button:hover {
     background-color: #0d2c50;
 }
+
+
 
 .server-table {
     width: 100%;
