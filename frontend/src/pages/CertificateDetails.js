@@ -18,6 +18,7 @@ const initialState = {
   safehost_ref_no: "",
   safehost_issue_date: "",
   safehost_valid_till: "",
+  loadtest_required: "",
   load_users: "",
   loadtest_avg_response: "",
   loadtest_agency: "",
@@ -36,6 +37,7 @@ function CertificateDetails() {
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
   const [safehostDoc, setSafehostDoc] = useState(null);
+  const [loadtestDoc, setLoadtestDoc] = useState(null);
 
   useEffect(() => {
     async function loadExisting() {
@@ -56,28 +58,28 @@ function CertificateDetails() {
     loadExisting();
   }, [ids.appId]);
 
-function handleChange(e) {
+  function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => {
-        const updated = { ...prev, [name]: value };
+      const updated = { ...prev, [name]: value };
 
-        if (name === "safehost_agency") {
-            if (value !== "Other Agency") {
-                updated.safehost_agency_other = "";
-            }
-            if (value !== "CERT-In Empanelled") {
-                updated.safehost_empanel_no = "";
-                updated.safehost_empanel_valid_till = "";
-            }
+      if (name === "safehost_agency") {
+        if (value !== "Other Agency") {
+          updated.safehost_agency_other = "";
         }
-
-        if (name === "loadtest_agency" && value !== "Other Agency") {
-            updated.loadtest_agency_other = "";
+        if (value !== "CERT-In Empanelled") {
+          updated.safehost_empanel_no = "";
+          updated.safehost_empanel_valid_till = "";
         }
+      }
 
-        return updated;
+      if (name === "loadtest_agency" && value !== "Other Agency") {
+        updated.loadtest_agency_other = "";
+      }
+
+      return updated;
     });
-}
+  }
 
   function validateForm() {
     const newErrors = {};
@@ -122,7 +124,11 @@ function handleChange(e) {
       navigate("/stagingdetails");
     } catch (err) {
       console.error(err);
-      setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save Certificate Details.");
+      setError(
+        err.status === 409
+          ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form."
+          : "Could not save Certificate Details."
+      );
     } finally {
       setSaving(false);
     }
@@ -245,6 +251,7 @@ function handleChange(e) {
               <label className="required">Please Attach Copy</label>
               <input
                 type="file"
+                accept=".pdf,.jpg,.jpeg"
                 onChange={(e) => setSafehostDoc(e.target.files[0])}
               />
               {errors.safehostDoc && <p className="error-message">{errors.safehostDoc}</p>}
@@ -272,126 +279,178 @@ function handleChange(e) {
         <div className="form-row">
           <hr />
         </div>
-
         <div className="form-section">
           <div className="section-header">
             <span className="section-badge">4.2</span>
             <h3>Load Test Certificate Details</h3>
           </div>
 
-          <div className="form-section-grid">
-            <div className="form-row full-width">
-              <label>Name of Certifying Agency</label>
+          <div className="form-row full-width">
+            <label>Load Test Certificate Details Required?</label>
 
-              <div className="cert-radio-group">
-                <label>
-                  <input type="radio" name="loadtest_agency" value="DoIT&C" checked={form.loadtest_agency === "DoIT&C"} onChange={handleChange} />
-                  DoIT&C
-                </label>
+            <div className="cert-radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="loadtest_required"
+                  value="Yes"
+                  checked={form.loadtest_required === "Yes"}
+                  onChange={handleChange}
+                />
+                Yes
+              </label>
 
-                <label>
-                  <input type="radio" name="loadtest_agency" value="Other Agency" checked={form.loadtest_agency === "Other Agency"} onChange={handleChange} />
-                  Other Agency
-                </label>
+              <label>
+                <input
+                  type="radio"
+                  name="loadtest_required"
+                  value="No"
+                  checked={form.loadtest_required === "No"}
+                  onChange={handleChange}
+                />
+                No
+              </label>
+            </div>
+          </div>
+
+          {form.loadtest_required === "Yes" && (
+            <div className="form-section-grid">
+
+              <div className="form-row full-width">
+                <label>Name of Certifying Agency</label>
+
+                <div className="cert-radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="loadtest_agency"
+                      value="DoIT&C"
+                      checked={form.loadtest_agency === "DoIT&C"}
+                      onChange={handleChange}
+                    />
+                    DoIT&C
+                  </label>
+
+                  <label>
+                    <input
+                      type="radio"
+                      name="loadtest_agency"
+                      value="Other Agency"
+                      checked={form.loadtest_agency === "Other Agency"}
+                      onChange={handleChange}
+                    />
+                    Other Agency
+                  </label>
+                </div>
+
+                {form.loadtest_agency === "Other Agency" && (
+                  <input
+                    type="text"
+                    name="loadtest_agency_other"
+                    placeholder="Please specify"
+                    value={form.loadtest_agency_other}
+                    onChange={handleChange}
+                    maxLength={100}
+                  />
+                )}
               </div>
-              {form.loadtest_agency === "Other Agency" && (
+
+              <div className="form-row">
+                <label>Load Tested (Maximum Users)</label>
+                <input
+                  type="number"
+                  name="load_users"
+                  value={form.load_users}
+                  onChange={handleChange}
+                  placeholder="Enter Maximum Users"
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Average Response Time</label>
                 <input
                   type="text"
-                  name="loadtest_agency_other"
-                  placeholder="Please specify"
-                  value={form.loadtest_agency_other}
+                  name="loadtest_avg_response"
+                  value={form.loadtest_avg_response}
                   onChange={handleChange}
-                  maxLength={100}
+                  placeholder="Enter Response Time"
                 />
-              )}
-            </div>
-
-
-            <div className="form-row">
-              <label>Load Tested (Maximum Users)</label>
-              <input
-                type="number"
-                name="load_users"
-                value={form.load_users}
-                onChange={handleChange}
-                placeholder="Enter Maximum Users"
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Average Response Time</label>
-              <input
-                type="text"
-                name="loadtest_avg_response"
-                value={form.loadtest_avg_response}
-                onChange={handleChange}
-                placeholder="Enter Response Time"
-              />
-            </div>
-
-
-
-
-
-            <div className="form-row">
-              <label>Certificate Reference Number</label>
-              <input
-                type="text"
-                name="loadtest_ref_no"
-                value={form.loadtest_ref_no}
-                onChange={handleChange}
-                placeholder="Enter Certificate Reference Number"
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Please Attach Copy</label>
-              <input type="file" />
-            </div>
-
-
-
-
-            <div className="form-row">
-              <label>Certificate Issue Date</label>
-              <input type="date" name="loadtest_issue_date" value={form.loadtest_issue_date} onChange={handleChange} />
-            </div>
-
-            <div className="form-row">
-              <label>Certificate Valid Till</label>
-              <input type="date" name="loadtest_valid_till" value={form.loadtest_valid_till} onChange={handleChange} />
-            </div>
-
-
-            <div className="form-row ">
-              <label>Any Other Certificate Details</label>
-
-              <div className="textarea-wrapper">
-                <textarea
-                  rows="1"
-                  name="other_certificate_details"
-                  value={form.other_certificate_details}
-                  onChange={handleChange}
-                  placeholder="Enter other certificate details (if any)"
-                  maxLength={500}
-                ></textarea>
-                <span className="char-counter">{form.other_certificate_details.length}/500</span>
               </div>
 
-              <p className="maintenance-text">This note field isn't stored in the DB yet (no matching column).</p>
+              <div className="form-row">
+                <label>Certificate Reference Number</label>
+                <input
+                  type="text"
+                  name="loadtest_ref_no"
+                  value={form.loadtest_ref_no}
+                  onChange={handleChange}
+                  placeholder="Enter Certificate Reference Number"
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Please Attach Copy</label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg"
+                  onChange={(e) => setLoadtestDoc(e.target.files[0])}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Certificate Issue Date</label>
+                <input
+                  type="date"
+                  name="loadtest_issue_date"
+                  value={form.loadtest_issue_date}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Certificate Valid Till</label>
+                <input
+                  type="date"
+                  name="loadtest_valid_till"
+                  value={form.loadtest_valid_till}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Any Other Certificate Details</label>
+
+                <div className="textarea-wrapper">
+                  <textarea
+                    rows="1"
+                    name="other_certificate_details"
+                    value={form.other_certificate_details}
+                    onChange={handleChange}
+                    placeholder="Enter other certificate details (if any)"
+                    maxLength={500}
+                  ></textarea>
+
+                  <span className="char-counter">
+                    {form.other_certificate_details.length}/500
+                  </span>
+                </div>
+
+                <p className="maintenance-text">
+                  This note field isn't stored in the DB yet (no matching column).
+                </p>
+              </div>
+
             </div>
-
-          </div>
+          )}
         </div>
-
       </div>
 
-      <FormButtons
-        showBack={true}
-        onBack={Backpage}
-        onNext={Nextpage}
-        disabled={saving} saving={saving}
-      />
+        <FormButtons
+          showBack={true}
+          onBack={Backpage}
+          onNext={Nextpage}
+          disabled={saving} saving={saving}
+        />
 
     </Layout>
   );

@@ -24,9 +24,7 @@ async function request(path, options = {}) {
     headers,
   });
 
-  if (res.status === 401)
-   {
- 
+  if (res.status === 401) {
     clearSessionAndRedirect("session_expired");
     throw new Error("Session expired. Redirecting to login.");
   }
@@ -34,14 +32,17 @@ async function request(path, options = {}) {
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     let parsed = null;
+
     try {
       parsed = text ? JSON.parse(text) : null;
     } catch {
     }
+
     const error = new Error(
       (parsed && parsed.message) ||
         `API ${options.method || "GET"} ${path} failed (${res.status}): ${text}`
     );
+
     error.status = res.status;
     error.body = parsed;
     throw error;

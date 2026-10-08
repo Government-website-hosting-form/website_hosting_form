@@ -84,7 +84,11 @@ function InfraOtherDetails() {
             navigate("/hardwaredetails");
         } catch (err) {
             console.error(err);
-            setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save Infrastructure Details.");
+            setError(
+                err.status === 409
+                    ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form."
+                    : "Could not save Infrastructure Details."
+            );
         } finally {
             setSaving(false);
         }
@@ -113,7 +117,7 @@ function InfraOtherDetails() {
 
                 <div className="form-section">
                     <div className="section-header">
-                        <span className="section-badge">5.2</span>
+                        <span className="section-badge">5.1</span>
                         <h3>Software Requirements</h3>
                     </div>
 
@@ -153,7 +157,7 @@ function InfraOtherDetails() {
 
                 <div className="form-section">
                     <div className="section-header">
-                        <span className="section-badge">5.3</span>
+                        <span className="section-badge">5.2</span>
                         <h3>SFTP Access Required in Demilitarized Zone</h3>
                     </div>
 
@@ -190,7 +194,7 @@ function InfraOtherDetails() {
 
                 <div className="form-section">
                     <div className="section-header">
-                        <span className="section-badge">5.4</span>
+                        <span className="section-badge">5.3</span>
                         <h3>Network Configuration</h3>
                     </div>
 
@@ -211,6 +215,11 @@ function InfraOtherDetails() {
                                     <input type="radio" name="dns_entry" value="Public" checked={form.dns_entry === "Public"} onChange={handleChange} />
                                     Public
                                 </label>
+                                 <label>
+                                    <input type="radio" name="dns_entry" value="both" checked={form.dns_entry === "both"} onChange={handleChange} />
+                                    Both
+                                </label>
+
                             </div>
                         </div>
                     </div>
@@ -218,7 +227,7 @@ function InfraOtherDetails() {
 
                 <div className="form-section">
                     <div className="section-header">
-                        <span className="section-badge">5.5</span>
+                        <span className="section-badge">5.4</span>
                         <h3>Monitoring</h3>
                     </div>
 
@@ -241,7 +250,7 @@ function InfraOtherDetails() {
 
                 <div className="form-section">
                     <div className="section-header">
-                        <span className="section-badge">5.6</span>
+                        <span className="section-badge">5.5</span>
                         <h3>Backup Services</h3>
                     </div>
 

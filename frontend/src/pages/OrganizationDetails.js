@@ -38,6 +38,7 @@ function OrganizationDetails() {
   const [error, setError] = useState("");
 
 
+//this function is used to load existing organization details if orgId is present in the context. It fetches the data from the API and populates the form state with the retrieved values. If any value is null, it replaces it with an empty string to avoid issues with controlled components in React.
   useEffect(() => {
     async function loadExisting() {
         if (!ids.orgId) return;
@@ -45,6 +46,7 @@ function OrganizationDetails() {
             const data = await apiGet(`/org/${ids.orgId}`);
             if (data) {
                 const cleaned = {};
+                //Object.entries(data)- JavaScript converts the object into an array of key-value pairs
                 for (const [key, value] of Object.entries(data)) {
                     cleaned[key] = value === null ? "" : value;
                 }
@@ -190,7 +192,11 @@ function OrganizationDetails() {
       navigate("/ApplicationDetails");
     } catch (err) {
       console.error(err);
-      setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save Organization Details. Please check the backend server and try again.");
+      setError(
+        err.status === 409
+          ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form."
+          : "Could not save Organization Details. Please check the backend server and try again."
+      );
     } finally {
       setSaving(false);
     }

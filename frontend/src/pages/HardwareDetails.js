@@ -1,3 +1,4 @@
+//new
 import { useState } from "react";
 import "./HardwareDetails.css";
 import Layout from "../components/Layout";

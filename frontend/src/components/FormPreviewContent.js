@@ -1,21 +1,30 @@
 import { useNavigate } from "react-router-dom";
 
+function filterServers(servers) {
+    return (servers || []).filter((server) => {
+        return (
+            (server.processor && server.processor.trim()) ||
+            (server.ram && server.ram.trim()) ||
+            (server.internal_storage && server.internal_storage.trim()) ||
+            (server.external_storage_capacity && server.external_storage_capacity.trim()) ||
+            (server.external_storage && server.external_storage !== "None") ||
+            (server.os && server.os !== "None") ||
+            (server.server_name && server.server_name.trim()) ||
+            (server.version && server.version.trim())
+        );
+    });
+}
+
+function hasAnyServers(group) {
+    if (!group) return false;
+    return ["web", "app", "db", "other"].some((key) => filterServers(group[key]).length > 0);
+}
+
 function FormPreviewContent({ org, app, infra, stagingServers, productionServers, checklist }) {
     const navigate = useNavigate();
 
     function renderServerSection(title, servers, showVersion, showServerName) {
-        const filtered = servers.filter((server) => {
-            return (
-                (server.processor && server.processor.trim()) ||
-                (server.ram && server.ram.trim()) ||
-                (server.internal_storage && server.internal_storage.trim()) ||
-                (server.external_storage_capacity && server.external_storage_capacity.trim()) ||
-                (server.external_storage && server.external_storage !== "None") ||
-                (server.os && server.os !== "None") ||
-                (server.server_name && server.server_name.trim()) ||
-                (server.version && server.version.trim())
-            );
-        });
+        const filtered = filterServers(servers);
 
         if (filtered.length === 0) return null;
 
@@ -384,6 +393,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         {renderServerSection("Application Server(VM)", stagingServers.app, false, false)}
                         {renderServerSection("Database Server(VM)", stagingServers.db, true, false)}
                         {renderServerSection("other Servers(VM)", stagingServers.other, false, true)}
+                        {!hasAnyServers(stagingServers) && <p className="doc-empty">No servers requested.</p>}
                     </div>
                 )}
 
@@ -399,6 +409,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         {renderServerSection("Application Server(VM)", productionServers.app, false, false)}
                         {renderServerSection("Database Server(VM)", productionServers.db, true, false)}
                         {renderServerSection("other Servers(VM)", productionServers.other, false, true)}
+                        {!hasAnyServers(productionServers) && <p className="doc-empty">No servers requested.</p>}
                     </div>
                 )}
 
@@ -706,7 +717,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                 )}
 
                 {checklist && (
-                    <div className="doc-section">
+                    <div className="doc-section doc-section-long">
                         <div className="doc-section-header">
                             <span className="doc-badge">10</span>
                             <h3>Checklist for Secure Code Programming</h3>

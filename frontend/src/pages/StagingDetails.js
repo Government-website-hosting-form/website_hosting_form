@@ -8,11 +8,25 @@ import { apiGet, apiPost, apiPut } from "../api";
 
 
 function emptyServer() {
-    return { processor: "", ram: "", internal_storage: "", external_storage: "", external_storage_other: "", external_storage_capacity: "", os: "", os_other: "" };
+    return {
+        processor: "",
+        ram: "",
+        internal_storage: "",
+        external_storage: "None",
+        external_storage_unit: "GB",
+        external_storage_other: "",
+        external_storage_capacity: "",
+        os: "None",
+        os_other: "",
+    };
 }
 
 function emptyDbServer() {
     return { ...emptyServer(), version: "" };
+}
+
+function emptyOtherServer() {
+    return { ...emptyServer(), server_name: "" };
 }
 
 function validateServer(server) {
@@ -32,6 +46,7 @@ function validateServer(server) {
         errs.os_other = "Please specify.";
     }
     if (server.version !== undefined && !server.version.trim()) errs.version = "This field is required.";
+    if (server.server_name !== undefined && !server.server_name.trim()) errs.server_name = "This field is required.";
     return errs;
 }
 
@@ -146,7 +161,7 @@ function StagingDetails() {
 
 
     function addOtherServer() {
-        setOtherServers((prev) => [...prev, emptyServer()]);
+        setOtherServers((prev) => [...prev, emptyOtherServer()]);
     }
     function updateOtherServer(index, field, value) {
         setOtherServers((prev) => {
@@ -207,7 +222,11 @@ function StagingDetails() {
             navigate("/productiondetails");
         } catch (err) {
             console.error(err);
-            setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save Staging Server Details.");
+            setError(
+                err.status === 409
+                    ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form."
+                    : "Could not save Staging Server Details."
+            );
         } finally {
             setSaving(false);
         }
@@ -220,16 +239,16 @@ function StagingDetails() {
             if (!hasRows) return;
             let infraId = ids.infraId;
             if (!infraId) {
-              const res = await apiPost("/infra", { app_id: ids.appId });
-              infraId = res.id;
-              setId("infraId", infraId);
+                const res = await apiPost("/infra", { app_id: ids.appId });
+                infraId = res.id;
+                setId("infraId", infraId);
             }
             await apiPut(`/infra/${infraId}/servers`, {
-              environment: "staging",
-              web: webServers,
-              app: appServers,
-              db: dbServers,
-              other: otherServers,
+                environment: "staging",
+                web: webServers,
+                app: appServers,
+                db: dbServers,
+                other: otherServers,
             });
         } catch (err) {
             console.error("Could not save draft on Back:", err);
@@ -249,18 +268,18 @@ function StagingDetails() {
 
                 <div className="form-section">
                     <div className="section-header-row">
-                        <h3>Web Servers</h3>
-                        <button type="button" className="add-server-button" onClick={addWebServer}>+ Add Web Server</button>
+                        <h3>Web Server(VM)</h3>
                     </div>
 
                     <table className="server-table">
                         <thead>
                             <tr>
-                                <th>Web Servers</th>
-                                <th>Processor (VCPU)</th>
-                                <th>RAM (in GB)</th>
-                                <th>Internal Storage (in GB)</th>
+                                <th>Web Server(VM)</th>
+                                <th>Processor(VCPU)</th>
+                                <th>Ram(in GB)</th>
+                                <th>Internal Storage(in GB)</th>
                                 <th>External Storage</th>
+                                <th>External Storage in GB/TB</th>
                                 <th>External Storage Capacity</th>
                                 <th>Operating System</th>
                                 <th></th>
@@ -269,7 +288,7 @@ function StagingDetails() {
                         <tbody>
                             {webServers.length === 0 && (
                                 <tr>
-                                    <td colSpan={8} className="empty-row">No web servers added yet</td>
+                                    <td colSpan={9} className="empty-row">No web servers added yet</td>
                                 </tr>
                             )}
                             {webServers.map((server, index) => (
@@ -286,9 +305,10 @@ function StagingDetails() {
                                     </td>
                                     <td>
                                         <select value={server.external_storage} onChange={(e) => updateWebServer(index, "external_storage", e.target.value)}>
-                                            <option value="">-- Select --</option>
+                                            <option value="None">None</option>
                                             <option value="SAN">SAN</option>
                                             <option value="NAS">NAS</option>
+                                            <option value="SAS">SAS</option>
                                             <option value="Unified">Unified</option>
                                             <option value="Other">Other</option>
                                         </select>
@@ -297,47 +317,55 @@ function StagingDetails() {
                                         )}
                                     </td>
                                     <td>
+                                        <select value={server.external_storage_unit} onChange={(e) => updateWebServer(index, "external_storage_unit", e.target.value)}>
+                                            <option value="GB">GB</option>
+                                            <option value="TB">TB</option>
+                                        </select>
+                                    </td>
+                                    <td>
 
                                         <input type="text" value={server.external_storage_capacity} onChange={(e) => updateWebServer(index, "external_storage_capacity", e.target.value)} placeholder="i.e. 500 GB, 1TB etc" />
 
                                     </td>
                                     <td>
                                         <select value={server.os} onChange={(e) => updateWebServer(index, "os", e.target.value)}>
-                                            <option value="">-- Select --</option>
+                                            <option value="None">None</option>
                                             <option value="Windows Server Standard">Windows Server Standard</option>
                                             <option value="RHEL Standard">RHEL Standard</option>
                                             <option value="Linux Community">Linux Community</option>
                                             <option value="Other">Other</option>
-                                            <option value="None">None</option>
                                         </select>
                                         {server.os === "Other" && (
                                             <input type="text" value={server.os_other} onChange={(e) => updateWebServer(index, "os_other", e.target.value)} placeholder="Please specify" />
                                         )}
                                     </td>
                                     <td>
-                                        <button type="button" className="delete-row-button" onClick={() => deleteWebServer(index)}>Delete</button>
+                                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+                                            <button type="button" className="delete-row-button" onClick={() => deleteWebServer(index)}>Delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    <button type="button" className="add-server-button" onClick={addWebServer}>+ Add Server</button>
                 </div>
 
 
                 <div className="form-section">
                     <div className="section-header-row">
-                        <h3>Application Servers</h3>
-                        <button type="button" className="add-server-button" onClick={addAppServer}>+ Add Application Server</button>
+                        <h3>Application Server(VM)</h3>
                     </div>
 
                     <table className="server-table">
                         <thead>
                             <tr>
-                                <th>Application Servers</th>
-                                <th>Processor</th>
-                                <th>RAM</th>
-                                <th>Internal Storage</th>
+                                <th>Application Server(VM)</th>
+                                <th>Processor(VCPU)</th>
+                                <th>Ram(in GB)</th>
+                                <th>Internal Storage(in GB)</th>
                                 <th>External Storage</th>
+                                <th>External Storage in GB/TB</th>
                                 <th>External Storage Capacity</th>
                                 <th>Operating System</th>
                                 <th></th>
@@ -346,7 +374,7 @@ function StagingDetails() {
                         <tbody>
                             {appServers.length === 0 && (
                                 <tr>
-                                    <td colSpan={8} className="empty-row">No application servers added yet</td>
+                                    <td colSpan={9} className="empty-row">No application servers added yet</td>
                                 </tr>
                             )}
                             {appServers.map((server, index) => (
@@ -363,9 +391,10 @@ function StagingDetails() {
                                     </td>
                                     <td>
                                         <select value={server.external_storage} onChange={(e) => updateAppServer(index, "external_storage", e.target.value)}>
-                                            <option value="">-- Select --</option>
+                                            <option value="None">None</option>
                                             <option value="SAN">SAN</option>
                                             <option value="NAS">NAS</option>
+                                            <option value="SAS">SAS</option>
                                             <option value="Unified">Unified</option>
                                             <option value="Other">Other</option>
                                         </select>
@@ -374,47 +403,55 @@ function StagingDetails() {
                                         )}
                                     </td>
                                     <td>
+                                        <select value={server.external_storage_unit} onChange={(e) => updateAppServer(index, "external_storage_unit", e.target.value)}>
+                                            <option value="GB">GB</option>
+                                            <option value="TB">TB</option>
+                                        </select>
+                                    </td>
+                                    <td>
 
                                         <input type="text" value={server.external_storage_capacity} onChange={(e) => updateAppServer(index, "external_storage_capacity", e.target.value)} placeholder="i.e. 500 GB, 1TB etc" />
 
                                     </td>
                                     <td>
                                         <select value={server.os} onChange={(e) => updateAppServer(index, "os", e.target.value)}>
-                                            <option value="">-- Select --</option>
+                                            <option value="None">None</option>
                                             <option value="Windows Server Standard">Windows Server Standard</option>
                                             <option value="RHEL Standard">RHEL Standard</option>
                                             <option value="Linux Community">Linux Community</option>
                                             <option value="Other">Other</option>
-                                            <option value="None">None</option>
                                         </select>
                                         {server.os === "Other" && (
                                             <input type="text" value={server.os_other} onChange={(e) => updateAppServer(index, "os_other", e.target.value)} placeholder="Please specify" />
                                         )}
                                     </td>
                                     <td>
-                                        <button type="button" className="delete-row-button" onClick={() => deleteAppServer(index)}>Delete</button>
+                                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+                                            <button type="button" className="delete-row-button" onClick={() => deleteAppServer(index)}>Delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    <button type="button" className="add-server-button" onClick={addAppServer}>+ Add Server</button>
                 </div>
 
 
                 <div className="form-section">
                     <div className="section-header-row">
-                        <h3>Database Servers</h3>
-                        <button type="button" className="add-server-button" onClick={addDbServer}>+ Add Database Server</button>
+                        <h3>Database Server(VM)</h3>
                     </div>
 
                     <table className="server-table">
                         <thead>
                             <tr>
-                                <th>Database Servers</th>
-                                <th>Processor</th>
-                                <th>RAM</th>
-                                <th>Internal Storage</th>
+                                <th>Database Server(VM)</th>
+                                <th>Processor(VCPU)</th>
+                                <th>Ram(in GB)</th>
+                                <th>Internal Storage(in GB)</th>
                                 <th>External Storage</th>
+                                <th>External Storage in GB/TB</th>
                                 <th>External Storage Capacity</th>
                                 <th>Operating System</th>
                                 <th>Database Version</th>
@@ -424,7 +461,7 @@ function StagingDetails() {
                         <tbody>
                             {dbServers.length === 0 && (
                                 <tr>
-                                    <td colSpan={9} className="empty-row">No database servers added yet</td>
+                                    <td colSpan={10} className="empty-row">No database servers added yet</td>
                                 </tr>
                             )}
                             {dbServers.map((server, index) => (
@@ -441,9 +478,10 @@ function StagingDetails() {
                                     </td>
                                     <td>
                                         <select value={server.external_storage} onChange={(e) => updateDbServer(index, "external_storage", e.target.value)}>
-                                            <option value="">-- Select --</option>
+                                            <option value="None">None</option>
                                             <option value="SAN">SAN</option>
                                             <option value="NAS">NAS</option>
+                                            <option value="SAS">SAS</option>
                                             <option value="Unified">Unified</option>
                                             <option value="Other">Other</option>
                                         </select>
@@ -452,18 +490,23 @@ function StagingDetails() {
                                         )}
                                     </td>
                                     <td>
+                                        <select value={server.external_storage_unit} onChange={(e) => updateDbServer(index, "external_storage_unit", e.target.value)}>
+                                            <option value="GB">GB</option>
+                                            <option value="TB">TB</option>
+                                        </select>
+                                    </td>
+                                    <td>
 
                                         <input type="text" value={server.external_storage_capacity} onChange={(e) => updateDbServer(index, "external_storage_capacity", e.target.value)} placeholder="i.e. 500 GB, 1TB etc" />
 
                                     </td>
                                     <td>
                                         <select value={server.os} onChange={(e) => updateDbServer(index, "os", e.target.value)}>
-                                            <option value="">-- Select --</option>
+                                            <option value="None">None</option>
                                             <option value="Windows Server Standard">Windows Server Standard</option>
                                             <option value="RHEL Standard">RHEL Standard</option>
                                             <option value="Linux Community">Linux Community</option>
                                             <option value="Other">Other</option>
-                                            <option value="None">None</option>
                                         </select>
                                         {server.os === "Other" && (
                                             <input type="text" value={server.os_other} onChange={(e) => updateDbServer(index, "os_other", e.target.value)} placeholder="Please specify" />
@@ -473,29 +516,33 @@ function StagingDetails() {
                                         <input type="text" value={server.version} onChange={(e) => updateDbServer(index, "version", e.target.value)} placeholder="i.e. Oracle10g, Sql 2005 etc" />
                                     </td>
                                     <td>
-                                        <button type="button" className="delete-row-button" onClick={() => deleteDbServer(index)}>Delete</button>
+                                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+                                            <button type="button" className="delete-row-button" onClick={() => deleteDbServer(index)}>Delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    <button type="button" className="add-server-button" onClick={addDbServer}>+ Add Server</button>
                 </div>
 
 
                 <div className="form-section">
                     <div className="section-header-row">
-                        <h3>Other Servers</h3>
-                        <button type="button" className="add-server-button" onClick={addOtherServer}>+ Add Other Server</button>
+                        <h3>Other Servers(VM)</h3>
                     </div>
 
                     <table className="server-table">
                         <thead>
                             <tr>
-                                <th>Other Servers</th>
-                                <th>Processor</th>
-                                <th>RAM</th>
-                                <th>Internal Storage</th>
+                                <th>Other Servers(VM)</th>
+                                <th>Name of Server</th>
+                                <th>Processor(VCPU)</th>
+                                <th>Ram(in GB)</th>
+                                <th>Internal Storage(in GB)</th>
                                 <th>External Storage</th>
+                                <th>External Storage in GB/TB</th>
                                 <th>External Storage Capacity</th>
                                 <th>Operating System</th>
                                 <th></th>
@@ -504,12 +551,15 @@ function StagingDetails() {
                         <tbody>
                             {otherServers.length === 0 && (
                                 <tr>
-                                    <td colSpan={8} className="empty-row">No other servers added yet</td>
+                                    <td colSpan={10} className="empty-row">No other servers added yet</td>
                                 </tr>
                             )}
                             {otherServers.map((server, index) => (
                                 <tr key={index}>
                                     <td>{index + 1}</td>
+                                    <td>
+                                        <input type="text" value={server.server_name} onChange={(e) => updateOtherServer(index, "server_name", e.target.value)} placeholder="Name of server" />
+                                    </td>
                                     <td>
                                         <input type="text" value={server.processor} onChange={(e) => updateOtherServer(index, "processor", e.target.value)} placeholder="i.e. 2-core, 4-core, 8-core" />
                                     </td>
@@ -521,9 +571,10 @@ function StagingDetails() {
                                     </td>
                                     <td>
                                         <select value={server.external_storage} onChange={(e) => updateOtherServer(index, "external_storage", e.target.value)}>
-                                            <option value="">-- Select --</option>
+                                            <option value="None">None</option>
                                             <option value="SAN">SAN</option>
                                             <option value="NAS">NAS</option>
+                                            <option value="SAS">SAS</option>
                                             <option value="Unified">Unified</option>
                                             <option value="Other">Other</option>
                                         </select>
@@ -532,30 +583,38 @@ function StagingDetails() {
                                         )}
                                     </td>
                                     <td>
+                                        <select value={server.external_storage_unit} onChange={(e) => updateOtherServer(index, "external_storage_unit", e.target.value)}>
+                                            <option value="GB">GB</option>
+                                            <option value="TB">TB</option>
+                                        </select>
+                                    </td>
+                                    <td>
 
                                         <input type="text" value={server.external_storage_capacity} onChange={(e) => updateOtherServer(index, "external_storage_capacity", e.target.value)} placeholder="i.e. 500 GB, 1TB etc" />
 
                                     </td>
                                     <td>
                                         <select value={server.os} onChange={(e) => updateOtherServer(index, "os", e.target.value)}>
-                                            <option value="">-- Select --</option>
+                                            <option value="None">None</option>
                                             <option value="Windows Server Standard">Windows Server Standard</option>
                                             <option value="RHEL Standard">RHEL Standard</option>
                                             <option value="Linux Community">Linux Community</option>
                                             <option value="Other">Other</option>
-                                            <option value="None">None</option>
                                         </select>
                                         {server.os === "Other" && (
                                             <input type="text" value={server.os_other} onChange={(e) => updateOtherServer(index, "os_other", e.target.value)} placeholder="Please specify" />
                                         )}
                                     </td>
                                     <td>
-                                        <button type="button" className="delete-row-button" onClick={() => deleteOtherServer(index)}>Delete</button>
+                                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+                                            <button type="button" className="delete-row-button" onClick={() => deleteOtherServer(index)}>Delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    <button type="button" className="add-server-button" onClick={addOtherServer}>+ Add Server</button>
                 </div>
 
                 {error && <p className="form-error">{error}</p>}

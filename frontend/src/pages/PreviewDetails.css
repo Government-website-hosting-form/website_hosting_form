@@ -126,6 +126,14 @@
     padding: 20px 30px;
     font-family: Arial,"Times New Roman", serif;
     color: #222;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+/* Long sections (e.g. the checklist) may span pages */
+.doc-section.doc-section-long {
+    break-inside: auto;
+    page-break-inside: auto;
 }
 
 .doc-section-header {
@@ -135,6 +143,8 @@
     border-bottom: 2px solid #14355e;
     padding-bottom: 6px;
     margin-bottom: 12px;
+    break-after: avoid;
+    page-break-after: avoid;
 }
 
 .doc-section-header h3 {
@@ -160,6 +170,8 @@
     font-weight: bold;
     color: #14355e;
     margin: 14px 0 6px;
+    break-after: avoid;
+    page-break-after: avoid;
 }
 
 .doc-subsubheading {
@@ -181,6 +193,8 @@
     padding: 3px 0;
     font-size: 12px;
     border-bottom: 1px solid #eee;
+    break-inside: avoid;
+    page-break-inside: avoid;
 }
 
 .doc-row label {
@@ -205,6 +219,8 @@
     border-collapse: collapse;
     font-size: 11px;
     margin: 4px 0 12px;
+    break-inside: avoid;
+    page-break-inside: avoid;
 }
 
 .doc-table th,
@@ -222,6 +238,12 @@
     color: #888;
 }
 
+.doc-empty {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #667085;
+}
+
 .form-error {
     max-width: 800px;
     margin: 10px auto;
@@ -229,12 +251,45 @@
     text-align: center;
 }
 
-.doc-section {
-    break-inside: avoid;
-    page-break-inside: avoid;
+/* ---------- PDF only ---------- */
+
+.pdf-header {
+    margin: 0 30px;
+    padding-bottom: 10px;
+    text-align: center;
+    border-bottom: 2px solid #14355e;
+    font-family: Arial, "Times New Roman", serif;
 }
 
-.doc-table {
-    break-inside: avoid;
-    page-break-inside: avoid;
+.pdf-header h1 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    color: #14355e;
 }
+
+.pdf-header h2 {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.pdf-header h3 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #344054;
+}
+
+.pdf-header p {
+    margin: 6px 0 0;
+    font-size: 10px;
+    color: #667085;
+}
+
+.pdf-root .doc-section {
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+}
+

@@ -10,7 +10,7 @@ import { useEffect } from "react";
 
 const initialState = {
   name: "",
-  type: "",
+  type: [],
   type_other: "",
   nature: "",
   utility: "",
@@ -34,55 +34,69 @@ function ApplicationDetails() {
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
   const [momDoc, setMomDoc] = useState(null);
+  const [purposeDoc, setPurposeDoc] = useState(null);
+  const [approvalDoc, setApprovalDoc] = useState(null);
+  const [domainApprovalDoc, setDomainApprovalDoc] = useState(null);
 
-useEffect(() => {
+
+  useEffect(() => {
     async function loadExisting() {
-        if (!ids.appId) return;
-        try {
-            const data = await apiGet(`/apps/${ids.appId}`);
-            if (data) {
-                const cleaned = {};
-                for (const [key, value] of Object.entries(data)) {
-                    cleaned[key] = value === null ? "" : value;
-                }
-                setForm((prev) => ({ ...prev, ...cleaned }));
-            }
-        } catch (err) {
-            console.error("Could not load saved application details:", err);
+      if (!ids.appId) return;
+      try {
+        const data = await apiGet(`/apps/${ids.appId}`);
+        if (data) {
+          const cleaned = {};
+          for (const [key, value] of Object.entries(data)) {
+            cleaned[key] = value === null ? "" : value;
+          }
+          setForm((prev) => ({ ...prev, ...cleaned }));
         }
+      } catch (err) {
+        console.error("Could not load saved application details:", err);
+      }
     }
     loadExisting();
-}, [ids.appId]);
+  }, [ids.appId]);
 
- function handleChange(e) {
+  function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => {
-        const updated = { ...prev, [name]: value };
+      const updated = { ...prev, [name]: value };
 
-        if (name === "type" && value !== "Other") {
-            updated.type_other = "";
-        }
-        if (name === "utility" && value !== "Other Priority Event") {
-            updated.utility_other = "";
-        }
-        if (name === "semt_approved" && value !== "Yes") {
-            updated.mom_ref_no = "";
-            updated.mom_date = "";
-        }
+      if (name === "type" && value !== "Other") {
+        updated.type_other = "";
+      }
+      if (name === "utility" && value !== "Other Priority Event") {
+        updated.utility_other = "";
+      }
+      if (name === "semt_approved" && value !== "Yes") {
+        updated.mom_ref_no = "";
+        updated.mom_date = "";
+      }
 
-        return updated;
+      return updated;
     });
 
     if (name === "semt_approved" && value !== "Yes") {
-        setMomDoc(null);
+      setMomDoc(null);
     }
-}
+  }
+
+  function handleTypeChange(value) {
+    setForm((prev) => {
+      const alreadySelected = prev.type.includes(value);
+      const updated = alreadySelected
+        ? prev.type.filter((item) => item !== value)
+        : [...prev.type, value];
+      return { ...prev, type: updated };
+    });
+  }
 
   function validateForm() {
     const newErrors = {};
 
     if (!form.name.trim()) newErrors.name = "This field is required.";
-    if (!form.type) newErrors.type = "This field is required.";
+    if (form.type.length === 0) newErrors.type = "Please select at least one type.";
     if (!form.nature) newErrors.nature = "This field is required.";
     if (!form.utility) newErrors.utility = "This field is required.";
     if (!form.purpose.trim()) newErrors.purpose = "This field is required.";
@@ -98,7 +112,7 @@ useEffect(() => {
       if (!momDoc) newErrors.momDoc = "Please attach the MoM/Document.";
     }
 
-    if (form.type === "Other" && !form.type_other.trim()) {
+    if (form.type.includes("Other") && !form.type_other.trim()) {
       newErrors.type_other = "Please specify the application type.";
     }
 
@@ -115,18 +129,22 @@ useEffect(() => {
     setError("");
     setSaving(true);
     try {
-     const payload = { ...form, org_id: ids.orgId || null, user_id: ids.userId || null };
-if (ids.appId) {
-    await apiPut(`/apps/${ids.appId}`, payload);
-} else {
-    const res = await apiPost("/apps", payload);
-    setId("appId", res.id);
-}
-navigate("/maindetails");
-     
+      const payload = { ...form, org_id: ids.orgId || null, user_id: ids.userId || null };
+      if (ids.appId) {
+        await apiPut(`/apps/${ids.appId}`, payload);
+      } else {
+        const res = await apiPost("/apps", payload);
+        setId("appId", res.id);
+      }
+      navigate("/maindetails");
+
     } catch (err) {
       console.error(err);
-      setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save Application Details. Please check the backend server and try again.");
+      setError(
+        err.status === 409
+          ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form."
+          : "Could not save Application Details. Please check the backend server and try again."
+      );
     } finally {
       setSaving(false);
     }
@@ -134,10 +152,11 @@ navigate("/maindetails");
 
   async function saveQuietly() {
     try {
+      const payload = { ...form, org_id: ids.orgId || null };
       if (ids.appId) {
-        await apiPut(`/apps/${ids.appId}`, { ...form, org_id: ids.orgId || null });
+        await apiPut(`/apps/${ids.appId}`, payload);
       } else if (form.name && form.name.trim()) {
-        const res = await apiPost("/apps", { ...form, org_id: ids.orgId || null });
+        const res = await apiPost("/apps", payload);
         setId("appId", res.id);
       }
     } catch (err) {
@@ -182,17 +201,37 @@ navigate("/maindetails");
 
             <div className="form-row">
               <label className="required">Application Type</label>
-              <select name="type" value={form.type} onChange={handleChange}>
-                <option value="">-- Select Application Type --</option>
-                <option value="Website">Website</option>
-                <option value="Portal">Portal</option>
-                <option value="Application">Application</option>
-                <option value="Mobile App">Mobile App</option>
-                <option value="Microservices">Microservices</option>
-                <option value="Api">Api</option>
-                <option value="Other">Other</option>
-              </select>
-              {form.type === "Other" && (
+              <div className="checkbox-group">
+                <label>
+                  <input type="checkbox" checked={form.type.includes("Website")} onChange={() => handleTypeChange("Website")} />
+                  Website
+                </label>
+                <label>
+                  <input type="checkbox" checked={form.type.includes("Portal")} onChange={() => handleTypeChange("Portal")} />
+                  Portal
+                </label>
+                <label>
+                  <input type="checkbox" checked={form.type.includes("Application")} onChange={() => handleTypeChange("Application")} />
+                  Application
+                </label>
+                <label>
+                  <input type="checkbox" checked={form.type.includes("Mobile App")} onChange={() => handleTypeChange("Mobile App")} />
+                  Mobile App
+                </label>
+                <label>
+                  <input type="checkbox" checked={form.type.includes("Microservices")} onChange={() => handleTypeChange("Microservices")} />
+                  Microservices
+                </label>
+                <label>
+                  <input type="checkbox" checked={form.type.includes("Api")} onChange={() => handleTypeChange("Api")} />
+                  Api
+                </label>
+                <label>
+                  <input type="checkbox" checked={form.type.includes("Other")} onChange={() => handleTypeChange("Other")} />
+                  Other
+                </label>
+              </div>
+              {form.type.includes("Other") && (
                 <input
                   type="text"
                   name="type_other"
@@ -205,7 +244,6 @@ navigate("/maindetails");
               {errors.type_other && <p className="error-message">{errors.type_other}</p>}
               {errors.type && <p className="error-message">{errors.type}</p>}
             </div>
-
             <div className="form-row">
               <label className="required">Application Nature</label>
               <select name="nature" value={form.nature} onChange={handleChange}>
@@ -267,7 +305,11 @@ navigate("/maindetails");
               </div>
               {errors.purpose && <p className="error-message">{errors.purpose}</p>}
 
-              <input type="file" />
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg"
+                onChange={(e) => setPurposeDoc(e.target.files[0])}
+              />
 
 
             </div>
@@ -312,6 +354,15 @@ navigate("/maindetails");
                 Note : Alternate URL will be assigned if the primary URL is not available.
               </p>
             </div>
+
+            <div className="form-row">
+              <label>Domain Approval Attachment</label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg"
+                onChange={(e) => setDomainApprovalDoc(e.target.files[0])}
+              />
+            </div>
           </div>
         </div>
 
@@ -336,10 +387,11 @@ navigate("/maindetails");
 
             <div className="form-row">
               <label>Attach Approval Document (if available)</label>
-              <input type="file" />
-              <p className="maintenance-text">
-                File uploads aren't wired up to the backend yet — this field is UI-only for now.
-              </p>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg"
+                onChange={(e) => setApprovalDoc(e.target.files[0])}
+              />
             </div>
 
           </div>
@@ -411,7 +463,7 @@ navigate("/maindetails");
                   <label className="required">Attach MoM / Document</label>
                   <input
                     type="file"
-
+                    accept=".pdf,.jpg,.jpeg"
                     onChange={(e) => setMomDoc(e.target.files[0])}
                   />
                   {errors.momDoc && <p className="error-message">{errors.momDoc}</p>}

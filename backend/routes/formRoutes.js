@@ -32,6 +32,32 @@ function unpackInfraPayload(row) {
   return result
 }
 
+function packAppsPayload(body) {
+  const rest = {}
+  for (const [key, value] of Object.entries(body)) {
+    rest[key] = key === 'type' ? JSON.stringify(value) : value
+  }
+  return rest
+}
+
+function unpackAppsPayload(row) {
+  if (!row) return row
+  const result = { ...formatDates(row) }
+  const type = result.type
+  if (!type) {
+    result.type = []
+  } else if (typeof type === 'object') {
+    result.type = type
+  } else {
+    try {
+      result.type = JSON.parse(type)
+    } catch {
+      result.type = [type]
+    }
+  }
+  return result
+}
+
 const columnCache = {}
 async function getColumns(table) {
   if (!columnCache[table]) {
@@ -91,7 +117,7 @@ router.delete('/org/:id', requireOwner('org'), requireEditable('org'), async (re
 
 router.get('/apps', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM apps WHERE user_id = ?', [req.userId])
-  res.json(rows.map(formatDates))
+  res.json(rows.map(unpackAppsPayload))
 })
 router.get('/apps/by-form-id/:formId', async (req, res) => {
   try {
@@ -99,7 +125,7 @@ router.get('/apps/by-form-id/:formId', async (req, res) => {
     if (!formId || formId.length > 100) return res.status(404).json({ error: 'Not found' })
     const [rows] = await db.query('SELECT * FROM apps WHERE form_id = ? AND user_id = ?', [formId, req.userId])
     if (!rows.length) return res.status(404).json({ error: 'Not found' })
-    res.json(formatDates(rows[0]))
+    res.json(unpackAppsPayload(rows[0]))
   } catch (err) {
     console.error(err.message)
     res.status(500).json({ error: 'Server error' })
@@ -107,11 +133,11 @@ router.get('/apps/by-form-id/:formId', async (req, res) => {
 })
 router.get('/apps/:id', requireOwner('apps'), async (req, res) => {
   const [rows] = await db.query('SELECT * FROM apps WHERE app_id = ?', [req.params.id])
-  res.json(formatDates(rows[0]))
+  res.json(unpackAppsPayload(rows[0]))
 })
 router.post('/apps', async (req, res) => {
   try {
-    const data = await cleanBody('apps', req.body, { pk: 'app_id', drop: ['user_id', 'status', 'submitted_at', 'form_id', 'form_serial', 'request_no'] })
+    const data = await cleanBody('apps', packAppsPayload(req.body), { pk: 'app_id', drop: ['user_id', 'status', 'submitted_at', 'form_id', 'form_serial', 'request_no'] })
     if (data.org_id && !(await ownsRow('org', data.org_id, req.userId))) {
       return forbidden(res, 'Invalid org_id')
     }
@@ -125,7 +151,7 @@ router.post('/apps', async (req, res) => {
 })
 router.put('/apps/:id', requireOwner('apps'), requireEditable('apps'), async (req, res) => {
   try {
-    const data = await cleanBody('apps', req.body, { pk: 'app_id', drop: ['user_id', 'status', 'submitted_at', 'form_id', 'form_serial', 'request_no'] })
+    const data = await cleanBody('apps', packAppsPayload(req.body), { pk: 'app_id', drop: ['user_id', 'status', 'submitted_at', 'form_id', 'form_serial', 'request_no'] })
     if (data.org_id && !(await ownsRow('org', data.org_id, req.userId))) {
       return forbidden(res, 'Invalid org_id')
     }

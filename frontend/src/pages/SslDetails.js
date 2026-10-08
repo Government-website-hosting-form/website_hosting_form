@@ -7,6 +7,9 @@ import { useFormContext } from "../context/FormContext";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 
+// in my sql we will need do, ALTER TABLE infra ADD COLUMN ssl_type JSON NULL; as we can select multiple ssl types so we will 
+// store them in json format in the database and when we fetch the data from the database we will parse it back to array 
+// and populate the form with the selected values
 
 const initialState = {
   ssl_needed: "",
@@ -111,7 +114,11 @@ function SslDetails() {
       navigate("/checklist");
     } catch (err) {
       console.error(err);
-      setError(err.status === 409 ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form." : "Could not save SSL Details.");
+      setError(
+        err.status === 409
+          ? "This request is already submitted and can no longer be changed. Please go to Home and start a new form."
+          : "Could not save SSL Details."
+      );
     } finally {
       setSaving(false);
     }
