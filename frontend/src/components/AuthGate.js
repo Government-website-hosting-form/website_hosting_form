@@ -15,7 +15,9 @@ import Checklist from "../pages/Checklist";
 import PreviewDetails from "../pages/PreviewDetails";
 import SubmittedDetails from "../pages/SubmittedDetails";
 import Mapping from "../pages/Mapping";
+import OicRequests from "../pages/OicRequests";
 import OicPortal from "../pages/OicPortal";
+import OicDashboard from "../pages/OicDashboard";
 import {
   SsoSuccess,
   SsoFailed,
@@ -24,7 +26,7 @@ import {
   SsoRejected,
   SsoObjection,
 } from "../pages/SsoPages";
-import OicDashboard from "../pages/OicDashboard";
+
 import { verifySession, SSO_BACK_URL } from "../auth";
 import SessionTimeout from "./SessionTimeout";
 import { useFormContext } from "../context/FormContext";
@@ -42,6 +44,8 @@ const EDIT_PATHS = [
   "/checklist",
 ];
 
+const LAST_PATH_KEY = "bsdc_last_path";
+
 function isPublicPath(pathname) {
   return pathname.startsWith("/sso/");
 }
@@ -58,6 +62,19 @@ function AuthGate() {
   useEffect(() => {
     if (staleSubmitted) resetForm({ keepUser: true });
   }, [staleSubmitted, resetForm]);
+
+  // Remember the last form page the user was on, so "Resume Draft" can
+  // take them straight back to it.
+  useEffect(() => {
+    const path = location.pathname.toLowerCase();
+    if (EDIT_PATHS.includes(path)) {
+      try {
+        localStorage.setItem(LAST_PATH_KEY, path);
+      } catch {
+        /* ignore storage errors */
+      }
+    }
+  }, [location.pathname]);
 
   const runCheck = useCallback(async () => {
     if (isPublicPath(location.pathname)) {
@@ -153,7 +170,8 @@ function AuthGate() {
         <Route path="/sso/not-active" element={<SsoNotActive />} />
         <Route path="/sso/rejected" element={<SsoRejected />} />
         <Route path="/sso/objection" element={<SsoObjection />} />
-        <Route path="/oic" element={<OicPortal />} />
+        <Route path="/oic/requests" element={<OicRequests />} />
+                <Route path="/oic" element={<OicPortal />} />
         <Route path="/oic/dashboard" element={<OicDashboard />} />
       </Routes>
     </>

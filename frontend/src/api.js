@@ -48,7 +48,8 @@ async function request(path, options = {}) {
     throw error;
   }
 
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 export const apiGet = (path) => request(path);
@@ -63,4 +64,8 @@ export const apiPut = (path, body) =>
   request(path, {
     method: "PUT",
     body: JSON.stringify(body),
+  });
+  export const apiDelete = (path) =>
+  request(path, {
+    method: "DELETE",
   });
