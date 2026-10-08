@@ -5,11 +5,8 @@ function Layout({ children }) {
   return (
     <>
       <Header />
-
       <div className="page-container">
-        <div className="form-card">
-          {children}
-        </div>
+        <div className="form-card">{children}</div>
       </div>
     </>
   );

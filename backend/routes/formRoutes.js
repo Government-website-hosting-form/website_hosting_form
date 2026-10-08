@@ -340,7 +340,7 @@ router.delete('/checklist/:id', requireOwner('checklist'), requireEditable('chec
   res.json({ msg: 'deleted' })
 })
 
-const FORM_ID_PREFIX = 'WebsiteHostingFormRSDC'
+const FORM_ID_PREFIX = 'RSDC'
 const APP_CODE_LENGTH = 5
 const SERIAL_PAD = 4
 

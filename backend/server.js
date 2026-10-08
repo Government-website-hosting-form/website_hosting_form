@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
     message: "Backend is running",
   });
 });
-
+app.use("/api/oic", requireSession, require("./routes/oicRoutes"));
 app.post("/", async (req, res) => {
   try {
     const token = req.body.userdetails;

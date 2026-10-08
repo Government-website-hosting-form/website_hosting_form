@@ -15,7 +15,7 @@ import Checklist from "../pages/Checklist";
 import PreviewDetails from "../pages/PreviewDetails";
 import SubmittedDetails from "../pages/SubmittedDetails";
 import Mapping from "../pages/Mapping";
-import OicRequests from "../pages/OicRequests";
+import OicPortal from "../pages/OicPortal";
 import {
   SsoSuccess,
   SsoFailed,
@@ -24,7 +24,7 @@ import {
   SsoRejected,
   SsoObjection,
 } from "../pages/SsoPages";
-
+import OicDashboard from "../pages/OicDashboard";
 import { verifySession, SSO_BACK_URL } from "../auth";
 import SessionTimeout from "./SessionTimeout";
 import { useFormContext } from "../context/FormContext";
@@ -153,7 +153,8 @@ function AuthGate() {
         <Route path="/sso/not-active" element={<SsoNotActive />} />
         <Route path="/sso/rejected" element={<SsoRejected />} />
         <Route path="/sso/objection" element={<SsoObjection />} />
-        <Route path="/oic/requests" element={<OicRequests />} />
+        <Route path="/oic" element={<OicPortal />} />
+        <Route path="/oic/dashboard" element={<OicDashboard />} />
       </Routes>
     </>
   );
