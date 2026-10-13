@@ -1,6 +1,15 @@
 const db = require("../config/db");
-const { OIC_ROLES } = require("../config/Roles");
+const { DASHBOARD_ROLES } = require("../config/Roles");
 
+// Designation ka ek hi source: live RajSSO identity (req.identity),
+// jo getUserDetails bhi use karta hai. DB wali designation sirf fallback hai.
+function currentDesignation(req, user) {
+  const live = (req.identity?.designation || "").trim();
+  const saved = (user?.designation || "").trim();
+  return (live || saved).toUpperCase();
+}
+
+// OIC dashboard (/api/oic/*, mapping approvals) sirf DASHBOARD_ROLES ke liye.
 async function requireOicRole(req, res, next) {
   try {
     const ssoId = req.ssoId;
@@ -15,11 +24,16 @@ async function requireOicRole(req, res, next) {
     );
 
     const user = rows[0];
-    const designation = (user?.designation || "").trim().toUpperCase();
+    const designation = currentDesignation(req, user);
     const isActive = (user?.status || "").trim().toLowerCase() === "active";
     const isApproved = !!user?.is_approved;
 
-    if (!user || !OIC_ROLES.includes(designation) || !isActive || !isApproved) {
+    if (
+      !user ||
+      !DASHBOARD_ROLES.includes(designation) ||
+      !isActive ||
+      !isApproved
+    ) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to perform this action",
@@ -33,4 +47,20 @@ async function requireOicRole(req, res, next) {
   }
 }
 
-module.exports = { requireOicRole };
+// Dashboard-only users ko form APIs se door rakhta hai.
+// OIC_ROLES wale users form use kar sakte hain, isliye wo yahan block nahi hote.
+function blockOic(req, res, next) {
+  const designation = (req.identity?.designation || "").trim().toUpperCase();
+
+  if (designation && DASHBOARD_ROLES.includes(designation)) {
+    return res.status(403).json({
+      success: false,
+      message: "Dashboard users can only access the dashboard.",
+      reason: "OIC_DASHBOARD_ONLY",
+    });
+  }
+
+  next();
+}
+
+module.exports = { requireOicRole, blockOic };

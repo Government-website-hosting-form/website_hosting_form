@@ -1,5 +1,5 @@
 const db = require("../config/db");
-const { OIC_ROLES } = require("../config/Roles");
+const { OIC_ROLES, DASHBOARD_ROLES } = require("../config/Roles");
 const { isTestOicBypass } = require("../config/testBypass");
 const {
   dropSession,
@@ -62,11 +62,14 @@ const getUserDetails = async (req, res) => {
   try {
     const id = req.identity;
 
+    // Test bypass (isTestOicBypass ko config/testBypass.js mein
+    // NODE_ENV !== "production" se gate karna zaroori hai)
     if (isTestOicBypass(id.ssoId)) {
       return res.json({
         success: true,
         access: "FORM",
         reason: "TEST_BYPASS",
+        isOic: true,
         data: {
           department: id.department,
           designation: "TEST-OIC",
@@ -82,11 +85,17 @@ const getUserDetails = async (req, res) => {
       });
     }
 
-    const currentDepartment = id.department.toUpperCase();
-    const currentDesignation = id.designation.toUpperCase();
+    const currentDepartment = (id.department || "").trim().toUpperCase();
+    const currentDesignation = (id.designation || "").trim().toUpperCase();
+const isBypassRole = OIC_ROLES.includes(currentDesignation);          // form, mapping skip
+const isOic = DASHBOARD_ROLES.includes(currentDesignation);           // dashboard (frontend isi ko /oic ke liye padhta hai)
 
-    if (id.userType !== "GOVT" || currentDesignation === "CITIZEN") {
-      return res.json({
+    // Har response mein isOic jayega, frontend isi se dashboard/form decide karega
+    const reply = (body) => res.json({ ...body, isOic });
+
+   const userType = String(id.userType || "").trim().toUpperCase();
+if (userType !== "GOVT" || currentDesignation === "CITIZEN")  {
+      return reply({
         success: true,
         access: "DENIED",
         reason: "NOT_G2G",
@@ -119,7 +128,43 @@ const getUserDetails = async (req, res) => {
     const existingUser = users[0];
 
     if (!existingUser) {
-      return res.json({
+      // Pehli baar aane wala OIC: row auto-create, mapping ki zaroorat nahi
+      // (designation RajSSO profile se aati hai, user input se nahi)
+      if (isOic) {
+        try {
+          await db.query(
+            `INSERT INTO users (sso_id, department, designation, email, status, is_approved)
+             VALUES (?, ?, ?, ?, 'active', 1)`,
+            [
+              id.ssoId,
+              id.department || null,
+              id.designation,
+              id.mailId || null,
+            ]
+          );
+        } catch (insertError) {
+          console.error("OIC auto-create failed:", insertError.message);
+
+          return res.status(500).json({
+            success: false,
+            message: "Could not create OIC user record",
+          });
+        }
+
+        return reply({
+          success: true,
+          access: "FORM",
+          reason: "OIC_AUTO_CREATED",
+          data: {
+            department: id.department || null,
+            designation: id.designation || null,
+            mailId: id.mailId || null,
+          },
+        });
+      }
+
+      // Pehli baar aane wala normal user: mapping
+      return reply({
         success: true,
         access: "MAPPING",
         reason: "FIRST_TIME_USER",
@@ -136,7 +181,7 @@ const getUserDetails = async (req, res) => {
     const isApprovedUser = !!existingUser.is_approved;
 
     if (!isActiveUser) {
-      return res.json({
+      return reply({
         success: true,
         access: "DENIED",
         reason: "ACCOUNT_INACTIVE",
@@ -145,7 +190,7 @@ const getUserDetails = async (req, res) => {
     }
 
     if (!isApprovedUser) {
-      return res.json({
+      return reply({
         success: true,
         access: "DENIED",
         reason: "NOT_APPROVED",
@@ -153,10 +198,8 @@ const getUserDetails = async (req, res) => {
       });
     }
 
-    const hasAllowedRole = OIC_ROLES.includes(currentDesignation);
-
-    if (hasAllowedRole) {
-      return res.json({
+    if (isOic) {
+      return reply({
         success: true,
         access: "FORM",
         reason: "ROLE_MATCHED",
@@ -183,7 +226,7 @@ const getUserDetails = async (req, res) => {
       currentDesignation === savedDesignation;
 
     if (detailsMatch) {
-      return res.json({
+      return reply({
         success: true,
         access: "FORM",
         reason: "DEPT_DESIGNATION_MATCHED",
@@ -195,7 +238,7 @@ const getUserDetails = async (req, res) => {
       });
     }
 
-    return res.json({
+    return reply({
       success: true,
       access: "MAPPING",
       reason: "USER_MAPPING_REQUIRED",

@@ -2,6 +2,10 @@ const express = require('express')
 const router = express.Router()
 const db = require('../config/db')
 const { requireOwner, requireEditable, isAppLocked, ownsRow } = require('../middleware/access')
+const { OIC_ROLES } = require('../config/Roles')
+
+const { blockOic } = require('../middleware/auth')
+router.use(blockOic)
 
 function formatDates(row) {
   if (!row) return row
@@ -457,4 +461,4 @@ router.post('/apps/:id/submit', requireOwner('apps'), async (req, res) => {
   }
 })
 
-module.exports = router
+module.exports = router;
