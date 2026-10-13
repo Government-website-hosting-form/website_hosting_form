@@ -38,6 +38,26 @@ function ssoHeaders(token) {
   };
 }
 
+// TEST ONLY: ek specific SSO ID ko normal G2G user bana deta hai.
+// Production mein hamesha band rehta hai (NODE_ENV=production).
+function applyTestForceOverride(identity) {
+  if (process.env.NODE_ENV === "production") return;
+
+  const forceId = (process.env.TEST_FORCE_SSO_ID || "").trim().toUpperCase();
+  if (!forceId) return;
+
+  if (String(identity.ssoId || "").trim().toUpperCase() !== forceId) return;
+
+  identity.userType = "GOVT";
+  identity.designation = (
+    process.env.TEST_FORCE_DESIGNATION || "SECTION OFFICER"
+  ).trim();
+  identity.department = (
+    process.env.TEST_FORCE_DEPARTMENT || "TEST DEPARTMENT"
+  ).trim();
+  identity.profileOk = true;
+}
+
 async function fetchIdentity(token) {
   let tokenRes;
   try {
@@ -98,6 +118,22 @@ async function fetchIdentity(token) {
   } catch (error) {
     console.error("SSO Profile error:", error.message);
   }
+
+  // Asli RajSSO values ek baar log karo (debugging ke liye, prod mein nahi)
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      "RajSSO identity (real):",
+      JSON.stringify({
+        ssoId: identity.ssoId,
+        userType: identity.userType,
+        designation: identity.designation,
+        department: identity.department,
+        profileOk: identity.profileOk,
+      })
+    );
+  }
+
+  applyTestForceOverride(identity);
 
   return { ok: true, identity };
 }

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import LandingPage from "../pages/LandingPage";
 import OrganizationDetails from "../pages/OrganizationDetails";
@@ -15,9 +15,9 @@ import Checklist from "../pages/Checklist";
 import PreviewDetails from "../pages/PreviewDetails";
 import SubmittedDetails from "../pages/SubmittedDetails";
 import Mapping from "../pages/Mapping";
-import OicRequests from "../pages/OicRequests";
+
 import OicPortal from "../pages/OicPortal";
-import OicDashboard from "../pages/OicDashboard";
+
 import {
   SsoSuccess,
   SsoFailed,
@@ -27,7 +27,7 @@ import {
   SsoObjection,
 } from "../pages/SsoPages";
 
-import { verifySession, SSO_BACK_URL } from "../auth";
+import { verifySession, fetchIsOic, SSO_BACK_URL } from "../auth";
 import SessionTimeout from "./SessionTimeout";
 import { useFormContext } from "../context/FormContext";
 
@@ -55,6 +55,8 @@ function AuthGate() {
   const { ids, resetForm } = useFormContext();
 
   const [status, setStatus] = useState("checking");
+  const [isOic, setIsOic] = useState(null); // null = abhi pata nahi
+  const isOicRef = useRef(null); // har navigation pe API dobara na lage
 
   const staleSubmitted =
     !!ids.submitted && EDIT_PATHS.includes(location.pathname.toLowerCase());
@@ -87,10 +89,17 @@ function AuthGate() {
     const result = await verifySession();
 
     if (result.authenticated) {
+      if (isOicRef.current === null) {
+        const value = await fetchIsOic();
+        isOicRef.current = value;
+        setIsOic(value);
+      }
       setStatus("authorized");
       return;
     }
 
+    isOicRef.current = null;
+    setIsOic(null);
     setStatus(result.reason === "server_unreachable" ? "offline" : "denied");
   }, [location.pathname]);
 
@@ -100,7 +109,11 @@ function AuthGate() {
 
   useEffect(() => {
     function onStorage(event) {
-      if (event.key === "ssoToken" || event.key === "ssoId") runCheck();
+      if (event.key === "ssoToken" || event.key === "ssoId") {
+        isOicRef.current = null;
+        setIsOic(null);
+        runCheck();
+      }
     }
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -144,6 +157,15 @@ function AuthGate() {
     );
   }
 
+  // OIC sirf dashboard dekhega; normal user OIC pages nahi dekhega.
+// OIC sirf dashboard dekhega; normal user OIC page nahi dekhega.
+const path = location.pathname.toLowerCase();
+const onOicPage = path === "/oic";
+const oicAllowed =
+  onOicPage || path === "/sso/success" || path === "/sso/failed";
+
+if (isOic === true && !oicAllowed) return <Navigate to="/oic" replace />;
+if (isOic === false && onOicPage) return <Navigate to="/" replace />;
   if (staleSubmitted) return null;
 
   return (
@@ -170,9 +192,11 @@ function AuthGate() {
         <Route path="/sso/not-active" element={<SsoNotActive />} />
         <Route path="/sso/rejected" element={<SsoRejected />} />
         <Route path="/sso/objection" element={<SsoObjection />} />
-        <Route path="/oic/requests" element={<OicRequests />} />
-                <Route path="/oic" element={<OicPortal />} />
-        <Route path="/oic/dashboard" element={<OicDashboard />} />
+    
+<Route path="/sso/objection" element={<SsoObjection />} />
+<Route path="/oic" element={<OicPortal />} />
+<Route path="*" element={<Navigate to={isOic ? "/oic" : "/"} replace />} />
+        
       </Routes>
     </>
   );
