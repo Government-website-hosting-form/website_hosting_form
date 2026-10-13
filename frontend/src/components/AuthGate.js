@@ -160,7 +160,7 @@ function AuthGate() {
   // OIC sirf dashboard dekhega; normal user OIC pages nahi dekhega.
 // OIC sirf dashboard dekhega; normal user OIC page nahi dekhega.
 const path = location.pathname.toLowerCase();
-const onOicPage = path === "/oic";
+const onOicPage = path === "/oic" || path.startsWith("/oic/");
 const oicAllowed =
   onOicPage || path === "/sso/success" || path === "/sso/failed";
 
