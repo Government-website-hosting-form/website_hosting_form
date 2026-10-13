@@ -49,9 +49,10 @@ const getUserBasic = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    data: {
+       data: {
       department: id.department,
       designation: id.designation,
+      fullName: id.fullName, // change
       mailId: id.mailId,
     },
   });

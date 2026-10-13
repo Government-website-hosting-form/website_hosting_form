@@ -43,6 +43,7 @@ function Mapping() {
   const [submitted, setSubmitted] = useState(false);
   const [requestNo, setRequestNo] = useState("");
   const [objectionRemarks, setObjectionRemarks] = useState("");
+  const [nameFromSso, setNameFromSso] = useState(false); // change
 
   useEffect(() => {
     if (!ssoId) {
@@ -84,6 +85,7 @@ function Mapping() {
     }
   };
 
+  // change: whole function updated to also read the full name from SSO
   const getUserDetails = async () => {
     try {
       const basicResponse = await apiGet(
@@ -91,8 +93,11 @@ function Mapping() {
           encodeURIComponent(ssoId)
       );
 
+      let ssoName = ""; // change
       if (basicResponse.success) {
         setUserType(basicResponse.data.userType || "");
+        ssoName = (basicResponse.data.fullName || "").trim(); // change
+        if (ssoName) setNameFromSso(true); // change
       }
 
       const detailsResponse = await apiGet(
@@ -100,25 +105,29 @@ function Mapping() {
       );
 
       if (detailsResponse.success && detailsResponse.data) {
-        const newForm = {
-          ...form,
-          department:
-            detailsResponse.data.department || "",
-          designation:
-            detailsResponse.data.designation || "",
+        // change: values coming from SSO, used for both the form and the draft save
+        const fromSso = {
+          department: detailsResponse.data.department || "",
+          designation: detailsResponse.data.designation || "",
           email: detailsResponse.data.mailId || "",
         };
 
-        setForm(newForm);
+        // change: functional update so values restored by loadExistingRequest are not overwritten
+        setForm((prev) => ({
+          ...prev,
+          ...fromSso,
+          fullName: ssoName || prev.fullName,
+        }));
 
         apiPost("/api/sso/mapping/init", {
           ssoId,
-          department: newForm.department,
-          designation: newForm.designation,
-          email: newForm.email,
+          ...fromSso, // change
         }).catch((err) =>
           console.error("Draft save failed:", err)
         );
+      } else if (ssoName) {
+        // change: still fill the name even if user-details returned no data
+        setForm((prev) => ({ ...prev, fullName: ssoName }));
       }
     } catch (error) {
       console.error("Error getting user details:", error);
@@ -156,7 +165,7 @@ function Mapping() {
 
     if (!form.fullName.trim()) {
       newErrors.fullName = "Full Name is required.";
-    } else if (nameError) {
+    } else if (!nameFromSso && nameError) { // change: SSO-provided name skips format check
       newErrors.fullName = nameError;
     }
 
@@ -350,6 +359,7 @@ function Mapping() {
             placeholder="Enter Full Name"
             value={form.fullName}
             onChange={handleChange}
+            disabled={nameFromSso} // change: locked when the name comes from SSO
           />
 
           {errors.fullName && (

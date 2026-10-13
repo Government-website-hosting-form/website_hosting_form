@@ -76,6 +76,7 @@ async function fetchIdentity(token) {
       : [],
     department: "",
     designation: "",
+    fullName: "", // change
     mailId: "",
     profileOk: false,
   };
@@ -90,6 +91,11 @@ async function fetchIdentity(token) {
       const p = await profileRes.json();
       identity.department = String(p.department || "").trim();
       identity.designation = String(p.designation || "").trim();
+            // change
+      identity.fullName = String(
+        p.displayName || p.fullName || p.name || p.cn ||
+        [p.firstName, p.lastName].filter(Boolean).join(" ") || ""
+      ).trim();
       identity.mailId = String(p.mailOfficial || p.mailPersonal || "").trim();
       identity.profileOk = true;
     } else {
@@ -204,3 +210,4 @@ module.exports = {
   issueLoginCode,
   redeemLoginCode,
 };
+

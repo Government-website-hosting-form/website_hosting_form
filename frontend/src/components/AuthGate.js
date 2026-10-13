@@ -171,7 +171,7 @@ function AuthGate() {
         <Route path="/sso/rejected" element={<SsoRejected />} />
         <Route path="/sso/objection" element={<SsoObjection />} />
         <Route path="/oic/requests" element={<OicRequests />} />
-                <Route path="/oic" element={<OicPortal />} />
+        <Route path="/oic" element={<OicPortal />} />
         <Route path="/oic/dashboard" element={<OicDashboard />} />
       </Routes>
     </>

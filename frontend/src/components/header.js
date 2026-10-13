@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { backToSso, logout, getSsoId } from "../auth";
 
 const HOME_PATH = "/"; // LandingPage route
+const NO_HOME_PATHS = ["/sso/mapping", "/oic", "/sso/success", "/sso/failed", "/sso/mapping", "/sso/pending", "/sso/not-active", "/sso/rejected", "/sso/objection", "/oic/requests"]; // change: pages where Home is hidden 
 
 // Form fill karne wale pages: yahan Home dabane par confirm popup aayega
 const EDIT_PATHS = [
@@ -55,16 +56,20 @@ function Header() {
       <div className="header-top">
         {ssoId && <span className="header-user">SSO ID: {ssoId}</span>}
 
-        {pathname !== HOME_PATH && (
-          <button
-            type="button"
-            className="header-btn"
-            onClick={handleHome}
-            disabled={busy}
-          >
-            Home
-          </button>
-        )}
+        {pathname !== HOME_PATH &&
+          !NO_HOME_PATHS.some((p) => {
+            const path = pathname.toLowerCase();
+            return path === p || path.startsWith(p + "/");
+          }) && ( // change // change// change made here to avoid showing Home button on SSO Mapping page
+            <button
+              type="button"
+              className="header-btn"
+              onClick={handleHome}
+              disabled={busy}
+            >
+              Home
+            </button>
+          )}
 
         <button
           type="button"
