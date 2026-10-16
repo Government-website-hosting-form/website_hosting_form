@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { apiGet } from "../api";
 
 const STORAGE_KEY = "bsdc_form_ids";
@@ -51,6 +51,19 @@ export function FormProvider({ children }) {
     ensureRealUser();
   }, []);
 
+  // The open form page registers its "save without validation" function here,
+  // so the Home button can offer "Save & go to Home".
+  const leaveSaver = useRef(null);
+  function setLeaveSaver(fn) {
+    leaveSaver.current = fn;
+  }
+  function hasLeaveSaver() {
+    return !!leaveSaver.current;
+  }
+  async function runLeaveSaver() {
+    if (leaveSaver.current) await leaveSaver.current();
+  }
+
   function setId(key, value) {
     setIds((prev) => ({ ...prev, [key]: value }));
   }
@@ -63,7 +76,7 @@ export function FormProvider({ children }) {
   }
 
   return (
-    <FormContext.Provider value={{ ids, setId, userReady, resetForm }}>
+    <FormContext.Provider value={{ ids, setId, userReady, resetForm, setLeaveSaver, hasLeaveSaver, runLeaveSaver }}>
       {children}
     </FormContext.Provider>
   );

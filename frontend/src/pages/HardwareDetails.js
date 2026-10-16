@@ -5,6 +5,7 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 import { validateEmail, validateMobile, validatePhone, validateText } from "../helpers/Validation";
@@ -194,6 +195,18 @@ function HardwareDetails() {
       setSaving(false);
     }
   }
+
+  // Used by the Home button ("Save & go to Home"): saves without validation.
+  async function saveQuietly() {
+    try {
+      if (!ids.infraId) return;
+      await apiPut(`/infra/${ids.infraId}`, form);
+    } catch (err) {
+      console.error("Could not save draft on Home:", err);
+    }
+  }
+
+  useLeaveSave(saveQuietly);
 
   function Backpage() {
     navigate("/infraotherdetails");

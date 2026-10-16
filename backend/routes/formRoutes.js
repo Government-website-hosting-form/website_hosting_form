@@ -142,6 +142,8 @@ router.get('/apps/:id', requireOwner('apps'), async (req, res) => {
 router.post('/apps', async (req, res) => {
   try {
     const data = await cleanBody('apps', packAppsPayload(req.body), { pk: 'app_id', drop: ['user_id', 'status', 'submitted_at', 'form_id', 'form_serial', 'request_no'] })
+    // apps.name is NOT NULL (default ''): an empty name is stored as '' (not entered yet), never NULL
+    if (data.name === null) data.name = ''
     if (data.org_id && !(await ownsRow('org', data.org_id, req.userId))) {
       return forbidden(res, 'Invalid org_id')
     }
@@ -156,6 +158,8 @@ router.post('/apps', async (req, res) => {
 router.put('/apps/:id', requireOwner('apps'), requireEditable('apps'), async (req, res) => {
   try {
     const data = await cleanBody('apps', packAppsPayload(req.body), { pk: 'app_id', drop: ['user_id', 'status', 'submitted_at', 'form_id', 'form_serial', 'request_no'] })
+    // apps.name is NOT NULL (default ''): an empty name is stored as '' (not entered yet), never NULL
+    if (data.name === null) data.name = ''
     if (data.org_id && !(await ownsRow('org', data.org_id, req.userId))) {
       return forbidden(res, 'Invalid org_id')
     }

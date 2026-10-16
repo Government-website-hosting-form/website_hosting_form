@@ -5,6 +5,7 @@ import "./MainDetails.css";
 import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { validateText, validateEmail, validateMobile, validatePhone } from "../helpers/Validation";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
@@ -217,6 +218,8 @@ function MainDetails() {
       console.error("Could not save draft on Back:", err);
     }
   }
+
+  useLeaveSave(saveQuietly);
 
   async function Backpage() {
     await saveQuietly();

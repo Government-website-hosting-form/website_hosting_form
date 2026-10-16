@@ -4,6 +4,7 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import "./ApplicationDetails.css";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { apiPost, apiGet, apiPut } from "../api";
 import { useEffect } from "react";
 
@@ -163,6 +164,8 @@ function ApplicationDetails() {
       console.error("Could not save draft on Back:", err);
     }
   }
+
+  useLeaveSave(saveQuietly);
 
   async function Backpage() {
     await saveQuietly();

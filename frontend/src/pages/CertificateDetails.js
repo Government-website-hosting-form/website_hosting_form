@@ -4,6 +4,7 @@ import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 
@@ -148,6 +149,8 @@ function CertificateDetails() {
       console.error("Could not save draft on Back:", err);
     }
   }
+
+  useLeaveSave(saveQuietly);
 
   async function Backpage() {
     await saveQuietly();

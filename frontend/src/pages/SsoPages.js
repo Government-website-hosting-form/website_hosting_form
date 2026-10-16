@@ -257,6 +257,11 @@ export function SsoFailed() {
   const [searchParams] = useSearchParams();
   const reason = searchParams.get("reason") || "unknown_error";
 
+  // A failed/denied login must not leave the previous user's session behind.
+  useEffect(() => {
+    clearSession();
+  }, []);
+
   if (reason === "NOT_G2G") {
     return (
       <Layout>

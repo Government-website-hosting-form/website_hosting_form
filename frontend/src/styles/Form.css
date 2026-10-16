@@ -305,3 +305,72 @@ body{
 .home-btn:hover {
   background: #0d2f55;
 }
+
+/* Home button: "Leave this form?" popup */
+.leave-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leave-modal {
+  background: #fff;
+  color: #222;
+  border-radius: 8px;
+  padding: 24px 28px;
+  width: min(440px, 92vw);
+  text-align: left;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.leave-title {
+  margin: 0 0 8px;
+  color: #123d6d;
+}
+
+.leave-text {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.leave-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.leave-btn {
+  padding: 8px 16px;
+  background: #fff;
+  color: #123d6d;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.leave-btn:hover:not(:disabled) {
+  background: #f1f5fa;
+}
+
+.leave-btn-primary {
+  background: #123d6d;
+  color: #fff;
+  border-color: #123d6d;
+  font-weight: 600;
+}
+
+.leave-btn-primary:hover:not(:disabled) {
+  background: #0d2f55;
+}
+
+.leave-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

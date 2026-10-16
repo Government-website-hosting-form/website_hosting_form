@@ -4,6 +4,7 @@ import FormButtons from "../components/FormButtons";
 import "./Checklist.css";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { apiGet, apiPost, apiPut } from "../api";
 
 function Checklist() {
@@ -236,6 +237,8 @@ function Checklist() {
       console.error("Could not save draft on Back:", err);
     }
   }
+
+  useLeaveSave(saveQuietly);
 
   async function Backpage() {
     await saveQuietly();

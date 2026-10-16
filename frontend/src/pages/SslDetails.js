@@ -4,6 +4,7 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import "./SslDetails.css";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 
@@ -132,6 +133,8 @@ function SslDetails() {
       console.error("Could not save draft on Back:", err);
     }
   }
+
+  useLeaveSave(saveQuietly);
 
   async function Backpage() {
     await saveQuietly();

@@ -4,6 +4,7 @@ import "./ServerDetails.css";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { apiGet, apiPost, apiPut } from "../api";
 
 
@@ -254,6 +255,8 @@ function StagingDetails() {
             console.error("Could not save draft on Back:", err);
         }
     }
+
+    useLeaveSave(saveQuietly);
 
     async function Backpage() {
         await saveQuietly();

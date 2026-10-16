@@ -4,6 +4,7 @@ import "./InfraDetails.css";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { apiGet, apiPut } from "../api";
 
 const initialState = {
@@ -102,6 +103,8 @@ function InfraOtherDetails() {
             console.error("Could not save draft on Back:", err);
         }
     }
+
+    useLeaveSave(saveQuietly);
 
     async function Backpage() {
         await saveQuietly();

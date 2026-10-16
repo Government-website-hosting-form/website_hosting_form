@@ -4,6 +4,7 @@ import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
+import useLeaveSave from "../hooks/useLeaveSave";
 import { apiPost, apiGet, apiPut } from "../api";
 import { useEffect } from "react";
 import {
@@ -201,6 +202,39 @@ function OrganizationDetails() {
       setSaving(false);
     }
   }
+
+  // Used by the Home button ("Save & go to Home"): saves without validation.
+  // Also creates the (empty) application record, so the form appears on the Home
+  // page as "Ongoing" (the Home list is built from applications).
+  async function saveQuietly() {
+    try {
+      const hasData = Object.values(form).some((v) => String(v ?? "").trim() !== "");
+      if (!ids.orgId && !hasData) return;
+
+      const payload = { ...form, user_id: ids.userId || null };
+      let orgId = ids.orgId;
+      if (orgId) {
+        await apiPut(`/org/${orgId}`, payload);
+      } else {
+        const res = await apiPost("/org", payload);
+        orgId = res.id;
+        setId("orgId", orgId);
+      }
+
+      if (!ids.appId) {
+        try {
+          const appRes = await apiPost("/apps", { org_id: orgId });
+          setId("appId", appRes.id);
+        } catch (err) {
+          console.error("Could not create the draft application record:", err);
+        }
+      }
+    } catch (err) {
+      console.error("Could not save draft on Home:", err);
+    }
+  }
+
+  useLeaveSave(saveQuietly);
 
   return (
     <Layout>
