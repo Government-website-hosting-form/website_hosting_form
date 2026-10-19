@@ -1,11 +1,12 @@
 const pool = require("../config/db");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 
 const APPROVAL_LETTER_DIR = path.join(__dirname, "..", "uploads", "approval-letters");
 
-async function findLatestRequestBySsoId(ssoId) {
-  const [rows] = await pool.query(
+async function findLatestRequestBySsoId(ssoId, db = pool) {
+  const [rows] = await db.query(
     `SELECT request_id, status
      FROM requests
      WHERE sso_id = ?
@@ -138,10 +139,13 @@ exports.listRequests = async (req, res) => {
     const status = (req.query.status || "pending").trim().toLowerCase();
 
     const params = [];
-    let where = "";
+    // Only requests the user really submitted (name + approval letter present).
+    // Blank rows created by /init must never reach the OIC list.
+    let where = `WHERE full_name IS NOT NULL AND full_name <> ''
+                   AND approval_letter_path IS NOT NULL AND approval_letter_path <> ''`;
 
     if (status !== "all") {
-      where = "WHERE status = ?";
+      where += " AND status = ?";
       params.push(status);
     }
 
@@ -180,6 +184,13 @@ exports.approveRequest = async (req, res) => {
     }
 
     const request = rows[0];
+
+    if (!request.full_name || !request.mobile || !request.approval_letter_path) {
+      return res.status(400).json({
+        success: false,
+        message: "This request is incomplete: the user has not submitted the mapping form yet",
+      });
+    }
 
     const [existingUsers] = await pool.query(
       `SELECT user_id FROM users WHERE sso_id = ?`,
@@ -314,13 +325,27 @@ exports.raiseObjection = async (req, res) => {
 };
 
 exports.initRequest = async (req, res) => {
+  let conn;
+  let lockName;
+
   try {
     const ssoId = req.ssoId;
     const { department, designation, email } = req.body;
 
     if (!ssoId) return loginRequired(res);
 
-    const existingRequest = await findLatestRequestBySsoId(ssoId);
+    // Two /init calls at the same moment (React StrictMode, two tabs) must not
+    // both insert. A lock per SSO ID makes the second call wait and then update.
+    conn = await pool.getConnection();
+    lockName = "mapping_init_" + crypto.createHash("md5").update(String(ssoId)).digest("hex");
+    const [[lock]] = await conn.query("SELECT GET_LOCK(?, 5) AS got", [lockName]);
+
+    if (!lock.got) {
+      lockName = null;
+      return res.status(503).json({ success: false, message: "Please try again" });
+    }
+
+    const existingRequest = await findLatestRequestBySsoId(ssoId, conn);
     let requestId;
 
     if (
@@ -328,13 +353,13 @@ exports.initRequest = async (req, res) => {
       (existingRequest.status === "pending" ||
         existingRequest.status === "objection")
     ) {
-      await pool.query(
+      await conn.query(
         `UPDATE requests SET department = ?, designation = ?, email = ? WHERE request_id = ?`,
         [department || null, designation || null, email || null, existingRequest.request_id]
       );
       requestId = existingRequest.request_id;
     } else {
-      const [result] = await pool.query(
+      const [result] = await conn.query(
         `INSERT INTO requests (sso_id, department, designation, email, submitted_at, status, is_approved)
          VALUES (?, ?, ?, ?, NOW(), 'pending', 0)`,
         [ssoId, department || null, designation || null, email || null]
@@ -346,6 +371,17 @@ exports.initRequest = async (req, res) => {
   } catch (error) {
     console.error("initRequest error:", error.message);
     return res.status(500).json({ success: false, message: "Server Error" });
+  } finally {
+    if (conn) {
+      if (lockName) {
+        try {
+          await conn.query("SELECT RELEASE_LOCK(?)", [lockName]);
+        } catch (e) {
+          /* lock is released anyway when the connection closes */
+        }
+      }
+      conn.release();
+    }
   }
 };
 

@@ -27,7 +27,7 @@ import {
   SsoObjection,
 } from "../pages/SsoPages";
 
-import { verifySession, fetchIsOic, SSO_BACK_URL } from "../auth";
+import { verifySession, fetchAccess, getSsoId, SSO_BACK_URL } from "../auth";
 import SessionTimeout from "./SessionTimeout";
 import { useFormContext } from "../context/FormContext";
 
@@ -46,6 +46,18 @@ const EDIT_PATHS = [
 
 const LAST_PATH_KEY = "bsdc_last_path";
 
+// Pages that need FORM access. Users whose access is MAPPING or DENIED must not open them.
+const FORM_PATHS = ["/", ...EDIT_PATHS, "/previewdetails", "/submitted"];
+// How long a fetched access result is trusted before it is checked again.
+const ACCESS_TTL_MS = 30 * 1000;
+
+// Same destinations SsoSuccess uses for a DENIED user.
+function deniedTarget(reason, ssoId) {
+  if (reason === "ACCOUNT_INACTIVE") return "/sso/not-active?ssoId=" + ssoId;
+  if (reason === "NOT_APPROVED") return "/sso/pending?ssoId=" + ssoId;
+  return "/sso/failed?reason=" + encodeURIComponent(reason || "access_denied");
+}
+
 function isPublicPath(pathname) {
   return pathname.startsWith("/sso/");
 }
@@ -57,6 +69,8 @@ function AuthGate() {
   const [status, setStatus] = useState("checking");
   const [isOic, setIsOic] = useState(null); // null = abhi pata nahi
   const isOicRef = useRef(null); // har navigation pe API dobara na lage
+  const [access, setAccess] = useState(null); // { access, reason, isOic } from /user-details
+  const accessRef = useRef(null); // { info, at }: re-checked after ACCESS_TTL_MS
 
   const staleSubmitted =
     !!ids.submitted && EDIT_PATHS.includes(location.pathname.toLowerCase());
@@ -80,6 +94,9 @@ function AuthGate() {
 
   const runCheck = useCallback(async () => {
     if (isPublicPath(location.pathname)) {
+      // Coming from a login / mapping / status page: always re-check access afterwards
+      accessRef.current = null;
+      setAccess(null);
       setStatus("authorized");
       return;
     }
@@ -89,17 +106,40 @@ function AuthGate() {
     const result = await verifySession();
 
     if (result.authenticated) {
-      if (isOicRef.current === null) {
-        const value = await fetchIsOic();
-        isOicRef.current = value;
-        setIsOic(value);
+      const onFormPath = FORM_PATHS.includes(location.pathname.toLowerCase());
+      const accessFresh =
+        accessRef.current && Date.now() - accessRef.current.at < ACCESS_TTL_MS;
+
+      if (isOicRef.current === null || (onFormPath && !accessFresh)) {
+        const info = await fetchAccess();
+
+        if (isOicRef.current === null) {
+          const value = info ? !!info.isOic : null;
+          isOicRef.current = value;
+          setIsOic(value);
+        }
+
+        if (onFormPath) {
+          if (!info) {
+            // Could not confirm access: do not open form pages.
+            accessRef.current = null;
+            setAccess(null);
+            setStatus("offline");
+            return;
+          }
+          accessRef.current = { info, at: Date.now() };
+        }
       }
+
+      setAccess(onFormPath && accessRef.current ? accessRef.current.info : null);
       setStatus("authorized");
       return;
     }
 
     isOicRef.current = null;
     setIsOic(null);
+    accessRef.current = null;
+    setAccess(null);
     setStatus(result.reason === "server_unreachable" ? "offline" : "denied");
   }, [location.pathname]);
 
@@ -112,6 +152,8 @@ function AuthGate() {
       if (event.key === "ssoToken" || event.key === "ssoId") {
         isOicRef.current = null;
         setIsOic(null);
+        accessRef.current = null;
+        setAccess(null);
         runCheck();
       }
     }
@@ -166,6 +208,18 @@ const oicAllowed =
 
 if (isOic === true && !oicAllowed) return <Navigate to="/oic" replace />;
 if (isOic === false && onOicPage) return <Navigate to="/" replace />;
+
+// Form pages need FORM access. MAPPING / DENIED users are sent to their own page.
+if (FORM_PATHS.includes(path) && access?.access !== "FORM") {
+  const sso = encodeURIComponent(getSsoId() || "");
+  if (access?.access === "MAPPING") {
+    return <Navigate to={"/sso/mapping?ssoId=" + sso} replace />;
+  }
+  if (access?.access === "DENIED") {
+    return <Navigate to={deniedTarget(access.reason, sso)} replace />;
+  }
+  return null; // access not known yet: never show a form page by default
+}
   if (staleSubmitted) return null;
 
   return (

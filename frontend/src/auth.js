@@ -123,6 +123,34 @@ export async function fetchIsOic() {
     return null;
   }
 }
+
+// Same call as fetchIsOic, but returns the whole access decision from the backend.
+// -> { access: "FORM" | "MAPPING" | "DENIED", reason, isOic }  or null if it could not be fetched.
+export async function fetchAccess() {
+  const token = getToken();
+  const ssoId = getSsoId();
+  if (!token || !ssoId) return null;
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/sso/2/user-details`, {
+      headers: {
+        Accept: "application/json",
+        "SSO-TOKEN": token,
+        "SSO-ID": ssoId,
+      },
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    if (!data.success) return null;
+    return { access: data.access, reason: data.reason, isOic: !!data.isOic };
+  } catch (error) {
+    console.error("fetchAccess failed:", error);
+    return null;
+  }
+}
+
 export async function logout() {
   const token = getToken();
 
