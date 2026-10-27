@@ -63,6 +63,7 @@ function ProductionDetails() {
 
     const [error, setError] = useState("");
     const [saving, setSaving] = useState(false);
+    const [showErrors, setShowErrors] = useState(false);
 
     useEffect(() => {
         async function loadExisting() {
@@ -158,7 +159,16 @@ function ProductionDetails() {
         });
     }
 
+    // Shows "This field is required." under an empty field once Next was clicked.
+    const serverLists = { web: webServers, app: appServers, db: dbServers, other: otherServers };
+    function fe(list, index, field) {
+        if (!showErrors) return null;
+        const message = validateServer(serverLists[list][index])[field];
+        return message ? <p className="error-message">{message}</p> : null;
+    }
+
     function validateForm() {
+        setShowErrors(true);
         const allServers = [...webServers, ...appServers, ...dbServers, ...otherServers];
         const anyInvalid = allServers.some((server) => Object.keys(validateServer(server)).length > 0);
         if (anyInvalid) {
@@ -268,12 +278,15 @@ function ProductionDetails() {
                                     <td>{index + 1}</td>
                                     <td>
                                         <input type="text" value={server.processor} onChange={(e) => updateWebServer(index, "processor", e.target.value)} placeholder="i.e. 2-core, 4-core, 8-core" />
+                                        {fe("web", index, "processor")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.ram} onChange={(e) => updateWebServer(index, "ram", e.target.value)} placeholder="i.e. 16 GB, 32 GB etc" />
+                                        {fe("web", index, "ram")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.internal_storage} onChange={(e) => updateWebServer(index, "internal_storage", e.target.value)} placeholder="i.e. 100 GB, 500 GB, 1TB etc" />
+                                        {fe("web", index, "internal_storage")}
                                     </td>
                                     <td>
                                         <select value={server.external_storage} onChange={(e) => updateWebServer(index, "external_storage", e.target.value)}>
@@ -287,6 +300,7 @@ function ProductionDetails() {
                                         {server.external_storage === "Other" && (
                                             <input type="text" value={server.external_storage_other} onChange={(e) => updateWebServer(index, "external_storage_other", e.target.value)} placeholder="Please specify" />
                                         )}
+                                        {fe("web", index, "external_storage_other")}
                                     </td>
                                     <td>
                                         <select value={server.external_storage_unit} onChange={(e) => updateWebServer(index, "external_storage_unit", e.target.value)}>
@@ -297,6 +311,7 @@ function ProductionDetails() {
                                     <td>
                                        
                                             <input type="text" value={server.external_storage_capacity} onChange={(e) => updateWebServer(index, "external_storage_capacity", e.target.value)} placeholder="i.e. 500 GB, 1TB etc" />
+                                            {fe("web", index, "external_storage_capacity")}
                                     
                                     </td>
                                     <td>
@@ -310,6 +325,7 @@ function ProductionDetails() {
                                         {server.os === "Other" && (
                                             <input type="text" value={server.os_other} onChange={(e) => updateWebServer(index, "os_other", e.target.value)} placeholder="Please specify" />
                                         )}
+                                        {fe("web", index, "os_other")}
                                     </td>
                                     <td>
                                         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
@@ -353,12 +369,15 @@ function ProductionDetails() {
                                     <td>{index + 1}</td>
                                     <td>
                                         <input type="text" value={server.processor} onChange={(e) => updateAppServer(index, "processor", e.target.value)} placeholder="i.e. 2-core, 4-core, 8-core" />
+                                        {fe("app", index, "processor")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.ram} onChange={(e) => updateAppServer(index, "ram", e.target.value)} placeholder="i.e. 16 GB, 32 GB etc" />
+                                        {fe("app", index, "ram")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.internal_storage} onChange={(e) => updateAppServer(index, "internal_storage", e.target.value)} placeholder="i.e. 100 GB, 500 GB, 1TB etc" />
+                                        {fe("app", index, "internal_storage")}
                                     </td>
                                     <td>
                                         <select value={server.external_storage} onChange={(e) => updateAppServer(index, "external_storage", e.target.value)}>
@@ -372,6 +391,7 @@ function ProductionDetails() {
                                         {server.external_storage === "Other" && (
                                             <input type="text" value={server.external_storage_other} onChange={(e) => updateAppServer(index, "external_storage_other", e.target.value)} placeholder="Please specify" />
                                         )}
+                                        {fe("app", index, "external_storage_other")}
                                     </td>
                                     <td>
                                         <select value={server.external_storage_unit} onChange={(e) => updateAppServer(index, "external_storage_unit", e.target.value)}>
@@ -382,6 +402,7 @@ function ProductionDetails() {
                                     <td>
                                         
                                             <input type="text" value={server.external_storage_capacity} onChange={(e) => updateAppServer(index, "external_storage_capacity", e.target.value)} placeholder="i.e. 500 GB, 1TB etc" />
+                                            {fe("app", index, "external_storage_capacity")}
                                         
                                     </td>
                                     <td>
@@ -395,6 +416,7 @@ function ProductionDetails() {
                                         {server.os === "Other" && (
                                             <input type="text" value={server.os_other} onChange={(e) => updateAppServer(index, "os_other", e.target.value)} placeholder="Please specify" />
                                         )}
+                                        {fe("app", index, "os_other")}
                                     </td>
                                     <td>
                                         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
@@ -439,12 +461,15 @@ function ProductionDetails() {
                                     <td>{index + 1}</td>
                                     <td>
                                         <input type="text" value={server.processor} onChange={(e) => updateDbServer(index, "processor", e.target.value)} placeholder="i.e. 2-core, 4-core, 8-core" />
+                                        {fe("db", index, "processor")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.ram} onChange={(e) => updateDbServer(index, "ram", e.target.value)} placeholder="i.e. 16 GB, 32 GB etc" />
+                                        {fe("db", index, "ram")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.internal_storage} onChange={(e) => updateDbServer(index, "internal_storage", e.target.value)} placeholder="i.e. 100 GB, 500 GB, 1TB etc" />
+                                        {fe("db", index, "internal_storage")}
                                     </td>
                                     <td>
                                         <select value={server.external_storage} onChange={(e) => updateDbServer(index, "external_storage", e.target.value)}>
@@ -458,6 +483,7 @@ function ProductionDetails() {
                                         {server.external_storage === "Other" && (
                                             <input type="text" value={server.external_storage_other} onChange={(e) => updateDbServer(index, "external_storage_other", e.target.value)} placeholder="Please specify" />
                                         )}
+                                        {fe("db", index, "external_storage_other")}
                                     </td>
                                     <td>
                                         <select value={server.external_storage_unit} onChange={(e) => updateDbServer(index, "external_storage_unit", e.target.value)}>
@@ -468,6 +494,7 @@ function ProductionDetails() {
                                     <td>
                                        
                                             <input type="text" value={server.external_storage_capacity} onChange={(e) => updateDbServer(index, "external_storage_capacity", e.target.value)} placeholder="i.e. 500 GB, 1TB etc" />
+                                            {fe("db", index, "external_storage_capacity")}
                                         
                                     </td>
                                     <td>
@@ -481,9 +508,11 @@ function ProductionDetails() {
                                         {server.os === "Other" && (
                                             <input type="text" value={server.os_other} onChange={(e) => updateDbServer(index, "os_other", e.target.value)} placeholder="Please specify" />
                                         )}
+                                        {fe("db", index, "os_other")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.version} onChange={(e) => updateDbServer(index, "version", e.target.value)} placeholder="i.e. Oracle10g, Sql 2005 etc" />
+                                        {fe("db", index, "version")}
                                     </td>
                                     <td>
                                         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
@@ -528,15 +557,19 @@ function ProductionDetails() {
                                     <td>{index + 1}</td>
                                     <td>
                                         <input type="text" value={server.server_name} onChange={(e) => updateOtherServer(index, "server_name", e.target.value)} placeholder="Name of server" />
+                                        {fe("other", index, "server_name")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.processor} onChange={(e) => updateOtherServer(index, "processor", e.target.value)} placeholder="i.e. 2-core, 4-core, 8-core" />
+                                        {fe("other", index, "processor")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.ram} onChange={(e) => updateOtherServer(index, "ram", e.target.value)} placeholder="i.e. 16 GB, 32 GB etc" />
+                                        {fe("other", index, "ram")}
                                     </td>
                                     <td>
                                         <input type="text" value={server.internal_storage} onChange={(e) => updateOtherServer(index, "internal_storage", e.target.value)} placeholder="i.e. 100 GB, 500 GB, 1TB etc" />
+                                        {fe("other", index, "internal_storage")}
                                     </td>
                                     <td>
                                         <select value={server.external_storage} onChange={(e) => updateOtherServer(index, "external_storage", e.target.value)}>
@@ -550,6 +583,7 @@ function ProductionDetails() {
                                         {server.external_storage === "Other" && (
                                             <input type="text" value={server.external_storage_other} onChange={(e) => updateOtherServer(index, "external_storage_other", e.target.value)} placeholder="Please specify" />
                                         )}
+                                        {fe("other", index, "external_storage_other")}
                                     </td>
                                     <td>
                                         <select value={server.external_storage_unit} onChange={(e) => updateOtherServer(index, "external_storage_unit", e.target.value)}>
@@ -560,6 +594,7 @@ function ProductionDetails() {
                                     <td>
                                        
                                             <input type="text" value={server.external_storage_capacity} onChange={(e) => updateOtherServer(index, "external_storage_capacity", e.target.value)} placeholder="i.e. 500 GB, 1TB etc" />
+                                            {fe("other", index, "external_storage_capacity")}
                                         
                                     </td>
                                     <td>
@@ -573,6 +608,7 @@ function ProductionDetails() {
                                         {server.os === "Other" && (
                                             <input type="text" value={server.os_other} onChange={(e) => updateOtherServer(index, "os_other", e.target.value)} placeholder="Please specify" />
                                         )}
+                                        {fe("other", index, "os_other")}
                                     </td>
                                     <td>
                                         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>

@@ -14,7 +14,6 @@ import { uploadPdf } from "../helpers/uploadPdf";
 
 const initialState = {
   ssl_needed: "",
-  ssl_provider_type: "",
   ssl_environment: "",
   ssl_fqdn: "",
   ssl_type: [],
@@ -76,7 +75,6 @@ function SslDetails() {
     setForm((prev) => {
         const updated = { ...prev, [name]: value };
         if (name === "ssl_needed" && value !== "Yes") {
-            updated.ssl_provider_type = "";
             updated.ssl_environment = "";
             updated.ssl_fqdn = "";
             updated.ssl_type = [];

@@ -20,7 +20,7 @@ function hasAnyServers(group) {
     return ["web", "app", "db", "other"].some((key) => filterServers(group[key]).length > 0);
 }
 
-function FormPreviewContent({ org, app, infra, stagingServers, productionServers, checklist }) {
+function FormPreviewContent({ org, app, infra, stagingServers, productionServers, checklist, readOnly }) {
     const navigate = useNavigate();
 
     function renderServerSection(title, servers, showVersion, showServerName) {
@@ -74,7 +74,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">1</span>
                             <h3>Organization Details</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/organization")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/organization")}>Edit</button>}
                         </div>
                         <div className="doc-grid">
                             <div className="doc-row">
@@ -140,7 +140,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">2</span>
                             <h3>Application Details</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/ApplicationDetails")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/ApplicationDetails")}>Edit</button>}
                         </div>
                         <div className="doc-grid">
                             <div className="doc-row">
@@ -216,7 +216,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">3</span>
                             <h3>Developer, Maintenance Team Details</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/maindetails")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/maindetails")}>Edit</button>}
                         </div>
                         <div className="doc-grid">
                             <div className="doc-row">
@@ -298,7 +298,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">4</span>
                             <h3>Certificate Details</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/certificatedetails")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/certificatedetails")}>Edit</button>}
                         </div>
                         <div className="doc-grid">
                             <div className="doc-row">
@@ -386,7 +386,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">5</span>
                             <h3>VM / Server Requirements of Staging</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/stagingdetails")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/stagingdetails")}>Edit</button>}
                         </div>
 
                         {renderServerSection("Web Server(VM)", stagingServers.web, false, false)}
@@ -402,7 +402,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">6</span>
                             <h3>VM / Server Requirements of Production</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/productiondetails")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/productiondetails")}>Edit</button>}
                         </div>
 
                         {renderServerSection("Web Server(VM)", productionServers.web, false, false)}
@@ -418,7 +418,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">7</span>
                             <h3>Software, SFTP, Network, Monitoring & Backup</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/infraotherdetails")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/infraotherdetails")}>Edit</button>}
                         </div>
                         <div className="doc-grid">
                             <div className="doc-row">
@@ -479,7 +479,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">8</span>
                             <h3>Hardware Details</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/hardwaredetails")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/hardwaredetails")}>Edit</button>}
                         </div>
                         <div className="doc-grid">
                             <div className="doc-row">
@@ -653,7 +653,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">9</span>
                             <h3>SSL Certificate Details</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/ssldetails")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/ssldetails")}>Edit</button>}
                         </div>
                         <div className="doc-grid">
                             <div className="doc-row">
@@ -662,10 +662,6 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                             </div>
                             {infra.ssl_needed === "Yes" && (
                                 <>
-                                    <div className="doc-row">
-                                        <label>SSL Provider Type</label>
-                                        <p>{infra.ssl_provider_type || "-"}</p>
-                                    </div>
                                     <div className="doc-row">
                                         <label>Environment</label>
                                         <p>{infra.ssl_environment || "-"}</p>
@@ -721,7 +717,7 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                         <div className="doc-section-header">
                             <span className="doc-badge">10</span>
                             <h3>Checklist for Secure Code Programming</h3>
-                            <button type="button" className="edit-section-button" onClick={() => navigate("/checklist")}>Edit</button>
+                            {!readOnly && <button type="button" className="edit-section-button" onClick={() => navigate("/checklist")}>Edit</button>}
                         </div>
 
                         <h4 className="doc-subheading">10.1 Action Item(s)</h4>

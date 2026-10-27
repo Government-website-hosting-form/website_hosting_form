@@ -22,15 +22,8 @@ app.set("etag", false);
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL =
   process.env.FRONTEND_URL || "http://localhost:3001";
-app.use("/api", requireSession, requireApprovedUser, require("./routes/uploadRoutes"));
 
-app.get("/uploads/form-pdfs/:name", requireSession, (req, res) => {
-  const file = path.join(__dirname, "uploads", "form-pdfs", path.basename(req.params.name));
-  if (!fs.existsSync(file)) {
-    return res.status(404).json({ success: false, message: "File not found" });
-  }
-  res.sendFile(file);
-});
+// CORS must come first so every response (including preflight) gets the headers
 app.use(
   cors({
     origin: FRONTEND_URL,
@@ -55,7 +48,22 @@ app.get("/", (req, res) => {
     message: "Backend is running",
   });
 });
+
+// Uploaded PDFs (session required)
+app.get("/uploads/form-pdfs/:name", requireSession, (req, res) => {
+  const file = path.join(__dirname, "uploads", "form-pdfs", path.basename(req.params.name));
+  if (!fs.existsSync(file)) {
+    return res.status(404).json({ success: false, message: "File not found" });
+  }
+  res.sendFile(file);
+});
+
+// Session check only on the upload endpoint, so /api/sso/exchange stays public
+app.use("/api/upload-file", requireSession, requireApprovedUser);
+app.use("/api", require("./routes/uploadRoutes"));
+
 app.use("/api/oic", requireSession, require("./routes/oicRoutes"));
+
 app.post("/", async (req, res) => {
   try {
     const token = req.body.userdetails;
@@ -78,9 +86,9 @@ app.post("/", async (req, res) => {
     }
 
     const id = session.identity;
-if (id.userType !== "GOVT" && !isTestOicBypass(id.ssoId)) {
-  return res.redirect(FRONTEND_URL + "/sso/failed?reason=NOT_G2G");
-}
+    if (id.userType !== "GOVT" && !isTestOicBypass(id.ssoId)) {
+      return res.redirect(FRONTEND_URL + "/sso/failed?reason=NOT_G2G");
+    }
 
     if (
       id.designation.toUpperCase() === "CITIZEN" &&
@@ -126,7 +134,7 @@ app.use((err, req, res, next) => {
     message: status < 500 ? err.message : "Server error",
   });
 });
-app.use("/api", requireSession, requireApprovedUser, require("./routes/uploadRoutes"));
+
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
