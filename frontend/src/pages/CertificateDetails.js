@@ -1,15 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./CertificateDetails.css";
 import FormButtons from "../components/FormButtons";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { useFormContext } from "../context/FormContext";
 import useLeaveSave from "../hooks/useLeaveSave";
-import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
-
-
-
+import { uploadFile } from "../helpers/uploadPdf";
 
 const initialState = {
   safehost_agency: "",
@@ -17,6 +14,7 @@ const initialState = {
   safehost_empanel_no: "",
   safehost_empanel_valid_till: "",
   safehost_ref_no: "",
+  safehost_doc: "",
   safehost_issue_date: "",
   safehost_valid_till: "",
   loadtest_required: "",
@@ -25,10 +23,13 @@ const initialState = {
   loadtest_agency: "",
   loadtest_agency_other: "",
   loadtest_ref_no: "",
+  loadtest_doc: "",
   loadtest_issue_date: "",
   loadtest_valid_till: "",
   other_certificate_details: "",
 };
+
+const fileName = (p) => (p ? String(p).split("/").pop() : "");
 
 function CertificateDetails() {
   const navigate = useNavigate();
@@ -37,8 +38,40 @@ function CertificateDetails() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
-  const [safehostDoc, setSafehostDoc] = useState(null);
-  const [loadtestDoc, setLoadtestDoc] = useState(null);
+  const [uploading, setUploading] = useState("");
+  async function handleDocChange(e, field) {
+    const input = e.target;
+    const file = input.files[0];
+    if (!file) return;
+
+    if (!["application/pdf", "image/jpeg"].includes(file.type)) {
+      alert("Only PDF or JPG files are allowed");
+      input.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File must be 5 MB or smaller");
+      input.value = "";
+      return;
+    }
+    if (!ids.appId) {
+      alert("Please fill Application Details first.");
+      input.value = "";
+      return;
+    }
+
+    setUploading(field);
+    try {
+      const path = await uploadFile(file, "apps", ids.appId, field);
+      setForm((p) => ({ ...p, [field]: path }));
+      setErrors((p) => ({ ...p, [field]: undefined }));
+    } catch (err) {
+      alert("Upload failed: " + err.message);
+      input.value = "";
+    } finally {
+      setUploading("");
+    }
+  }
 
   useEffect(() => {
     async function loadExisting() {
@@ -95,7 +128,7 @@ function CertificateDetails() {
     if (!form.safehost_ref_no.trim()) {
       newErrors.safehost_ref_no = "This field is required.";
     }
-    if (!safehostDoc) newErrors.safehostDoc = "Please attach the certificate copy.";
+    if (!form.safehost_doc) newErrors.safehost_doc = "Please attach the certificate copy.";
     if (!form.safehost_issue_date) newErrors.safehost_issue_date = "This field is required.";
     if (!form.safehost_valid_till) newErrors.safehost_valid_till = "This field is required.";
     if (form.safehost_agency === "Other Agency" && !form.safehost_agency_other.trim()) {
@@ -105,7 +138,18 @@ function CertificateDetails() {
     return Object.keys(newErrors).length === 0;
   }
 
+  function buildPayload() {
+    return {
+      ...form,
+      safehost_empanel_valid_till: form.safehost_empanel_valid_till || null,
+      loadtest_issue_date: form.loadtest_issue_date || null,
+      loadtest_valid_till: form.loadtest_valid_till || null,
+      load_users: form.load_users || null,
+    };
+  }
+
   async function Nextpage() {
+    if (uploading) return;
     if (!validateForm()) return;
     setError("");
     if (!ids.appId) {
@@ -114,14 +158,7 @@ function CertificateDetails() {
     }
     setSaving(true);
     try {
-      const payload = {
-        ...form,
-        safehost_empanel_valid_till: form.safehost_empanel_valid_till || null,
-        loadtest_issue_date: form.loadtest_issue_date || null,
-        loadtest_valid_till: form.loadtest_valid_till || null,
-        load_users: form.load_users || null,
-      };
-      await apiPut(`/apps/${ids.appId}`, payload);
+      await apiPut(`/apps/${ids.appId}`, buildPayload());
       navigate("/stagingdetails");
     } catch (err) {
       console.error(err);
@@ -138,13 +175,7 @@ function CertificateDetails() {
   async function saveQuietly() {
     try {
       if (!ids.appId) return;
-      await apiPut(`/apps/${ids.appId}`, {
-        ...form,
-        safehost_empanel_valid_till: form.safehost_empanel_valid_till || null,
-        loadtest_issue_date: form.loadtest_issue_date || null,
-        loadtest_valid_till: form.loadtest_valid_till || null,
-        load_users: form.load_users || null,
-      });
+      await apiPut(`/apps/${ids.appId}`, buildPayload());
     } catch (err) {
       console.error("Could not save draft on Back:", err);
     }
@@ -165,7 +196,6 @@ function CertificateDetails() {
           Certificate Details (Annexure-4)
         </h2>
 
-
         {error && <p className="form-error">{error}</p>}
         <div className="form-section">
           <div className="section-header">
@@ -173,11 +203,7 @@ function CertificateDetails() {
             <h3>Safe to Host Certificate Details</h3>
           </div>
 
-
-
-
           <div className="form-section-grid">
-
 
             <div className="form-row full-width">
               <label className="required">Name of Certifying Agency</label>
@@ -232,11 +258,8 @@ function CertificateDetails() {
                   <input type="date" name="safehost_empanel_valid_till" value={form.safehost_empanel_valid_till} onChange={handleChange} />
                   {errors.safehost_empanel_valid_till && <p className="error-message">{errors.safehost_empanel_valid_till}</p>}
                 </div>
-
               </>
             )}
-
-
 
             <div className="form-row">
               <label className="required">Security Audit Certificate Reference Number</label>
@@ -255,12 +278,15 @@ function CertificateDetails() {
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg"
-                onChange={(e) => setSafehostDoc(e.target.files[0])}
+                onChange={(e) => handleDocChange(e, "safehost_doc")}
+                disabled={uploading === "safehost_doc"}
               />
-              {errors.safehostDoc && <p className="error-message">{errors.safehostDoc}</p>}
+              {uploading === "safehost_doc" && <p>Uploading...</p>}
+              {form.safehost_doc && uploading !== "safehost_doc" && (
+                <p>✔ Uploaded: {fileName(form.safehost_doc)}</p>
+              )}
+              {errors.safehost_doc && <p className="error-message">{errors.safehost_doc}</p>}
             </div>
-
-
 
             <div className="form-row">
               <label className="required">Certificate Issue Date</label>
@@ -274,10 +300,8 @@ function CertificateDetails() {
               {errors.safehost_valid_till && <p className="error-message">{errors.safehost_valid_till}</p>}
             </div>
 
-
           </div>
         </div>
-
 
         <div className="form-row">
           <hr />
@@ -396,8 +420,13 @@ function CertificateDetails() {
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg"
-                  onChange={(e) => setLoadtestDoc(e.target.files[0])}
+                  onChange={(e) => handleDocChange(e, "loadtest_doc")}
+                  disabled={uploading === "loadtest_doc"}
                 />
+                {uploading === "loadtest_doc" && <p>Uploading...</p>}
+                {form.loadtest_doc && uploading !== "loadtest_doc" && (
+                  <p>✔ Uploaded: {fileName(form.loadtest_doc)}</p>
+                )}
               </div>
 
               <div className="form-row">
@@ -448,12 +477,13 @@ function CertificateDetails() {
         </div>
       </div>
 
-        <FormButtons
-          showBack={true}
-          onBack={Backpage}
-          onNext={Nextpage}
-          disabled={saving} saving={saving}
-        />
+      <FormButtons
+        showBack={true}
+        onBack={Backpage}
+        onNext={Nextpage}
+        disabled={saving || !!uploading}
+        saving={saving}
+      />
 
     </Layout>
   );

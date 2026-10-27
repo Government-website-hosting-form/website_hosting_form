@@ -10,7 +10,6 @@ import { validateText, validateEmail, validateMobile, validatePhone } from "../h
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 
-
 const initialState = {
   dev_company: "",
   dev_company_other: "",
@@ -39,8 +38,8 @@ function MainDetails() {
   const [error, setError] = useState("");
   const [sameAsDeveloper, setSameAsDeveloper] = useState(false);
   const [errors, setErrors] = useState({});
-
   useEffect(() => {
+ 
     async function loadExisting() {
       if (!ids.appId) return;
       try {

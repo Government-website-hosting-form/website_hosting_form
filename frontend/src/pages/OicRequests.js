@@ -26,13 +26,13 @@ const css = `
 .oic .btn.ok{background:#f0fdf4;border-color:#86efac;color:#15803d}
 .oic .btn.warn{background:#fff7ed;border-color:#fdba74;color:#c2410c}
 
-.oic .tablebox{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:auto}
-.oic table{width:100%;border-collapse:collapse}
-.oic th{text-align:left;padding:10px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
-.oic td{padding:10px 12px;border-bottom:1px solid var(--line)}
+.oic .tablebox{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.oic table{width:100%;border-collapse:collapse;table-layout:auto}
+.oic th{text-align:left;padding:10px 8px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.oic td{padding:10px 8px;border-bottom:1px solid var(--line);overflow-wrap:anywhere;word-break:break-word}
 .oic tbody tr:last-child td{border-bottom:none}
 .oic .empty{text-align:center;color:var(--muted);padding:24px}
-.oic .actions{display:flex;gap:6px}
+.oic .actions{display:flex;gap:6px;flex-wrap:wrap}
 
 .oic .badge{padding:2px 9px;border-radius:999px;font-size:12px;text-transform:capitalize}
 .oic .badge.pending{background:#fef3c7;color:#b45309}.oic .badge.approved{background:#dcfce7;color:#15803d}

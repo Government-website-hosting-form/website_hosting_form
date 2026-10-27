@@ -1,6 +1,6 @@
 const db = require("../config/db");
 const { DASHBOARD_ROLES } = require("../config/Roles");
-
+const { isTestOicBypass } = require("../config/testBypass");
 // Designation ka ek hi source: live RajSSO identity (req.identity),
 // jo getUserDetails bhi use karta hai. DB wali designation sirf fallback hai.
 function currentDesignation(req, user) {
@@ -13,10 +13,12 @@ function currentDesignation(req, user) {
 async function requireOicRole(req, res, next) {
   try {
     const ssoId = req.ssoId;
-
     if (!ssoId) {
       return res.status(401).json({ success: false, message: "Login required" });
     }
+
+    if (isTestOicBypass(ssoId)) return next();
+   
 
     const [rows] = await db.query(
       `SELECT designation, is_approved, status FROM users WHERE sso_id = ?`,

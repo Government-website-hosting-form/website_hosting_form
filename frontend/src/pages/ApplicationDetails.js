@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import FormButtons from "../components/FormButtons";
@@ -6,8 +6,9 @@ import "./ApplicationDetails.css";
 import { useFormContext } from "../context/FormContext";
 import useLeaveSave from "../hooks/useLeaveSave";
 import { apiPost, apiGet, apiPut } from "../api";
-import { useEffect } from "react";
+import { uploadFile } from "../helpers/uploadPdf";
 
+const DOC_FIELDS = ["app_purpose_doc", "app_domain_doc", "app_approval_doc", "mom_doc"];
 
 const initialState = {
   name: "",
@@ -17,15 +18,21 @@ const initialState = {
   utility: "",
   utility_other: "",
   purpose: "",
+  app_purpose_doc: "",
   subdomain: "",
   url: "",
   alternate_url: "",
+  app_domain_doc: "",
   approval_authority: "",
   approval_designation: "",
+  app_approval_doc: "",
   semt_approved: "",
   mom_ref_no: "",
   mom_date: "",
+  mom_doc: "",
 };
+
+const fileName = (p) => (p ? String(p).split("/").pop() : "");
 
 function ApplicationDetails() {
   const navigate = useNavigate();
@@ -34,11 +41,7 @@ function ApplicationDetails() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
-  const [momDoc, setMomDoc] = useState(null);
-  const [purposeDoc, setPurposeDoc] = useState(null);
-  const [approvalDoc, setApprovalDoc] = useState(null);
-  const [domainApprovalDoc, setDomainApprovalDoc] = useState(null);
-
+  const [uploading, setUploading] = useState("");
 
   useEffect(() => {
     async function loadExisting() {
@@ -48,7 +51,10 @@ function ApplicationDetails() {
         if (data) {
           const cleaned = {};
           for (const [key, value] of Object.entries(data)) {
-            cleaned[key] = value === null ? "" : value;
+            const v = value === null ? "" : value;
+            // don't let an older server copy wipe a file that was just uploaded
+            if (DOC_FIELDS.includes(key) && v === "") continue;
+            cleaned[key] = v;
           }
           setForm((prev) => ({ ...prev, ...cleaned }));
         }
@@ -58,6 +64,53 @@ function ApplicationDetails() {
     }
     loadExisting();
   }, [ids.appId]);
+
+  async function handleDocChange(e, field) {
+    const input = e.target;
+    const file = input.files[0];
+    if (!file) return;
+
+    if (!["application/pdf", "image/jpeg"].includes(file.type)) {
+      alert("Only PDF or JPG files are allowed");
+      input.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File must be 5 MB or smaller");
+      input.value = "";
+      return;
+    }
+
+    setUploading(field);
+    try {
+      let appId = ids.appId;
+
+      // First upload on this page: create the record so the file has a row to attach to
+      if (!appId) {
+        if (!form.name.trim()) {
+          alert("Pehle Application Name bharo, phir file upload karo.");
+          input.value = "";
+          return;
+        }
+        const res = await apiPost("/apps", {
+          ...form,
+          org_id: ids.orgId || null,
+          user_id: ids.userId || null,
+        });
+        setId("appId", res.id);
+        appId = res.id;
+      }
+
+      const path = await uploadFile(file, "apps", appId, field);
+      setForm((p) => ({ ...p, [field]: path }));
+      setErrors((p) => ({ ...p, [field]: undefined }));
+    } catch (err) {
+      alert("Upload failed: " + err.message);
+      input.value = "";
+    } finally {
+      setUploading("");
+    }
+  }
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -73,14 +126,11 @@ function ApplicationDetails() {
       if (name === "semt_approved" && value !== "Yes") {
         updated.mom_ref_no = "";
         updated.mom_date = "";
+        updated.mom_doc = "";
       }
 
       return updated;
     });
-
-    if (name === "semt_approved" && value !== "Yes") {
-      setMomDoc(null);
-    }
   }
 
   function handleTypeChange(value) {
@@ -110,7 +160,7 @@ function ApplicationDetails() {
     if (form.semt_approved === "Yes") {
       if (!form.mom_ref_no.trim()) newErrors.mom_ref_no = "This field is required.";
       if (!form.mom_date.trim()) newErrors.mom_date = "This field is required.";
-      if (!momDoc) newErrors.momDoc = "Please attach the MoM/Document.";
+      if (!form.mom_doc) newErrors.mom_doc = "Please attach the MoM/Document.";
     }
 
     if (form.type.includes("Other") && !form.type_other.trim()) {
@@ -126,6 +176,7 @@ function ApplicationDetails() {
   }
 
   async function Nextpage() {
+    if (uploading) return;
     if (!validateForm()) return;
     setError("");
     setSaving(true);
@@ -311,9 +362,13 @@ function ApplicationDetails() {
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg"
-                onChange={(e) => setPurposeDoc(e.target.files[0])}
+                onChange={(e) => handleDocChange(e, "app_purpose_doc")}
+                disabled={uploading === "app_purpose_doc"}
               />
-
+              {uploading === "app_purpose_doc" && <p>Uploading...</p>}
+              {form.app_purpose_doc && uploading !== "app_purpose_doc" && (
+                <p>✔ Uploaded: {fileName(form.app_purpose_doc)}</p>
+              )}
 
             </div>
 
@@ -363,8 +418,13 @@ function ApplicationDetails() {
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg"
-                onChange={(e) => setDomainApprovalDoc(e.target.files[0])}
+                onChange={(e) => handleDocChange(e, "app_domain_doc")}
+                disabled={uploading === "app_domain_doc"}
               />
+              {uploading === "app_domain_doc" && <p>Uploading...</p>}
+              {form.app_domain_doc && uploading !== "app_domain_doc" && (
+                <p>✔ Uploaded: {fileName(form.app_domain_doc)}</p>
+              )}
             </div>
           </div>
         </div>
@@ -393,8 +453,13 @@ function ApplicationDetails() {
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg"
-                onChange={(e) => setApprovalDoc(e.target.files[0])}
+                onChange={(e) => handleDocChange(e, "app_approval_doc")}
+                disabled={uploading === "app_approval_doc"}
               />
+              {uploading === "app_approval_doc" && <p>Uploading...</p>}
+              {form.app_approval_doc && uploading !== "app_approval_doc" && (
+                <p>✔ Uploaded: {fileName(form.app_approval_doc)}</p>
+              )}
             </div>
 
           </div>
@@ -467,9 +532,14 @@ function ApplicationDetails() {
                   <input
                     type="file"
                     accept=".pdf,.jpg,.jpeg"
-                    onChange={(e) => setMomDoc(e.target.files[0])}
+                    onChange={(e) => handleDocChange(e, "mom_doc")}
+                    disabled={uploading === "mom_doc"}
                   />
-                  {errors.momDoc && <p className="error-message">{errors.momDoc}</p>}
+                  {uploading === "mom_doc" && <p>Uploading...</p>}
+                  {form.mom_doc && uploading !== "mom_doc" && (
+                    <p>✔ Uploaded: {fileName(form.mom_doc)}</p>
+                  )}
+                  {errors.mom_doc && <p className="error-message">{errors.mom_doc}</p>}
                 </div>
               </>
             )}
@@ -482,7 +552,8 @@ function ApplicationDetails() {
         showBack={true}
         onBack={Backpage}
         onNext={Nextpage}
-        disabled={saving} saving={saving}
+        disabled={saving || !!uploading}
+        saving={saving}
       />
 
     </Layout>

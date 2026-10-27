@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { shortFormId } from "../helpers/formId";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:3000";
@@ -17,35 +18,35 @@ const CIRCLES = [
 ];
 
 const SECTIONS = [
-  { title: "Organization / Department Details", src: "org", fields: [
+  { title: "Organization / Department Details", src: "org", prefix: ["org_"], fields: [
     ["name", "Department Name"], ["type", "Department Type"], ["officer", "Officer Name"],
     ["officer_designation", "Officer Designation"], ["email", "Email"], ["phone_office", "Office Phone"],
     ["phone", "Mobile"], ["address", "Address"], ["contact_name", "Contact Person"],
     ["contact_designation", "Contact Designation"], ["contact_phone", "Contact Phone"],
     ["contact_email", "Contact Email"]] },
-  { title: "Application Details", src: "request", fields: [
+  { title: "Application Details", src: "request", prefix: ["mom_", "app_"], fields: [
     ["name", "Application Name"], ["type", "Application Type"], ["nature", "Nature"],
     ["utility", "Utility"], ["purpose", "Purpose"], ["subdomain", "Subdomain"], ["url", "URL"],
     ["alternate_url", "Alternate URL"], ["approval_authority", "Approval Authority"],
     ["approval_designation", "Approval Designation"], ["semt_approved", "SEMT Approved"],
     ["mom_ref_no", "MOM Ref No"], ["mom_date", "MOM Date"]] },
-  { title: "Developer Details", src: "request", fields: [
+  { title: "Developer Details", src: "request", prefix: ["dev_"], fields: [
     ["dev_company", "Company"], ["dev_contact_person", "Contact Person"], ["dev_address", "Address"],
     ["dev_phone_office", "Office Phone"], ["dev_phone", "Mobile"], ["dev_email", "Email"]] },
-  { title: "Maintenance Details", src: "request", fields: [
+  { title: "Maintenance Details", src: "request", prefix: ["maint_"], fields: [
     ["maint_company", "Company"], ["maint_active", "Active"], ["maint_expiry", "Expiry"],
     ["maint_contact_person", "Contact Person"], ["maint_address", "Address"],
     ["maint_phone_office", "Office Phone"], ["maint_phone_mobile", "Mobile"], ["maint_email", "Email"],
     ["maint_contract_attached", "Contract Attached"]] },
-  { title: "Safe-to-Host Certificate", src: "request", fields: [
+  { title: "Safe-to-Host Certificate", src: "request", prefix: ["safehost_"], fields: [
     ["safehost_agency", "Agency"], ["safehost_empanel_no", "Empanelment No"],
     ["safehost_empanel_valid_till", "Empanelment Valid Till"], ["safehost_ref_no", "Reference No"],
     ["safehost_issue_date", "Issue Date"], ["safehost_valid_till", "Valid Till"]] },
-  { title: "Load Test", src: "request", fields: [
+  { title: "Load Test", src: "request", prefix: ["load_", "loadtest_"], fields: [
     ["load_users", "Users"], ["loadtest_agency", "Agency"], ["loadtest_avg_response", "Avg Response"],
     ["loadtest_ref_no", "Reference No"], ["loadtest_issue_date", "Issue Date"],
     ["loadtest_valid_till", "Valid Till"]] },
-  { title: "Other", src: "request", fields: [
+  { title: "Other", src: "request", prefix: ["other_"], fields: [
     ["other_certificate_details", "Other Certificate Details"], ["request_status", "Status"],
     ["objection_remarks", "Objection Remarks"]] },
 ];
@@ -56,6 +57,32 @@ const fmt = (k, v) => {
   if (YESNO.includes(k)) return v === 1 || v === true || v === "1" ? "Yes" : v === 0 || v === false || v === "0" ? "No" : String(v);
   return String(v);
 };
+
+// Value khali hai ya nahi
+const isEmpty = (v) => v === null || v === undefined || String(v).trim() === "";
+// Value PDF file ki hai ya nahi
+const isPdf = (v) => typeof v === "string" && /\.pdf(\?.*)?$/i.test(v.trim());
+const fileUrl = (v) => (/^https?:\/\//i.test(v) ? v : `${API}/${String(v).replace(/^\/+/, "")}`);
+
+// SSO headers ke saath PDF fetch karke new tab me kholta hai
+const openPdf = async (v) => {
+  const w = window.open("", "_blank");
+  try {
+    const res = await fetch(fileUrl(v), { headers: authHeaders() });
+    if (!res.ok) throw new Error(res.status);
+    const blob = await res.blob();
+    w.location.href = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  } catch (e) {
+    if (w) w.close();
+    alert("Unable to open PDF: " + e.message);
+  }
+};
+
+const PdfLink = ({ value }) => (
+  <button type="button" className="btn view" onClick={() => openPdf(value)}>
+    View PDF
+  </button>
+);
 
 // Status ko hamesha ek standard value me badalta hai: pending / approved / rejected / objection
 const normStatus = (s) => {
@@ -69,15 +96,50 @@ const normStatus = (s) => {
 };
 
 const RowsTable = ({ rows }) => {
-  if (!rows || !rows.length) return <p style={{ color: "#6b7280", margin: 0 }}>No data available</p>;
-  const keys = Object.keys(rows[0]).filter((k) => k !== "id" && k !== "app_id");
+  if (!rows || !rows.length) return null;
+  // sirf wahi columns jinme kam se kam ek row me value ho
+  const keys = Object.keys(rows[0]).filter(
+    (k) => k !== "id" && k !== "app_id" && rows.some((r) => !isEmpty(r[k]))
+  );
+  if (!keys.length) return null;
   return (
     <div className="tablebox">
       <table>
         <thead><tr>{keys.map((k) => <th key={k}>{k.replace(/_/g, " ")}</th>)}</tr></thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i}>{keys.map((k) => <td key={k}>{fmt(k, r[k])}</td>)}</tr>
+            <tr key={i}>
+              {keys.map((k) => (
+                <td key={k}>{isPdf(r[k]) ? <PdfLink value={r[k]} /> : fmt(k, r[k])}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// View modal ka section: sirf bhari hui fields table me, aur us section ki PDFs
+const SectionTable = ({ sec, data }) => {
+  const filled = sec.fields.filter(([k]) => !isEmpty(data[k]) && !isPdf(data[k]));
+  const pdfs = Object.entries(data).filter(
+    ([k, v]) => isPdf(v) && (sec.prefix || []).some((p) => k.startsWith(p))
+  );
+  if (!filled.length && !pdfs.length) return null; // khali section hide
+  return (
+    <div className="fsec">
+      <div className="fhead">{sec.title}</div>
+      <table className="vtable">
+        <tbody>
+          {filled.map(([k, label]) => (
+            <tr key={k}><th>{label}</th><td>{fmt(k, data[k])}</td></tr>
+          ))}
+          {pdfs.map(([k, v]) => (
+            <tr key={k}>
+              <th>{k.replace(/_/g, " ")}</th>
+              <td><PdfLink value={v} /></td>
+            </tr>
           ))}
         </tbody>
       </table>
@@ -181,6 +243,15 @@ const css = `
 .oic .fl{color:var(--muted);min-width:130px;flex-shrink:0}
 .oic .fv{word-break:break-word}
 
+/* view modal: Field | Value table */
+.oic .vtable{width:100%;border-collapse:collapse}
+.oic .vtable th{width:30%;background:#f4f7fa;color:#333;font-weight:600;text-transform:none;border:1px solid var(--line);padding:8px 12px;white-space:normal}
+.oic .vtable td{border:1px solid var(--line);padding:8px 12px;word-break:break-word}
+
+/* top bar: title + Go to Forms button */
+.oic .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.oic .topbar h2{margin:0;text-align:left}
+
 @media (max-width:1400px){
   .oic .fid{max-width:170px}
   .oic td a.link{max-width:170px}
@@ -199,6 +270,7 @@ const css = `
 `;
 
 export default function OicDashboard({ embedded = false }) {
+  const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -393,7 +465,7 @@ export default function OicDashboard({ embedded = false }) {
     <div className="oic" style={embedded ? { padding: 0, minHeight: "auto", background: "transparent" } : undefined}>
       <style>{css}</style>
 
-      {!embedded && <h2>OIC Dashboard</h2>}
+   
       {error && <div className="err">{error}</div>}
 
       {/* Filter circles */}
@@ -568,29 +640,32 @@ export default function OicDashboard({ embedded = false }) {
               </div>
             )}
 
-            {SECTIONS.map((sec) => {
-              const data = (sec.src === "org" ? selected.org : selected.request) || {};
-              return (
-                <div className="fsec" key={sec.title}>
-                  <div className="fhead">{sec.title}</div>
-                  <div className="fgrid">
-                    {sec.fields.map(([k, label]) => (
-                      <div className="frow" key={k}>
-                        <span className="fl">{label}</span>
-                        <span className="fv">{fmt(k, data[k])}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {SECTIONS.map((sec) => (
+              <SectionTable
+                key={sec.title}
+                sec={sec}
+                data={(sec.src === "org" ? selected.org : selected.request) || {}}
+              />
+            ))}
 
-            <h4>Infra</h4>
-            <RowsTable rows={selected.infra} />
-            <h4>Checklist</h4>
-            <RowsTable rows={selected.checklist} />
-            <h4>Audit Log</h4>
-            <RowsTable rows={selected.audit} />
+            {selected.infra?.length > 0 && (
+              <>
+                <h4>Infra</h4>
+                <RowsTable rows={selected.infra} />
+              </>
+            )}
+            {selected.checklist?.length > 0 && (
+              <>
+                <h4>Checklist</h4>
+                <RowsTable rows={selected.checklist} />
+              </>
+            )}
+            {selected.audit?.length > 0 && (
+              <>
+                <h4>Audit Log</h4>
+                <RowsTable rows={selected.audit} />
+              </>
+            )}
 
             <p>
               <a

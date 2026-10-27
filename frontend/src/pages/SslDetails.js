@@ -7,7 +7,7 @@ import { useFormContext } from "../context/FormContext";
 import useLeaveSave from "../hooks/useLeaveSave";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
-
+import { uploadPdf } from "../helpers/uploadPdf";
 // in my sql we will need do, ALTER TABLE infra ADD COLUMN ssl_type JSON NULL; as we can select multiple ssl types so we will 
 // store them in json format in the database and when we fetch the data from the database we will parse it back to array 
 // and populate the form with the selected values
@@ -35,8 +35,24 @@ function SslDetails() {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+ async function handlePdfChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
+  if (file.type !== "application/pdf") {
+    alert("Only PDF files are allowed");
+    return;
+  }
+
+  try {
+    const savedName = await uploadPdf(file, ids.appId, "safehost_certificate");
+    // yahan state mein savedName rakho, jaise: setForm((p) => ({ ...p, safehost_certificate: savedName }));
+  } catch (err) {
+    alert("Upload failed: " + err.message);
+  }
+}
   useEffect(() => {
+   
     async function loadExisting() {
         if (!ids.infraId) return;
         try {

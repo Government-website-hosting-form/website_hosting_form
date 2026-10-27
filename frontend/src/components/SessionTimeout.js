@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { clearSession } from "../auth";
 
-const IDLE_LIMIT_MS = 20  *60* 1000;
-const WARN_AFTER_MS = 18  *60*1000;
+const IDLE_LIMIT_MS = 20 * 60 * 1000;
+const WARN_AFTER_MS = 18 * 60 * 1000;
 
 const ACTIVITY_EVENTS = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"];
 

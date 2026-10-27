@@ -349,15 +349,18 @@ exports.initRequest = async (req, res) => {
     let requestId;
 
     if (
-      existingRequest &&
-      (existingRequest.status === "pending" ||
-        existingRequest.status === "objection")
-    ) {
-      await conn.query(
-        `UPDATE requests SET department = ?, designation = ?, email = ? WHERE request_id = ?`,
-        [department || null, designation || null, email || null, existingRequest.request_id]
-      );
-      requestId = existingRequest.request_id;
+  existingRequest &&
+  (existingRequest.status === "pending" ||
+    existingRequest.status === "objection")
+) {
+  await conn.query(
+    `UPDATE requests SET department = ?, designation = ?, email = ? WHERE request_id = ?`,
+    [department || null, designation || null, email || null, existingRequest.request_id]
+  );
+  requestId = existingRequest.request_id;
+} else if (existingRequest && existingRequest.status === "approved") {
+  // Already approved: don't create a blank pending row
+  requestId = existingRequest.request_id;
     } else {
       const [result] = await conn.query(
         `INSERT INTO requests (sso_id, department, designation, email, submitted_at, status, is_approved)
@@ -371,7 +374,7 @@ exports.initRequest = async (req, res) => {
   } catch (error) {
     console.error("initRequest error:", error.message);
     return res.status(500).json({ success: false, message: "Server Error" });
-  } finally {
+  } finally  {
     if (conn) {
       if (lockName) {
         try {

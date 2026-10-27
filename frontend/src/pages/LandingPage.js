@@ -18,8 +18,24 @@ const ROW_COLOR_CSS = `
   .status-badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; white-space: nowrap; }
   .status-ongoing { background: #f0a500; color: #fff; }
   .status-submitted { background: #2e9e4f; color: #fff; }
+  .status-approved { background: #1b7f3b; color: #fff; }
+  .status-rejected { background: #7a1c1c; color: #fff; }
   .status-objection { background: #d93025; color: #fff; }
+  .objection-remark { margin-top: 6px; max-width: 240px; font-size: 12px; line-height: 1.4; color: #b3261e; white-space: normal; word-break: break-word; }
 `;
+
+// Statuses where the user has finished the form (not ongoing, not objection).
+const DONE_STATUSES = ["submitted", "approved", "rejected"];
+
+// apps.status stays "submitted" after the OIC decides; the OIC decision is stored
+// in apps.request_status. Show the OIC decision once the form is submitted.
+function effectiveStatus(app) {
+  const decision = String(app.request_status || "").trim().toLowerCase();
+  if (app.status === "submitted" && ["approved", "rejected", "objection"].includes(decision)) {
+    return decision;
+  }
+  return app.status;
+}
 
 function formatSubmittedDate(value) {
   if (!value) return "-";
@@ -74,13 +90,17 @@ function LandingPage() {
       if (cancelled) return;
 
       if (appsRes.status === "fulfilled") {
-        const all = appsRes.value;
-        // Ongoing + objection forms first (newest on top), then submitted ones.
+        const all = appsRes.value.map((app) => ({
+          ...app,
+          raw_status: app.status,
+          status: effectiveStatus(app),
+        }));
+        // Ongoing + objection forms first (newest on top), then submitted / approved ones.
         const ongoing = all
-          .filter((app) => app.status !== "submitted")
+          .filter((app) => !DONE_STATUSES.includes(app.status))
           .sort((a, b) => b.app_id - a.app_id);
         const submitted = all
-          .filter((app) => app.status === "submitted")
+          .filter((app) => DONE_STATUSES.includes(app.status))
           .sort((a, b) => a.app_id - b.app_id);
         setForms([...ongoing, ...submitted]);
       } else {
@@ -112,14 +132,29 @@ function LandingPage() {
     };
   }
 
-  // Form is still being filled (not submitted, no objection).
+  // Form is still being filled (not submitted, no objection, not approved / denied).
   function isOngoing(form) {
-    return form.status !== "submitted" && form.status !== "objection";
+    return form.status !== "objection" && !DONE_STATUSES.includes(form.status);
   }
 
   // OIC has raised an objection -> user may edit again.
   function hasObjection(form) {
     return form.status === "objection";
+  }
+
+  // OIC has approved the form.
+  function isApproved(form) {
+    return form.status === "approved";
+  }
+
+  // OIC has denied access.
+  function isRejected(form) {
+    return form.status === "rejected";
+  }
+
+  // Reason given by the OIC (objection / access denied).
+  function remarksOf(form) {
+    return form.objection_remarks || form.rejection_reason || form.remarks || "";
   }
 
   // Edit is shown only for ongoing forms or forms with an OIC objection.
@@ -313,6 +348,27 @@ function LandingPage() {
                 const org = orgFor(form);
                 const ongoing = isOngoing(form);
                 const objection = hasObjection(form);
+                const approved = isApproved(form);
+                const rejected = isRejected(form);
+                const remark = remarksOf(form);
+                const badgeClass = objection
+                  ? "status-objection"
+                  : approved
+                  ? "status-approved"
+                  : rejected
+                  ? "status-rejected"
+                  : ongoing
+                  ? "status-ongoing"
+                  : "status-submitted";
+                const badgeText = objection
+                  ? "Objection"
+                  : approved
+                  ? "Approved"
+                  : rejected
+                  ? "Access Denied"
+                  : ongoing
+                  ? "Ongoing"
+                  : "Submitted";
                 return (
                   <tr key={form.app_id} className={ongoing ? "row-ongoing" : "row-submitted"}>
                     <td className="form-id-cell" title={form.form_id || ""}>
@@ -329,13 +385,13 @@ function LandingPage() {
                     <td>{form.name || "-"}</td>
                     <td>{org ? (org.name || "-") : "-"}</td>
                     <td>
-                      <span
-                        className={`status-badge ${
-                          objection ? "status-objection" : ongoing ? "status-ongoing" : "status-submitted"
-                        }`}
-                      >
-                        {objection ? "Objection" : ongoing ? "Ongoing" : "Submitted"}
-                      </span>
+                      <span className={`status-badge ${badgeClass}`}>{badgeText}</span>
+                      {(objection || rejected) && remark && (
+                        <div className="objection-remark">
+                          <b>{rejected ? "Reason: " : "Objection: "}</b>
+                          {remark}
+                        </div>
+                      )}
                     </td>
                     <td>{ongoing ? "-" : formatSubmittedDate(form.submitted_at)}</td>
                     <td className="actions-cell">
@@ -359,7 +415,7 @@ function LandingPage() {
                           Edit
                         </button>
                       )}
-                      {(ongoing || (!form.form_id && !objection)) && (
+                      {(ongoing || (!form.form_id && !objection && !approved && !rejected)) && (
                         <button
                           type="button"
                           className="edit-button"

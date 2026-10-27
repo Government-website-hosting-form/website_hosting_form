@@ -9,7 +9,7 @@ import useLeaveSave from "../hooks/useLeaveSave";
 import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 import { validateEmail, validateMobile, validatePhone, validateText } from "../helpers/Validation";
-
+import { uploadFile } from "../helpers/uploadPdf";
 const initialState = {
   hw_type: "",
   hw_brand: "",
@@ -38,6 +38,7 @@ const initialState = {
 
   hw_fms_contract_expiry: "",
   hw_fms_contract_attached: "",
+  hw_fms_contract_doc: "",
 
   hw_amc: "",
   hw_amc_company: "",
@@ -49,7 +50,10 @@ const initialState = {
 
   hw_amc_contract_expiry: "",
   hw_amc_contract_attached: "",
+  hw_amc_contract_doc: "",
 };
+
+const fileName = (p) => (p ? String(p).split("/").pop() : "");
 
 function HardwareDetails() {
   const navigate = useNavigate();
@@ -58,10 +62,44 @@ function HardwareDetails() {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [fmsContractFile, setFmsContractFile] = useState(null);
-  const [amcContractFile, setAmcContractFile] = useState(null);
+  const [uploading, setUploading] = useState("");
+
+  async function handleDocChange(e, field) {
+    const input = e.target;
+    const file = input.files[0];
+    if (!file) return;
+
+    if (!["application/pdf", "image/jpeg"].includes(file.type)) {
+      alert("Only PDF or JPG files are allowed");
+      input.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File must be 5 MB or smaller");
+      input.value = "";
+      return;
+    }
+    if (!ids.infraId) {
+      alert("Please fill Infra Details first.");
+      input.value = "";
+      return;
+    }
+
+    setUploading(field);
+    try {
+      const path = await uploadFile(file, "infra", ids.infraId, field);
+      setForm((p) => ({ ...p, [field]: path }));
+      setErrors((p) => ({ ...p, [field]: undefined }));
+    } catch (err) {
+      alert("Upload failed: " + err.message);
+      input.value = "";
+    } finally {
+      setUploading("");
+    }
+  }
 
   useEffect(() => {
+
     async function loadExisting() {
       if (!ids.infraId) return;
       try {
@@ -118,6 +156,7 @@ function HardwareDetails() {
         updated.hw_fms_email = "";
         updated.hw_fms_contract_expiry = "";
         updated.hw_fms_contract_attached = "";
+        updated.hw_fms_contract_doc = "";
       }
 
       if (name === "hw_amc" && value !== "Yes") {
@@ -129,9 +168,10 @@ function HardwareDetails() {
         updated.hw_amc_email = "";
         updated.hw_amc_contract_expiry = "";
         updated.hw_amc_contract_attached = "";
+        updated.hw_amc_contract_doc = "";
       }
-      if (name === "hw_fms_contract_attached" && value !== "Yes") setFmsContractFile(null);
-      if (name === "hw_amc_contract_attached" && value !== "Yes") setAmcContractFile(null);
+      if (name === "hw_fms_contract_attached" && value !== "Yes") updated.hw_fms_contract_doc = "";
+      if (name === "hw_amc_contract_attached" && value !== "Yes") updated.hw_amc_contract_doc = "";
 
       return updated;
     });
@@ -178,6 +218,7 @@ function HardwareDetails() {
   }
 
   async function Nextpage() {
+    if (uploading) return;
     if (!validateForm()) return;
     setError("");
     if (!ids.infraId) {
@@ -557,9 +598,13 @@ function HardwareDetails() {
                               <input
                                 type="file"
                                 accept=".pdf,.jpg,.jpeg"
-                                onChange={(e) => setFmsContractFile(e.target.files[0])}
+                                onChange={(e) => handleDocChange(e, "hw_fms_contract_doc")}
+                                disabled={uploading === "hw_fms_contract_doc"}
                               />
-                              {errors.fmsContractFile && <p className="error-message">{errors.fmsContractFile}</p>}
+                              {uploading === "hw_fms_contract_doc" && <p>Uploading...</p>}
+                              {form.hw_fms_contract_doc && uploading !== "hw_fms_contract_doc" && (
+                                <p>✔ Uploaded: {fileName(form.hw_fms_contract_doc)}</p>
+                              )}
                             </>
                           )}
                         </>
@@ -583,9 +628,13 @@ function HardwareDetails() {
                               <input
                                 type="file"
                                 accept=".pdf,.jpg,.jpeg"
-                                onChange={(e) => setAmcContractFile(e.target.files[0])}
+                                onChange={(e) => handleDocChange(e, "hw_amc_contract_doc")}
+                                disabled={uploading === "hw_amc_contract_doc"}
                               />
-                              {errors.amcContractFile && <p className="error-message">{errors.amcContractFile}</p>}
+                              {uploading === "hw_amc_contract_doc" && <p>Uploading...</p>}
+                              {form.hw_amc_contract_doc && uploading !== "hw_amc_contract_doc" && (
+                                <p>✔ Uploaded: {fileName(form.hw_amc_contract_doc)}</p>
+                              )}
                             </>
                           )}
                         </>
@@ -603,7 +652,7 @@ function HardwareDetails() {
         showBack={true}
         onBack={Backpage}
         onNext={Nextpage}
-        disabled={saving} saving={saving}
+        disabled={saving || !!uploading} saving={saving}
       />
     </Layout>
   );

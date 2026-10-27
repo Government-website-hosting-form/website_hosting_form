@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { backToSso, logout, getSsoId } from "../auth";
+import { backToSso, logout, getSsoId, fetchAccess } from "../auth";
 import { useFormContext } from "../context/FormContext";
 
 const HOME_PATH = "/"; // LandingPage route
@@ -31,7 +31,19 @@ function Header() {
   // Where the user was heading when the "Leave this form?" popup opened: "home" | "sso" | null
   const [leaveTarget, setLeaveTarget] = useState(null);
   const [leaving, setLeaving] = useState(false);
+const [isOic, setIsOic] = useState(false);
 
+useEffect(() => {
+  let cancelled = false;
+  fetchAccess()
+    .then((info) => {
+      if (!cancelled) setIsOic(!!info?.isOic);
+    })
+    .catch(() => {});
+  return () => {
+    cancelled = true;
+  };
+}, []);
   function onFormPage() {
     return EDIT_PATHS.includes(pathname.toLowerCase()) && hasLeaveSaver();
   }
@@ -116,7 +128,26 @@ function Header() {
               Home
             </button>
           )}
-
+          
+{pathname.startsWith("/oic") && (
+  <button
+    type="button"
+    className="header-btn"
+    onClick={() => navigate("/", { state: { newForm: true } })}
+  >
+    New Form
+  </button>
+)}
+{isOic && pathname === HOME_PATH && (
+  <button
+    type="button"
+    className="header-btn"
+    onClick={() => navigate("/oic")}
+    disabled={busy}
+  >
+    Go to Dashboard
+  </button>
+)}
         <button
           type="button"
           className="header-btn"
