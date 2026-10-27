@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { shortFormId } from "../helpers/formId";
+import FormPreviewContent from "../components/FormPreviewContent";
+import "./OicDashboard.css";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:3000";
 const authHeaders = () => ({
@@ -14,40 +16,6 @@ const CIRCLES = [
   { key: "approved", label: "Approved", cls: "approved" },
   { key: "rejected", label: "Access Denied", cls: "rejected" },
   { key: "objection", label: "Objection", cls: "objection" },
-];
-
-const SECTIONS = [
-  { title: "Organization / Department Details", src: "org", fields: [
-    ["name", "Department Name"], ["type", "Department Type"], ["officer", "Officer Name"],
-    ["officer_designation", "Officer Designation"], ["email", "Email"], ["phone_office", "Office Phone"],
-    ["phone", "Mobile"], ["address", "Address"], ["contact_name", "Contact Person"],
-    ["contact_designation", "Contact Designation"], ["contact_phone", "Contact Phone"],
-    ["contact_email", "Contact Email"]] },
-  { title: "Application Details", src: "request", fields: [
-    ["name", "Application Name"], ["type", "Application Type"], ["nature", "Nature"],
-    ["utility", "Utility"], ["purpose", "Purpose"], ["subdomain", "Subdomain"], ["url", "URL"],
-    ["alternate_url", "Alternate URL"], ["approval_authority", "Approval Authority"],
-    ["approval_designation", "Approval Designation"], ["semt_approved", "SEMT Approved"],
-    ["mom_ref_no", "MOM Ref No"], ["mom_date", "MOM Date"]] },
-  { title: "Developer Details", src: "request", fields: [
-    ["dev_company", "Company"], ["dev_contact_person", "Contact Person"], ["dev_address", "Address"],
-    ["dev_phone_office", "Office Phone"], ["dev_phone", "Mobile"], ["dev_email", "Email"]] },
-  { title: "Maintenance Details", src: "request", fields: [
-    ["maint_company", "Company"], ["maint_active", "Active"], ["maint_expiry", "Expiry"],
-    ["maint_contact_person", "Contact Person"], ["maint_address", "Address"],
-    ["maint_phone_office", "Office Phone"], ["maint_phone_mobile", "Mobile"], ["maint_email", "Email"],
-    ["maint_contract_attached", "Contract Attached"]] },
-  { title: "Safe-to-Host Certificate", src: "request", fields: [
-    ["safehost_agency", "Agency"], ["safehost_empanel_no", "Empanelment No"],
-    ["safehost_empanel_valid_till", "Empanelment Valid Till"], ["safehost_ref_no", "Reference No"],
-    ["safehost_issue_date", "Issue Date"], ["safehost_valid_till", "Valid Till"]] },
-  { title: "Load Test", src: "request", fields: [
-    ["load_users", "Users"], ["loadtest_agency", "Agency"], ["loadtest_avg_response", "Avg Response"],
-    ["loadtest_ref_no", "Reference No"], ["loadtest_issue_date", "Issue Date"],
-    ["loadtest_valid_till", "Valid Till"]] },
-  { title: "Other", src: "request", fields: [
-    ["other_certificate_details", "Other Certificate Details"], ["request_status", "Status"],
-    ["objection_remarks", "Objection Remarks"]] },
 ];
 
 const YESNO = ["semt_approved", "maint_active", "maint_contract_attached"];
@@ -68,8 +36,15 @@ const normStatus = (s) => {
   return v;
 };
 
+// type / ssl_type come from the DB as JSON text
+const parseJson = (v, fallback) => {
+  if (!v) return fallback;
+  if (typeof v === "object") return v;
+  try { return JSON.parse(v); } catch { return [v]; }
+};
+
 const RowsTable = ({ rows }) => {
-  if (!rows || !rows.length) return <p style={{ color: "#6b7280", margin: 0 }}>No data available</p>;
+  if (!rows || !rows.length) return <p className="nodata">No data available</p>;
   const keys = Object.keys(rows[0]).filter((k) => k !== "id" && k !== "app_id");
   return (
     <div className="tablebox">
@@ -96,107 +71,6 @@ const fmtDate = (d) => {
   return isNaN(t) ? "-" : t.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 };
 const toHref = (u) => (/^https?:\/\//i.test(u) ? u : `https://${u}`);
-
-const css = `
-.oic,.oic *,.oic *::before,.oic *::after{box-sizing:border-box}
-.oic{--line:#ccd3da;--muted:#666;--primary:#123d6d;font-family:inherit;background:transparent;color:#222;min-height:100vh;padding:20px;font-size:14px}
-.oic h2{margin:0 0 14px;font-size:22px;text-align:center}
-.oic .sub{color:var(--muted);margin:0 0 14px}
-.oic .err{background:#fdecea;color:#b71c1c;border:1px solid #f5c6cb;padding:8px 12px;border-radius:4px;margin-bottom:12px}
-
-/* status filter: simple radio jaise options */
-.oic .circles{display:flex;gap:22px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-.oic .circle{--c:#666;display:inline-flex;align-items:center;gap:6px;background:none;border:none;padding:2px 0;cursor:pointer;font-family:inherit;font-size:14px;color:#333}
-.oic .circle::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid var(--c);background:#fff;display:inline-block}
-.oic .circle.active::before{background:var(--c)}
-.oic .circle.active{font-weight:bold}
-.oic .circle .cn::before{content:"("}
-.oic .circle .cn::after{content:")"}
-.oic .circle.all,.oic .circle.pending,.oic .circle.approved,.oic .circle.rejected,.oic .circle.objection{--c:#123d6d}
-
-.oic .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.oic .filters input,.oic .filters select{padding:8px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;font-size:14px;font-family:inherit}
-.oic .filters input{flex:1;min-width:240px}
-.oic .filters input:focus,.oic .filters select:focus,.oic textarea:focus{outline:none;border-color:#123d6d;box-shadow:0 0 0 2px rgba(18,61,109,.2)}
-
-.oic .btn{border:1px solid #bbb;background:#f5f5f5;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:13px;font-family:inherit;color:#222;white-space:nowrap}
-.oic .btn:hover:not(:disabled){background:#e6e6e6}
-.oic .btn:disabled{opacity:.5;cursor:not-allowed}
-.oic .btn.view{background:#123d6d;border-color:#123d6d;color:#fff}
-.oic .btn.view:hover:not(:disabled){background:#0d2f55}
-
-/* modal action buttons */
-.oic .btn.ok{background:#2e7d32;border-color:#2e7d32;color:#fff}
-.oic .btn.ok:hover:not(:disabled){background:#1b5e20}
-.oic .btn.deny{background:#b71c1c;border-color:#b71c1c;color:#fff}
-.oic .btn.deny:hover:not(:disabled){background:#8e1515}
-.oic .btn.warn{background:#e65100;border-color:#e65100;color:#fff}
-.oic .btn.warn:hover:not(:disabled){background:#bf4300}
-
-/* table */
-.oic .tablebox{background:#fff;border:1px solid var(--line);overflow:auto;max-width:100%}
-.oic table{width:100%;border-collapse:collapse}
-.oic th{text-align:left;padding:9px 10px;font-size:14px;font-weight:bold;color:#123d6d;background:#e8eff5;border:1px solid var(--line);white-space:nowrap;text-transform:capitalize}
-.oic td{padding:9px 10px;border:1px solid var(--line);vertical-align:middle}
-.oic .empty{text-align:center;color:var(--muted);padding:24px}
-.oic .fid{display:inline-block;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
-.oic .tablebox > table > tbody > tr > td:nth-child(2){white-space:nowrap}
-.oic .tablebox > table > tbody > tr > td:nth-child(7){min-width:120px}
-.oic .tablebox > table > tbody > tr > td:last-child{width:1%;white-space:nowrap}
-
-.oic .badge{font-weight:bold;text-transform:capitalize}
-
-.oic .pager{display:flex;align-items:center;gap:10px;margin-top:12px;color:#333;flex-wrap:wrap}
-.oic .pinfo{margin-left:auto;font-size:13px;color:var(--muted)}
-
-/* modal */
-.oic .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:24px 12px;z-index:50}
-.oic .modal{background:#fff;border-radius:6px;padding:20px;width:100%;max-width:800px;height:fit-content}
-.oic .modal.small{max-width:440px;margin-top:10vh}
-.oic .modal h3{margin:0 0 12px;font-size:18px}
-.oic .modal h4{margin:16px 0 6px}
-.oic .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:8px}
-.oic .field{background:#f9f9f9;border:1px solid var(--line);padding:8px 10px;word-break:break-word}
-.oic .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:2px;text-transform:capitalize}
-.oic pre{background:#f3f3f3;padding:10px;overflow:auto;font-size:12px;max-height:200px}
-.oic textarea{width:100%;min-height:100px;padding:8px;border:1px solid #ccc;border-radius:4px;font-family:inherit;font-size:14px;resize:vertical}
-.oic .modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
-.oic a.link{color:#0b5ed7;text-decoration:none}
-.oic a.link:hover{text-decoration:underline}
-.oic td a.link{display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
-.oic th.sortable{cursor:pointer;user-select:none}
-.oic .tablebox.loading{opacity:.6}
-.oic .hover{cursor:help}
-.oic .remark{margin-top:4px;font-size:12px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.oic .remarkbox{background:#fff8e1;border:1px solid #ffe08a;color:#7a5b00;padding:10px 12px;border-radius:4px;margin-bottom:12px}
-.oic .toast{position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:10px 16px;border-radius:4px;z-index:100}
-.oic .mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
-.oic .mhead h3{margin:0}
-.oic .mhead small{color:var(--muted)}
-.oic .xbtn{border:none;background:none;font-size:26px;line-height:1;cursor:pointer;color:#666;padding:0 4px}
-.oic .fsec{border:1px solid var(--line);margin-bottom:12px;overflow:hidden}
-.oic .fhead{background:#e8eff5;color:#123d6d;padding:8px 12px;font-weight:bold}
-.oic .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))}
-.oic .frow{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--line)}
-.oic .fl{color:var(--muted);min-width:130px;flex-shrink:0}
-.oic .fv{word-break:break-word}
-
-@media (max-width:1400px){
-  .oic .fid{max-width:170px}
-  .oic td a.link{max-width:170px}
-  .oic th,.oic td{padding:9px 8px}
-  .oic .btn{padding:5px 9px}
-}
-@media (max-width:640px){
-  .oic{padding:12px}
-  .oic .filters input{min-width:100%}
-  .oic .filters select{flex:1 1 calc(50% - 4px);min-width:0}
-  .oic .frow{flex-direction:column;gap:2px}
-  .oic .fl{min-width:0}
-  .oic .modal{padding:14px}
-  .oic .toast{left:12px;right:12px;bottom:12px}
-}
-`;
 
 export default function OicDashboard({ embedded = false }) {
   const [rows, setRows] = useState([]);
@@ -285,6 +159,8 @@ export default function OicDashboard({ embedded = false }) {
         infra: d.infra,
         checklist: d.checklist,
         audit: d.audit,
+        stagingServers: d.stagingServers,
+        productionServers: d.productionServers,
       });
     } catch (e) {
       setError("Unable to load the form: " + e.message);
@@ -390,9 +266,7 @@ export default function OicDashboard({ embedded = false }) {
   const selStatus = selected ? selected.request.request_status : "";
 
   return (
-    <div className="oic" style={embedded ? { padding: 0, minHeight: "auto", background: "transparent" } : undefined}>
-      <style>{css}</style>
-
+    <div className={embedded ? "oic embedded" : "oic"}>
       {!embedded && <h2>OIC Dashboard</h2>}
       {error && <div className="err">{error}</div>}
 
@@ -568,27 +442,17 @@ export default function OicDashboard({ embedded = false }) {
               </div>
             )}
 
-            {SECTIONS.map((sec) => {
-              const data = (sec.src === "org" ? selected.org : selected.request) || {};
-              return (
-                <div className="fsec" key={sec.title}>
-                  <div className="fhead">{sec.title}</div>
-                  <div className="fgrid">
-                    {sec.fields.map(([k, label]) => (
-                      <div className="frow" key={k}>
-                        <span className="fl">{label}</span>
-                        <span className="fv">{fmt(k, data[k])}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {/* Same document as the PDF (read-only: no Edit buttons) */}
+            <FormPreviewContent
+              readOnly
+              org={selected.org}
+              app={{ ...selected.request, type: parseJson(selected.request.type, []) }}
+              infra={selected.infra && selected.infra[0] ? { ...selected.infra[0], ssl_type: parseJson(selected.infra[0].ssl_type, []) } : null}
+              stagingServers={selected.stagingServers}
+              productionServers={selected.productionServers}
+              checklist={selected.checklist && selected.checklist[0] ? selected.checklist[0] : null}
+            />
 
-            <h4>Infra</h4>
-            <RowsTable rows={selected.infra} />
-            <h4>Checklist</h4>
-            <RowsTable rows={selected.checklist} />
             <h4>Audit Log</h4>
             <RowsTable rows={selected.audit} />
 
@@ -638,7 +502,7 @@ export default function OicDashboard({ embedded = false }) {
 
       {/* Objection / Access Denied modal */}
       {objTarget && (
-        <div className="overlay" style={{ zIndex: 60 }}>
+        <div className="overlay overlay-top">
           <div className="modal small">
             <h3>
               {objTarget.type === "reject" ? "Access Denied" : "Raise Objection"} - {objTarget.form_id}

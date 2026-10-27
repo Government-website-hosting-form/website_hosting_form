@@ -239,12 +239,16 @@ router.get('/infra/:id/servers', requireOwner('infra'), async (req, res) => {
         internal_storage: row.internal_storage || '',
         external_storage: row.external_storage || '',
         external_storage_other: row.external_storage_other || '',
+        external_storage_unit: row.external_storage_unit || 'GB',
         os: row.os || '',
         os_other: row.os_other || '',
         external_storage_capacity: row.external_storage_capacity || ''
       }
       if (row.server_type === 'db') {
         server.version = row.version || ''
+      }
+      if (row.server_type === 'other') {
+        server.server_name = row.server_name || ''
       }
       grouped[row.server_type].push(server)
     }
@@ -281,8 +285,9 @@ router.put('/infra/:id/servers', requireOwner('infra'), requireEditable('infra')
         `INSERT INTO infra_servers
         (infra_id, environment, server_type, processor, ram,
          internal_storage, external_storage,
-         external_storage_other, os, version, os_other, external_storage_capacity)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         external_storage_other, os, version, os_other, external_storage_capacity,
+         server_name, external_storage_unit)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           infraId,
           environment,
@@ -295,7 +300,9 @@ router.put('/infra/:id/servers', requireOwner('infra'), requireEditable('infra')
           server.os || null,
           server.version || null,
           server.os_other || null,
-          server.external_storage_capacity || null
+          server.external_storage_capacity || null,
+          server.server_name || null,
+          server.external_storage_unit || null
         ]
       )
     }

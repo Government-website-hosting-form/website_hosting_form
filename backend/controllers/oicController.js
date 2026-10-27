@@ -129,7 +129,37 @@ exports.getOne = async (req, res) => {
        FROM oic_audit_log l
        LEFT JOIN users u ON u.sso_id = l.sso_id
        WHERE l.app_id = ? ORDER BY l.id DESC`);
-    res.json({ app: clean(app), org: clean(org), infra, checklist, audit });
+    // Staging / production servers, grouped like the user's own preview
+    const groupServers = async (environment) => {
+      const grouped = { web: [], app: [], db: [], other: [] };
+      if (!infra[0]) return grouped;
+      try {
+        const [rows] = await db.query(
+          "SELECT * FROM infra_servers WHERE infra_id = ? AND environment = ?",
+          [infra[0].infra_id, environment]);
+        for (const r of rows) {
+          const server = {
+            processor: r.processor || "",
+            ram: r.ram || "",
+            internal_storage: r.internal_storage || "",
+            external_storage: r.external_storage || "",
+            external_storage_other: r.external_storage_other || "",
+            external_storage_unit: r.external_storage_unit || "",
+            os: r.os || "",
+            os_other: r.os_other || "",
+            external_storage_capacity: r.external_storage_capacity || "",
+          };
+          if (r.server_type === "db") server.version = r.version || "";
+          if (r.server_type === "other") server.server_name = r.server_name || "";
+          if (grouped[r.server_type]) grouped[r.server_type].push(server);
+        }
+      } catch (e) { console.error("oic getOne servers:", e.message); }
+      return grouped;
+    };
+    const stagingServers = await groupServers("staging");
+    const productionServers = await groupServers("production");
+
+    res.json({ app: clean(app), org: clean(org), infra, checklist, audit, stagingServers, productionServers });
   } catch (e) { console.error("oic getOne:", e.message); res.status(500).json({ message: e.message }); }
 };
 

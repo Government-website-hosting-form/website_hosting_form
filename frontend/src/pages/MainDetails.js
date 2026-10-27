@@ -39,6 +39,8 @@ function MainDetails() {
   const [error, setError] = useState("");
   const [sameAsDeveloper, setSameAsDeveloper] = useState(false);
   const [errors, setErrors] = useState({});
+  // eslint-disable-next-line no-unused-vars
+  const [contractFile, setContractFile] = useState(null);
 
   useEffect(() => {
     async function loadExisting() {
@@ -84,6 +86,11 @@ function MainDetails() {
 
     if (name === "maint_active" && value !== "Yes") {
         setSameAsDeveloper(false);
+        setContractFile(null);
+    }
+
+    if (name === "maint_contract_attached" && value !== "Yes") {
+        setContractFile(null);
     }
 }
 
@@ -413,6 +420,14 @@ function MainDetails() {
                 <label><input type="radio" name="maint_contract_attached" value="No" checked={form.maint_contract_attached === "No"} onChange={handleChange} />
                   No</label>
               </div>
+
+              {form.maint_contract_attached === "Yes" && (
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg"
+                  onChange={(e) => setContractFile(e.target.files[0])}
+                />
+              )}
             </div>
           )}
         </div>

@@ -19,7 +19,7 @@ const initialState = {
   safehost_ref_no: "",
   safehost_issue_date: "",
   safehost_valid_till: "",
-  loadtest_required: "",
+  loadtest_required: "No",
   load_users: "",
   loadtest_avg_response: "",
   loadtest_agency: "",

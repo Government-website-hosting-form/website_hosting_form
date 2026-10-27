@@ -11,6 +11,7 @@ import { apiPut, apiGet } from "../api";
 import { validateEmail, validateMobile, validatePhone, validateText } from "../helpers/Validation";
 
 const initialState = {
+  physical_hw_required: "No",
   hw_type: "",
   hw_brand: "",
   hw_model: "",
@@ -84,6 +85,12 @@ function HardwareDetails() {
     const { name, value } = e.target;
     setForm((prev) => {
       const updated = { ...prev, [name]: value };
+
+      if (name === "physical_hw_required" && value !== "Yes") {
+        setFmsContractFile(null);
+        setAmcContractFile(null);
+        return { ...updated, ...initialState, physical_hw_required: value };
+      }
 
       if (name === "hw_type" && value !== "Dedicated") {
         updated.hw_brand = "";
@@ -227,18 +234,34 @@ function HardwareDetails() {
 
           <div className="form-section-grid">
             <div className="form-row full-width">
-              <label>Hardware Type</label>
+              <label>Do you need hardware details?</label>
               <div className="hw-radio-group">
                 <label>
-                  <input type="radio" name="hw_type" value="Dedicated" checked={form.hw_type === "Dedicated"} onChange={handleChange} />
-                  Dedicated (provided by dept)
+                  <input type="radio" name="physical_hw_required" value="Yes" checked={form.physical_hw_required === "Yes"} onChange={handleChange} />
+                  Yes
                 </label>
                 <label>
-                  <input type="radio" name="hw_type" value="Shared" checked={form.hw_type === "Shared"} onChange={handleChange} />
-                  Shared
+                  <input type="radio" name="physical_hw_required" value="No" checked={form.physical_hw_required === "No"} onChange={handleChange} />
+                  No
                 </label>
               </div>
             </div>
+
+            {form.physical_hw_required === "Yes" && (
+              <div className="form-row full-width">
+                <label>Hardware Type</label>
+                <div className="hw-radio-group">
+                  <label>
+                    <input type="radio" name="hw_type" value="Dedicated" checked={form.hw_type === "Dedicated"} onChange={handleChange} />
+                    Dedicated (provided by dept)
+                  </label>
+                  <label>
+                    <input type="radio" name="hw_type" value="Shared" checked={form.hw_type === "Shared"} onChange={handleChange} />
+                    Shared
+                  </label>
+                </div>
+              </div>
+            )}
 
             {form.hw_type === "Dedicated" && (
               <>
