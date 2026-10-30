@@ -12,8 +12,7 @@ import {
   validateFileType,
   validateFileSize,
 } from "../helpers/Validation";
-const API_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:3000";
+const API_URL = process.env.REACT_APP_API_URL || "";
 
 const formData = {
   fullName: "",
@@ -375,6 +374,7 @@ function Mapping() {
           <input
             type="tel"
             name="mobile"
+            maxLength={10}
             placeholder="Enter Mobile Number"
             value={form.mobile}
             onChange={handleChange}

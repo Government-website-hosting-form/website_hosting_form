@@ -1,4 +1,4 @@
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_API_URL || "";
 
 const SSO_BACK_URL =
   process.env.REACT_APP_SSO_BACK_URL || "https://ssotest.rajasthan.gov.in/sso";

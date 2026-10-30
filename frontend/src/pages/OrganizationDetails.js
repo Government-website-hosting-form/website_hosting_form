@@ -211,7 +211,14 @@ function OrganizationDetails() {
       const hasData = Object.values(form).some((v) => String(v ?? "").trim() !== "");
       if (!ids.orgId && !hasData) return;
 
-      const payload = { ...form, user_id: ids.userId || null };
+      const ph = (v) => (/^\d{10}$/.test(v) ? v : null);
+      const payload = {
+        ...form,
+        phone_office: ph(form.phone_office),
+        phone: ph(form.phone),
+        contact_phone: ph(form.contact_phone),
+        user_id: ids.userId || null,
+      };
       let orgId = ids.orgId;
       if (orgId) {
         await apiPut(`/org/${orgId}`, payload);

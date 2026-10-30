@@ -215,8 +215,13 @@ const [contractFile, setContractFile] = useState(null);
   async function saveQuietly() {
     try {
       if (!ids.appId) return;
+      const ph = (v) => (/^\d{10}$/.test(v) ? v : null);
       await apiPut(`/apps/${ids.appId}`, {
         ...form,
+        dev_phone_office: ph(form.dev_phone_office),
+        dev_phone: ph(form.dev_phone),
+        maint_phone_office: ph(form.maint_phone_office),
+        maint_phone_mobile: ph(form.maint_phone_mobile),
         maint_expiry: form.maint_expiry || null,
         maint_contract_attached: form.maint_contract_attached || null,
       });

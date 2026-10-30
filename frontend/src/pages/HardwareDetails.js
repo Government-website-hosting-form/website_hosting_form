@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { apiPut, apiGet } from "../api";
 import { validateEmail, validateMobile, validatePhone, validateText } from "../helpers/Validation";
 import { uploadFile } from "../helpers/uploadPdf";
+import FileUploadField from "../components/FileUploadField";
 const initialState = {
   physical_hw_required: "No",
   hw_type: "",
@@ -53,8 +54,6 @@ const initialState = {
   hw_amc_contract_attached: "",
   hw_amc_contract_doc: "",
 };
-
-const fileName = (p) => (p ? String(p).split("/").pop() : "");
 
 function HardwareDetails() {
   const navigate = useNavigate();
@@ -125,8 +124,6 @@ function HardwareDetails() {
       const updated = { ...prev, [name]: value };
 
       if (name === "physical_hw_required" && value !== "Yes") {
-        setFmsContractFile(null);
-        setAmcContractFile(null);
         return { ...updated, ...initialState, physical_hw_required: value };
       }
 
@@ -248,7 +245,14 @@ function HardwareDetails() {
   async function saveQuietly() {
     try {
       if (!ids.infraId) return;
-      await apiPut(`/infra/${ids.infraId}`, form);
+      const ph = (v) => (/^\d{10}$/.test(v) ? v : null);
+      await apiPut(`/infra/${ids.infraId}`, {
+        ...form,
+        hw_fms_phone_office: ph(form.hw_fms_phone_office),
+        hw_fms_phone_mobile: ph(form.hw_fms_phone_mobile),
+        hw_amc_phone_office: ph(form.hw_amc_phone_office),
+        hw_amc_phone_mobile: ph(form.hw_amc_phone_mobile),
+      });
     } catch (err) {
       console.error("Could not save draft on Home:", err);
     }
@@ -532,7 +536,7 @@ function HardwareDetails() {
                     <div>
                       {form.hw_fms === "Yes" && (
                         <>
-                          <input type="text" placeholder="Enter Office Phone No." name="hw_fms_phone_office" value={form.hw_fms_phone_office} onChange={handleChange} />
+                          <input type="text" placeholder="Enter Office Phone No." name="hw_fms_phone_office" value={form.hw_fms_phone_office} onChange={handleChange} maxLength={10} />
                           {errors.hw_fms_phone_office && <p className="error-message">{errors.hw_fms_phone_office}</p>}
                         </>
                       )}
@@ -540,7 +544,7 @@ function HardwareDetails() {
                     <div>
                       {form.hw_amc === "Yes" && (
                         <>
-                          <input type="text" placeholder="Enter Office Phone No." name="hw_amc_phone_office" value={form.hw_amc_phone_office} onChange={handleChange} />
+                          <input type="text" placeholder="Enter Office Phone No." name="hw_amc_phone_office" value={form.hw_amc_phone_office} onChange={handleChange} maxLength={10} />
                           {errors.hw_amc_phone_office && <p className="error-message">{errors.hw_amc_phone_office}</p>}
                         </>
                       )}
@@ -552,7 +556,7 @@ function HardwareDetails() {
                     <div>
                       {form.hw_fms === "Yes" && (
                         <>
-                          <input type="text" placeholder="Enter Mobile Phone No." name="hw_fms_phone_mobile" value={form.hw_fms_phone_mobile} onChange={handleChange} />
+                          <input type="text" placeholder="Enter Mobile Phone No." name="hw_fms_phone_mobile" value={form.hw_fms_phone_mobile} onChange={handleChange} maxLength={10} />
                           {errors.hw_fms_phone_mobile && <p className="error-message">{errors.hw_fms_phone_mobile}</p>}
                         </>
                       )}
@@ -560,7 +564,7 @@ function HardwareDetails() {
                     <div>
                       {form.hw_amc === "Yes" && (
                         <>
-                          <input type="text" placeholder="Enter Mobile Phone No." name="hw_amc_phone_mobile" value={form.hw_amc_phone_mobile} onChange={handleChange} />
+                          <input type="text" placeholder="Enter Mobile Phone No." name="hw_amc_phone_mobile" value={form.hw_amc_phone_mobile} onChange={handleChange} maxLength={10} />
                           {errors.hw_amc_phone_mobile && <p className="error-message">{errors.hw_amc_phone_mobile}</p>}
                         </>
                       )}
@@ -618,16 +622,11 @@ function HardwareDetails() {
                           </div>
                           {form.hw_fms_contract_attached === "Yes" && (
                             <>
-                              <input
-                                type="file"
-                                accept=".pdf,.jpg,.jpeg"
+                              <FileUploadField
+                                value={form.hw_fms_contract_doc}
+                                uploading={uploading === "hw_fms_contract_doc"}
                                 onChange={(e) => handleDocChange(e, "hw_fms_contract_doc")}
-                                disabled={uploading === "hw_fms_contract_doc"}
                               />
-                              {uploading === "hw_fms_contract_doc" && <p>Uploading...</p>}
-                              {form.hw_fms_contract_doc && uploading !== "hw_fms_contract_doc" && (
-                                <p>✔ Uploaded: {fileName(form.hw_fms_contract_doc)}</p>
-                              )}
                             </>
                           )}
                         </>
@@ -648,16 +647,11 @@ function HardwareDetails() {
                           </div>
                           {form.hw_amc_contract_attached === "Yes" && (
                             <>
-                              <input
-                                type="file"
-                                accept=".pdf,.jpg,.jpeg"
+                              <FileUploadField
+                                value={form.hw_amc_contract_doc}
+                                uploading={uploading === "hw_amc_contract_doc"}
                                 onChange={(e) => handleDocChange(e, "hw_amc_contract_doc")}
-                                disabled={uploading === "hw_amc_contract_doc"}
                               />
-                              {uploading === "hw_amc_contract_doc" && <p>Uploading...</p>}
-                              {form.hw_amc_contract_doc && uploading !== "hw_amc_contract_doc" && (
-                                <p>✔ Uploaded: {fileName(form.hw_amc_contract_doc)}</p>
-                              )}
                             </>
                           )}
                         </>

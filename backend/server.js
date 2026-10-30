@@ -21,7 +21,7 @@ app.set("etag", false);
 
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL =
-  process.env.FRONTEND_URL || "http://localhost:3001";
+  process.env.FRONTEND_URL || "https://10.70.234.50:443";
 
 // CORS must come first so every response (including preflight) gets the headers
 app.use(

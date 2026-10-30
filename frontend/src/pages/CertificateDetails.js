@@ -7,7 +7,7 @@ import { useFormContext } from "../context/FormContext";
 import useLeaveSave from "../hooks/useLeaveSave";
 import { apiPut, apiGet } from "../api";
 import { uploadFile } from "../helpers/uploadPdf";
-
+import FileUploadField from "../components/FileUploadField";
 const initialState = {
   safehost_agency: "",
   safehost_agency_other: "",
@@ -28,8 +28,6 @@ const initialState = {
   loadtest_valid_till: "",
   other_certificate_details: "",
 };
-
-const fileName = (p) => (p ? String(p).split("/").pop() : "");
 
 function CertificateDetails() {
   const navigate = useNavigate();
@@ -275,16 +273,11 @@ function CertificateDetails() {
 
             <div className="form-row">
               <label className="required">Please Attach Copy</label>
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg"
+              <FileUploadField
+                value={form.safehost_doc}
+                uploading={uploading === "safehost_doc"}
                 onChange={(e) => handleDocChange(e, "safehost_doc")}
-                disabled={uploading === "safehost_doc"}
               />
-              {uploading === "safehost_doc" && <p>Uploading...</p>}
-              {form.safehost_doc && uploading !== "safehost_doc" && (
-                <p>✔ Uploaded: {fileName(form.safehost_doc)}</p>
-              )}
               {errors.safehost_doc && <p className="error-message">{errors.safehost_doc}</p>}
             </div>
 
@@ -417,16 +410,11 @@ function CertificateDetails() {
 
               <div className="form-row">
                 <label>Please Attach Copy</label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg"
+                <FileUploadField
+                  value={form.loadtest_doc}
+                  uploading={uploading === "loadtest_doc"}
                   onChange={(e) => handleDocChange(e, "loadtest_doc")}
-                  disabled={uploading === "loadtest_doc"}
                 />
-                {uploading === "loadtest_doc" && <p>Uploading...</p>}
-                {form.loadtest_doc && uploading !== "loadtest_doc" && (
-                  <p>✔ Uploaded: {fileName(form.loadtest_doc)}</p>
-                )}
               </div>
 
               <div className="form-row">

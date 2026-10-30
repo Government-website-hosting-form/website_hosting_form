@@ -383,7 +383,10 @@ async function submitAndAssignFormId(appId, appName) {
 
     if (row.form_id) {
       await conn.query(
-        `UPDATE apps SET status = 'submitted', submitted_at = NOW() WHERE app_id = ?`,
+        `UPDATE apps SET status = 'submitted', submitted_at = NOW(),
+           objection_remarks = IF(request_status = 'objection', NULL, objection_remarks),
+           request_status = IF(request_status = 'objection', 'pending', request_status)
+         WHERE app_id = ?`,
         [appId]
       )
       await conn.commit()
@@ -396,7 +399,9 @@ async function submitAndAssignFormId(appId, appName) {
     const formId = `${FORM_ID_PREFIX}_${appCodeFromName(appName)}_${String(serial).padStart(SERIAL_PAD, '0')}`
 
     await conn.query(
-      `UPDATE apps SET status = 'submitted', submitted_at = NOW(), form_serial = ?, form_id = ?
+      `UPDATE apps SET status = 'submitted', submitted_at = NOW(), form_serial = ?, form_id = ?,
+         objection_remarks = IF(request_status = 'objection', NULL, objection_remarks),
+         request_status = IF(request_status = 'objection', 'pending', request_status)
        WHERE app_id = ?`,
       [serial, formId, appId]
     )

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { FileLink } from "./FileUploadField";
 
 function filterServers(servers) {
     return (servers || []).filter((server) => {
@@ -175,6 +176,12 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                                 <label>Purpose</label>
                                 <p>{app.purpose || "-"}</p>
                             </div>
+                            {app.app_purpose_doc && (
+                                <div className="doc-row">
+                                    <label>Purpose Document</label>
+                                    <p><FileLink value={app.app_purpose_doc} /></p>
+                                </div>
+                            )}
                             <div className="doc-row">
                                 <label>URL</label>
                                 <p>{app.url || "-"}</p>
@@ -183,6 +190,12 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                                 <label>Alternate URL</label>
                                 <p>{app.alternate_url || "-"}</p>
                             </div>
+                            {app.app_domain_doc && (
+                                <div className="doc-row">
+                                    <label>Domain Approval Attachment</label>
+                                    <p><FileLink value={app.app_domain_doc} /></p>
+                                </div>
+                            )}
                             <div className="doc-row">
                                 <label>Authority Name</label>
                                 <p>{app.approval_authority || "-"}</p>
@@ -191,6 +204,12 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                                 <label>Designation</label>
                                 <p>{app.approval_designation || "-"}</p>
                             </div>
+                            {app.app_approval_doc && (
+                                <div className="doc-row">
+                                    <label>Approval Document</label>
+                                    <p><FileLink value={app.app_approval_doc} /></p>
+                                </div>
+                            )}
                             <div className="doc-row">
                                 <label>SEMT/Administrative Approval</label>
                                 <p>{app.semt_approved || "-"}</p>
@@ -205,6 +224,12 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                                         <label>Date</label>
                                         <p>{app.mom_date || "-"}</p>
                                     </div>
+                                    {app.mom_doc && (
+                                        <div className="doc-row">
+                                            <label>MoM / Document Attachment</label>
+                                            <p><FileLink value={app.mom_doc} /></p>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -327,6 +352,12 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                                 <label>Security Audit Certificate Reference Number</label>
                                 <p>{app.safehost_ref_no || "-"}</p>
                             </div>
+                            {app.safehost_doc && (
+                                <div className="doc-row">
+                                    <label>Safe to Host Certificate Copy</label>
+                                    <p><FileLink value={app.safehost_doc} /></p>
+                                </div>
+                            )}
                             <div className="doc-row">
                                 <label>Certificate Issue Date</label>
                                 <p>{app.safehost_issue_date || "-"}</p>
@@ -363,6 +394,12 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                                         <label>Certificate Reference Number</label>
                                         <p>{app.loadtest_ref_no || "-"}</p>
                                     </div>
+                                    {app.loadtest_doc && (
+                                        <div className="doc-row">
+                                            <label>Load Test Certificate Copy</label>
+                                            <p><FileLink value={app.loadtest_doc} /></p>
+                                        </div>
+                                    )}
                                     <div className="doc-row">
                                         <label>Certificate Issue Date</label>
                                         <p>{app.loadtest_issue_date || "-"}</p>
@@ -596,6 +633,12 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                                                         <label>FMS Contract Attached</label>
                                                         <p>{infra.hw_fms_contract_attached || "-"}</p>
                                                     </div>
+                                                    {infra.hw_fms_contract_doc && (
+                                                        <div className="doc-row">
+                                                            <label>FMS Contract Copy</label>
+                                                            <p><FileLink value={infra.hw_fms_contract_doc} /></p>
+                                                        </div>
+                                                    )}
                                                 </>
                                             )}
 
@@ -637,6 +680,12 @@ function FormPreviewContent({ org, app, infra, stagingServers, productionServers
                                                         <label>AMC Contract Attached</label>
                                                         <p>{infra.hw_amc_contract_attached || "-"}</p>
                                                     </div>
+                                                    {infra.hw_amc_contract_doc && (
+                                                        <div className="doc-row">
+                                                            <label>AMC Contract Copy</label>
+                                                            <p><FileLink value={infra.hw_amc_contract_doc} /></p>
+                                                        </div>
+                                                    )}
                                                 </>
                                             )}
                                         </>

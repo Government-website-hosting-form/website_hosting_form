@@ -3,7 +3,7 @@ import { shortFormId } from "../helpers/formId";
 import FormPreviewContent from "../components/FormPreviewContent";
 import "./OicDashboard.css";
 
-const API = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const API = process.env.REACT_APP_API_URL || "";
 const authHeaders = () => ({
   "Content-Type": "application/json",
   "SSO-TOKEN": localStorage.getItem("ssoToken"),

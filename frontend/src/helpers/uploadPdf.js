@@ -1,4 +1,4 @@
-const API = process.env.REACT_APP_API_URL || "http://localhost:3000";
+const API = process.env.REACT_APP_API_URL || "";
 
 // target: "apps" or "infra", id: appId or infraId, field: DB column name
 export async function uploadFile(file, target, id, field) {

@@ -8,11 +8,17 @@ In the project directory, you can run:
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Runs the app in HTTPS development mode on port 443.\
+Open [https://10.70.234.50:443](https://10.70.234.50:443) to view it in your browser.
 
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
+
+During development, API requests are proxied to the backend at `http://localhost:3000`.
+In deployment, configure the HTTPS reverse proxy on port 443 to serve the frontend and
+forward backend routes (`/api`, `/uploads`, `/org`, `/apps`, `/infra`, and `/checklist`)
+to the backend on port 3000. The backend's SSO callback route (`POST /`) must also be
+forwarded to the backend; other frontend routes should serve the React app.
 
 ### `npm test`
 

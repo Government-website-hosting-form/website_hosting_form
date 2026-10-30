@@ -6,7 +6,7 @@ const pool = require('../db')
 const SSO_BASE_URL = process.env.SSO_BASE_URL
 const WSUSERNAME = process.env.WSUSERNAME
 const WSPASSWORD = process.env.WSPASSWORD
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://10.70.234.50:443'
 
 const DOITC_OIC_ROLES = (process.env.DOITC_OIC_ROLES || '')
   .split(',')

@@ -25,8 +25,15 @@ const EXT = { "application/pdf": ".pdf", "image/jpeg": ".jpg" };
 const upload = multer({
   storage: multer.diskStorage({
     destination: DIR,
-    filename: (req, file, cb) =>
-      cb(null, Date.now() + "-" + crypto.randomBytes(6).toString("hex") + EXT[file.mimetype]),
+    filename: (req, file, cb) => {
+      const ext = EXT[file.mimetype];
+      const safe = path
+        .basename(file.originalname, path.extname(file.originalname))
+        .replace(/[^A-Za-z0-9_-]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 60) || "file";
+      cb(null, Date.now() + "-" + crypto.randomBytes(6).toString("hex") + "-" + safe + ext);
+    },
   }),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) =>

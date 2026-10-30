@@ -7,6 +7,7 @@ import { useFormContext } from "../context/FormContext";
 import useLeaveSave from "../hooks/useLeaveSave";
 import { apiPost, apiGet, apiPut } from "../api";
 import { uploadFile } from "../helpers/uploadPdf";
+import FileUploadField from "../components/FileUploadField";
 
 const DOC_FIELDS = ["app_purpose_doc", "app_domain_doc", "app_approval_doc", "mom_doc"];
 
@@ -31,8 +32,6 @@ const initialState = {
   mom_date: "",
   mom_doc: "",
 };
-
-const fileName = (p) => (p ? String(p).split("/").pop() : "");
 
 function ApplicationDetails() {
   const navigate = useNavigate();
@@ -359,16 +358,11 @@ function ApplicationDetails() {
               </div>
               {errors.purpose && <p className="error-message">{errors.purpose}</p>}
 
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg"
+              <FileUploadField
+                value={form.app_purpose_doc}
+                uploading={uploading === "app_purpose_doc"}
                 onChange={(e) => handleDocChange(e, "app_purpose_doc")}
-                disabled={uploading === "app_purpose_doc"}
               />
-              {uploading === "app_purpose_doc" && <p>Uploading...</p>}
-              {form.app_purpose_doc && uploading !== "app_purpose_doc" && (
-                <p>✔ Uploaded: {fileName(form.app_purpose_doc)}</p>
-              )}
 
             </div>
 
@@ -415,16 +409,11 @@ function ApplicationDetails() {
 
             <div className="form-row">
               <label>Domain Approval Attachment</label>
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg"
+              <FileUploadField
+                value={form.app_domain_doc}
+                uploading={uploading === "app_domain_doc"}
                 onChange={(e) => handleDocChange(e, "app_domain_doc")}
-                disabled={uploading === "app_domain_doc"}
               />
-              {uploading === "app_domain_doc" && <p>Uploading...</p>}
-              {form.app_domain_doc && uploading !== "app_domain_doc" && (
-                <p>✔ Uploaded: {fileName(form.app_domain_doc)}</p>
-              )}
             </div>
           </div>
         </div>
@@ -450,16 +439,11 @@ function ApplicationDetails() {
 
             <div className="form-row">
               <label>Attach Approval Document (if available)</label>
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg"
+              <FileUploadField
+                value={form.app_approval_doc}
+                uploading={uploading === "app_approval_doc"}
                 onChange={(e) => handleDocChange(e, "app_approval_doc")}
-                disabled={uploading === "app_approval_doc"}
               />
-              {uploading === "app_approval_doc" && <p>Uploading...</p>}
-              {form.app_approval_doc && uploading !== "app_approval_doc" && (
-                <p>✔ Uploaded: {fileName(form.app_approval_doc)}</p>
-              )}
             </div>
 
           </div>
@@ -529,16 +513,11 @@ function ApplicationDetails() {
 
                 <div className="form-row">
                   <label className="required">Attach MoM / Document</label>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg"
+                  <FileUploadField
+                    value={form.mom_doc}
+                    uploading={uploading === "mom_doc"}
                     onChange={(e) => handleDocChange(e, "mom_doc")}
-                    disabled={uploading === "mom_doc"}
                   />
-                  {uploading === "mom_doc" && <p>Uploading...</p>}
-                  {form.mom_doc && uploading !== "mom_doc" && (
-                    <p>✔ Uploaded: {fileName(form.mom_doc)}</p>
-                  )}
                   {errors.mom_doc && <p className="error-message">{errors.mom_doc}</p>}
                 </div>
               </>

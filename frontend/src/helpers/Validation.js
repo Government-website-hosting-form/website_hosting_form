@@ -37,8 +37,8 @@ export function validatePhone(phone) {
     return "Only numbers are allowed.";
   }
 
-  if (phone && !/^\d{6,15}$/.test(phone)) {
-    return "Enter a valid phone number.";
+ if (phone && !/^\d{10}$/.test(phone)) {
+  return "Phone number must be exactly 10 digits.";
   }
 
   return "";
